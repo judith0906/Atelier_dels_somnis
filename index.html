@@ -7,952 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Cinzel:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --gold: #C9A84C;
-      --gold-light: #E8C96A;
-      --gold-pale: #F5E6B8;
-      --black: #0A0A0A;
-      --black-mid: #111111;
-      --black-soft: #1A1A1A;
-      --black-card: #161616;
-      --white: #FAF7F0;
-      --white-dim: #D4C9B0;
-      --text-muted: #8A7A5A;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--black);
-      color: var(--white);
-      font-family: 'Lato', sans-serif;
-      font-weight: 300;
-      overflow-x: hidden;
-      cursor: default;
-    }
-
-    /* ── NOISE OVERLAY ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.6;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 0 48px;
-      height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(to bottom, rgba(10,10,10,0.98) 0%, rgba(10,10,10,0.85) 100%);
-      border-bottom: 1px solid rgba(201,168,76,0.2);
-      backdrop-filter: blur(12px);
-    }
-
-    .nav-logo {
-      font-family: 'Cinzel', serif;
-      font-size: 1.1rem;
-      letter-spacing: 0.15em;
-      color: var(--gold);
-      text-decoration: none;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 36px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.75rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--white-dim);
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-
-    .nav-links a:hover { color: var(--gold); }
-
-    /* ── LANGUAGE SWITCH ── */
-    .lang-switch {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(201,168,76,0.08);
-      border: 1px solid rgba(201,168,76,0.3);
-      border-radius: 30px;
-      padding: 5px 14px;
-    }
-
-    .lang-label {
-      font-family: 'Cinzel', serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      color: var(--white-dim);
-      cursor: pointer;
-      transition: color 0.3s;
-      user-select: none;
-    }
-
-    .lang-label.active { color: var(--gold); font-weight: 700; }
-
-    .toggle-track {
-      width: 36px;
-      height: 18px;
-      background: rgba(201,168,76,0.15);
-      border: 1px solid var(--gold);
-      border-radius: 9px;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.3s;
-    }
-
-    .toggle-thumb {
-      position: absolute;
-      top: 2px; left: 2px;
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      background: var(--gold);
-      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-      box-shadow: 0 0 6px rgba(201,168,76,0.6);
-    }
-
-    .toggle-thumb.ca { transform: translateX(18px); }
-
-    /* ── HERO ── */
-    .hero {
-      position: relative;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 100px 24px 60px;
-      overflow: hidden;
-    }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 20%, rgba(201,168,76,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse 50% 50% at 80% 70%, rgba(201,168,76,0.03) 0%, transparent 50%);
-    }
-
-    /* Stars */
-    .stars {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .star {
-      position: absolute;
-      width: 2px; height: 2px;
-      background: var(--gold-pale);
-      border-radius: 50%;
-      animation: twinkle var(--d, 3s) ease-in-out infinite;
-      animation-delay: var(--delay, 0s);
-    }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.1; }
-      50% { opacity: 0.8; }
-    }
-
-    .moon {
-      font-size: 5rem;
-      margin-bottom: 16px;
-      filter: drop-shadow(0 0 30px rgba(201,168,76,0.4));
-      animation: float 6s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
-    }
-
-    .hero h1 {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(3rem, 9vw, 7rem);
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      line-height: 1;
-      background: linear-gradient(135deg, var(--gold-pale) 0%, var(--gold) 40%, #8B6914 70%, var(--gold-light) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 4px;
-    }
-
-    .hero-subtitle {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: clamp(1.4rem, 3vw, 2.2rem);
-      color: var(--gold-light);
-      letter-spacing: 0.1em;
-      margin-bottom: 20px;
-    }
-
-    .hero-tagline {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.75rem;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 48px;
-    }
-
-    .hero-divider {
-      width: 180px;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold), transparent);
-      margin: 0 auto 48px;
-    }
-
-    .hero-ctas {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 14px 38px;
-      font-family: 'Cinzel', serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: all 0.35s;
-      cursor: pointer;
-      border: none;
-    }
-
-    .btn-gold {
-      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
-      color: var(--black);
-      font-weight: 700;
-    }
-
-    .btn-gold:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(201,168,76,0.4);
-    }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--gold);
-      border: 1px solid var(--gold);
-    }
-
-    .btn-outline:hover {
-      background: rgba(201,168,76,0.08);
-      transform: translateY(-2px);
-    }
-
-    .scroll-indicator {
-      position: absolute;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-muted);
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      animation: fadeIn 2s ease 1.5s both;
-    }
-
-    .scroll-line {
-      width: 1px;
-      height: 40px;
-      background: linear-gradient(to bottom, var(--gold), transparent);
-      animation: scrollDown 2s ease-in-out infinite;
-    }
-
-    @keyframes scrollDown {
-      0% { transform: scaleY(0); transform-origin: top; }
-      50% { transform: scaleY(1); transform-origin: top; }
-      51% { transform: scaleY(1); transform-origin: bottom; }
-      100% { transform: scaleY(0); transform-origin: bottom; }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; } to { opacity: 1; }
-    }
-
-    /* ── SECTION BASE ── */
-    section {
-      position: relative;
-      z-index: 1;
-    }
-
-    .section-intro {
-      text-align: center;
-      padding: 100px 24px 60px;
-    }
-
-    .eyebrow {
-      font-size: 0.65rem;
-      letter-spacing: 0.4em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--gold-pale), var(--gold));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.1;
-      margin-bottom: 20px;
-    }
-
-    .section-desc {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.2rem;
-      color: var(--white-dim);
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.7;
-    }
-
-    .gold-rule {
-      width: 80px;
-      height: 1px;
-      background: var(--gold);
-      margin: 32px auto;
-    }
-
-    /* ── SEPARATOR BAND ── */
-    .separator-band {
-      padding: 40px 48px;
-      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.06), transparent);
-      border-top: 1px solid rgba(201,168,76,0.15);
-      border-bottom: 1px solid rgba(201,168,76,0.15);
-      text-align: center;
-    }
-
-    .separator-band .band-text {
-      font-family: 'Cinzel', serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.5em;
-      text-transform: uppercase;
-      color: var(--gold);
-      opacity: 0.7;
-    }
-
-    /* ── CLASSES SECTION ── */
-    #classes {
-      padding-bottom: 100px;
-    }
-
-    .classes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2px;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    .class-card {
-      position: relative;
-      background: var(--black-card);
-      border: 1px solid rgba(201,168,76,0.12);
-      padding: 48px 36px;
-      overflow: hidden;
-      transition: all 0.4s;
-      cursor: default;
-    }
-
-    .class-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      transform: scaleX(0);
-      transition: transform 0.4s;
-    }
-
-    .class-card:hover::before { transform: scaleX(1); }
-
-    .class-card:hover {
-      background: #1C1A14;
-      transform: translateY(-4px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(201,168,76,0.06);
-    }
-
-    .class-icon {
-      font-size: 2.8rem;
-      margin-bottom: 20px;
-      display: block;
-    }
-
-    .class-name {
-      font-family: 'Cinzel', serif;
-      font-size: 1.1rem;
-      letter-spacing: 0.1em;
-      color: var(--gold-light);
-      margin-bottom: 12px;
-    }
-
-    .class-desc {
-      font-size: 0.9rem;
-      line-height: 1.7;
-      color: var(--white-dim);
-      margin-bottom: 20px;
-    }
-
-    .class-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .tag {
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      padding: 4px 10px;
-      border: 1px solid rgba(201,168,76,0.25);
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    /* Featured wide card */
-    .class-card.wide {
-      grid-column: span 2;
-    }
-
-    /* ── DANCE DISCIPLINES ── */
-    .disciplines-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .discipline-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(201,168,76,0.1);
-      font-size: 0.85rem;
-      letter-spacing: 0.06em;
-      color: var(--white-dim);
-    }
-
-    .discipline-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--gold);
-      flex-shrink: 0;
-    }
-
-    /* ── AGE BADGE ── */
-    .age-badge {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 6px 16px;
-      background: rgba(201,168,76,0.1);
-      border: 1px solid rgba(201,168,76,0.3);
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      color: var(--gold);
-      text-transform: uppercase;
-    }
-
-    /* ── BIG DIVIDER ── */
-    .big-divider {
-      position: relative;
-      padding: 80px 24px;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .big-divider::before,
-    .big-divider::after {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      height: 1px;
-    }
-
-    .big-divider::before { top: 0; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent); }
-    .big-divider::after  { bottom: 0; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent); }
-
-    .divider-label {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(1.4rem, 4vw, 2.5rem);
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--gold);
-      opacity: 0.15;
-      text-transform: uppercase;
-    }
-
-    .divider-icon {
-      font-size: 3rem;
-      display: block;
-      margin: 16px 0;
-      opacity: 0.5;
-    }
-
-    /* ── RENTAL SECTION ── */
-    #rental {
-      background: linear-gradient(180deg, var(--black) 0%, #0D0D0D 100%);
-      padding-bottom: 100px;
-    }
-
-    .rental-hero-banner {
-      position: relative;
-      margin: 0 24px 60px;
-      max-width: 1400px;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 60px 48px;
-      background: linear-gradient(135deg, #1A1500 0%, #0A0A0A 50%, #1A1200 100%);
-      border: 1px solid rgba(201,168,76,0.25);
-      overflow: hidden;
-      text-align: center;
-    }
-
-    .rental-hero-banner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%);
-    }
-
-    .rental-big-title {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(2rem, 6vw, 4.5rem);
-      font-weight: 900;
-      color: var(--gold);
-      letter-spacing: 0.12em;
-      position: relative;
-    }
-
-    .rental-sub {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-      color: var(--white-dim);
-      margin-top: 12px;
-      position: relative;
-    }
-
-    /* Events 2-col */
-    .events-split {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2px;
-      max-width: 1400px;
-      margin: 0 auto 60px;
-      padding: 0 24px;
-    }
-
-    .events-col {
-      background: var(--black-card);
-      border: 1px solid rgba(201,168,76,0.12);
-      padding: 48px 40px;
-    }
-
-    .events-col-title {
-      font-family: 'Cinzel', serif;
-      font-size: 0.8rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--gold);
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(201,168,76,0.2);
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .events-list {
-      list-style: none;
-    }
-
-    .events-list li {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(201,168,76,0.06);
-      font-size: 0.9rem;
-      color: var(--white-dim);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .events-list li::before {
-      content: '◆';
-      color: var(--gold);
-      font-size: 0.5rem;
-      flex-shrink: 0;
-    }
-
-    /* Services grid */
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-      max-width: 1400px;
-      margin: 0 auto 60px;
-      padding: 0 24px;
-    }
-
-    .service-card {
-      background: var(--black-card);
-      border: 1px solid rgba(201,168,76,0.12);
-      padding: 28px 20px;
-      text-align: center;
-      transition: all 0.3s;
-    }
-
-    .service-card:hover {
-      border-color: rgba(201,168,76,0.4);
-      background: #1C1A14;
-      transform: translateY(-3px);
-    }
-
-    .service-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
-
-    .service-name {
-      font-family: 'Cinzel', serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      color: var(--gold);
-      text-transform: uppercase;
-    }
-
-    /* Workshops */
-    .workshops-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px 60px;
-    }
-
-    .workshop-card {
-      position: relative;
-      background: var(--black-card);
-      border: 1px solid rgba(201,168,76,0.12);
-      padding: 32px 24px;
-      overflow: hidden;
-      transition: all 0.35s;
-    }
-
-    .workshop-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      transform: scaleX(0);
-      transition: transform 0.4s;
-    }
-
-    .workshop-card:hover::after { transform: scaleX(1); }
-    .workshop-card:hover { transform: translateY(-3px); background: #1C1A14; }
-
-    .workshop-icon { font-size: 2rem; margin-bottom: 14px; display: block; }
-
-    .workshop-name {
-      font-family: 'Cinzel', serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.08em;
-      color: var(--gold-light);
-      margin-bottom: 8px;
-    }
-
-    .workshop-desc {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    /* ── BENEFITS BAND ── */
-    .benefits-band {
-      background: linear-gradient(135deg, #12100A 0%, #0D0C07 100%);
-      border-top: 1px solid rgba(201,168,76,0.15);
-      border-bottom: 1px solid rgba(201,168,76,0.15);
-      padding: 60px 24px;
-    }
-
-    .benefits-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .benefits-title {
-      font-family: 'Cinzel', serif;
-      font-size: 0.65rem;
-      letter-spacing: 0.45em;
-      text-transform: uppercase;
-      color: var(--gold);
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .benefits-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 32px;
-    }
-
-    .benefit-item {
-      text-align: center;
-    }
-
-    .benefit-icon { font-size: 2rem; margin-bottom: 10px; }
-
-    .benefit-text {
-      font-size: 0.82rem;
-      color: var(--white-dim);
-      line-height: 1.5;
-    }
-
-    /* ── CONTACT ── */
-    #contact {
-      padding: 100px 24px;
-      text-align: center;
-    }
-
-    .contact-inner {
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .contact-details {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin: 48px 0;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.3rem;
-      color: var(--white-dim);
-    }
-
-    .contact-item span:first-child { font-size: 1.5rem; }
-
-    .contact-item strong {
-      color: var(--gold-light);
-      font-weight: 400;
-    }
-
-    .contact-social {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 32px;
-    }
-
-    .social-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px; height: 44px;
-      border: 1px solid rgba(201,168,76,0.3);
-      color: var(--gold);
-      font-size: 1.1rem;
-      text-decoration: none;
-      transition: all 0.3s;
-    }
-
-    .social-link:hover {
-      background: rgba(201,168,76,0.1);
-      border-color: var(--gold);
-      transform: translateY(-3px);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      background: var(--black-mid);
-      border-top: 1px solid rgba(201,168,76,0.15);
-      padding: 32px 48px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .footer-logo {
-      font-family: 'Cinzel', serif;
-      font-size: 0.85rem;
-      letter-spacing: 0.2em;
-      color: var(--gold);
-    }
-
-    .footer-tagline {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    .footer-copy {
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-    }
-
-    /* ── MOBILE NAV ── */
-    .hamburger {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      padding: 4px;
-    }
-
-    .hamburger span {
-      display: block;
-      width: 22px; height: 1px;
-      background: var(--gold);
-      transition: all 0.3s;
-    }
-
-    @media (max-width: 900px) {
-      .nav-links { display: none; }
-      .hamburger { display: flex; }
-      .class-card.wide { grid-column: span 1; }
-      .events-split { grid-template-columns: 1fr; }
-      nav { padding: 0 24px; }
-    }
-
-    @media (max-width: 600px) {
-      .hero-ctas { flex-direction: column; align-items: center; }
-      .footer { flex-direction: column; text-align: center; }
-    }
-
-    /* ── REVEAL ANIMATIONS ── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── SECTION ACCENT LINE ── */
-    .section-accent {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 60px;
-    }
-
-    .accent-line {
-      flex: 1;
-      max-width: 120px;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold));
-    }
-
-    .accent-line.right {
-      background: linear-gradient(to left, transparent, var(--gold));
-    }
-
-    .accent-diamond {
-      color: var(--gold);
-      font-size: 0.8rem;
-    }
-
-    /* Wellness (yoga/pilates) */
-    .wellness-cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px 60px;
-    }
-
-    .wellness-card {
-      background: var(--black-card);
-      border: 1px solid rgba(201,168,76,0.12);
-      padding: 48px 36px;
-      text-align: center;
-      transition: all 0.4s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .wellness-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-
-    .wellness-card:hover::before { opacity: 1; }
-    .wellness-card:hover { border-color: rgba(201,168,76,0.3); transform: translateY(-4px); }
-
-    .wellness-name {
-      font-family: 'Cinzel', serif;
-      font-size: 1.3rem;
-      letter-spacing: 0.18em;
-      color: var(--gold);
-      margin-bottom: 16px;
-    }
-
-    .wellness-desc {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      line-height: 1.7;
-      color: var(--white-dim);
-    }
-
-    .wellness-icon { font-size: 3rem; margin-bottom: 20px; display: block; }
-
-    @media (max-width: 768px) {
-      .wellness-cards { grid-template-columns: 1fr; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -961,7 +16,7 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">✦ ATELIER DELS SOMNIS</a>
+  <a href="#" class="nav-logo">✦ Atelier dels Somnis</a>
 
   <ul class="nav-links">
     <li><a href="#classes" data-i18n="nav_classes">Clases</a></li>
@@ -1012,67 +67,65 @@
     <p class="section-desc" data-i18n="classes_desc">Aprende, crea y diviértete explorando tu talento en un ambiente inspirador. Clases para niños a partir de 5 años y adultos de todos los niveles.</p>
   </div>
 
+  <!-- ARTES PLÁSTICAS -->
   <div class="section-accent reveal">
     <div class="accent-line"></div>
     <span class="accent-diamond">✦</span>
-    <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;" data-i18n="classes_arts">Artes Plásticas</span>
+    <span class="accent-label" data-i18n="classes_arts">Artes Plásticas</span>
     <span class="accent-diamond">✦</span>
     <div class="accent-line right"></div>
   </div>
 
-  <!-- ARTS CARDS -->
   <div class="classes-grid reveal">
-
     <div class="class-card">
       <span class="class-icon">✏️</span>
-      <div class="class-name" data-i18n="card_drawing">Dibuix a Llapis</div>
-      <p class="class-desc" data-i18n="card_drawing_desc">Ombres, proporcions, volum i perspectiva. Desenvolupa la teva mirada artística des de zero.</p>
+      <div class="class-name" data-i18n="card_drawing">Dibujo a Lápiz</div>
+      <p class="class-desc" data-i18n="card_drawing_desc">Sombras, proporciones, volumen y perspectiva. Desarrolla tu mirada artística desde cero.</p>
       <div class="class-tags">
-        <span class="tag" data-i18n="tag_kids">Nens +5</span>
-        <span class="tag" data-i18n="tag_adults">Adults</span>
+        <span class="tag" data-i18n="tag_kids">Niños +5</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
       </div>
-      <span class="age-badge" data-i18n="tag_alllevels">Tots els nivells</span>
+      <span class="age-badge" data-i18n="tag_alllevels">Todos los niveles</span>
     </div>
 
     <div class="class-card">
       <span class="class-icon">🎨</span>
-      <div class="class-name" data-i18n="card_paint">Pintura Acrílica i Aquarel·la</div>
-      <p class="class-desc" data-i18n="card_paint_desc">Barreja de colors, textures, degradats i tècniques humides. Crea obres plenes de llum.</p>
+      <div class="class-name" data-i18n="card_paint">Pintura Acrílica y Acuarela</div>
+      <p class="class-desc" data-i18n="card_paint_desc">Mezcla de colores, texturas, degradados y técnicas húmedas. Crea obras llenas de luz.</p>
       <div class="class-tags">
-        <span class="tag" data-i18n="tag_kids">Nens +5</span>
-        <span class="tag" data-i18n="tag_adults">Adults</span>
+        <span class="tag" data-i18n="tag_kids">Niños +5</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
       </div>
-      <span class="age-badge" data-i18n="tag_alllevels">Tots els nivells</span>
+      <span class="age-badge" data-i18n="tag_alllevels">Todos los niveles</span>
     </div>
 
     <div class="class-card">
       <span class="class-icon">✂️</span>
-      <div class="class-name" data-i18n="card_crafts">Manualitats Creatives</div>
-      <p class="class-desc" data-i18n="card_crafts_desc">Reciclatge, collage, papereria creativa, foamy, teles i molt més. La creativitat no té límits.</p>
+      <div class="class-name" data-i18n="card_crafts">Manualidades Creativas</div>
+      <p class="class-desc" data-i18n="card_crafts_desc">Reciclaje, collage, papelería creativa, foamy, telas y mucho más. La creatividad no tiene límites.</p>
       <div class="class-tags">
-        <span class="tag" data-i18n="tag_kids">Nens +5</span>
+        <span class="tag" data-i18n="tag_kids">Niños +5</span>
       </div>
-      <span class="age-badge" data-i18n="tag_from5">A partir de 5 anys</span>
+      <span class="age-badge" data-i18n="tag_from5">A partir de 5 años</span>
     </div>
 
     <div class="class-card">
       <span class="class-icon">🎌</span>
-      <div class="class-name" data-i18n="card_manga">Manga &amp; Il·lustració</div>
-      <p class="class-desc" data-i18n="card_manga_desc">Aprèn l'estil manga japonès: personatges, expressions i narrativa visual. Per a fans del món de l'anime.</p>
+      <div class="class-name" data-i18n="card_manga">Manga &amp; Ilustración</div>
+      <p class="class-desc" data-i18n="card_manga_desc">Aprende el estilo manga japonés: personajes, expresiones y narrativa visual. Para fans del anime.</p>
       <div class="class-tags">
-        <span class="tag" data-i18n="tag_kids">Nens +5</span>
-        <span class="tag" data-i18n="tag_adults">Adults</span>
+        <span class="tag" data-i18n="tag_kids">Niños +5</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
       </div>
-      <span class="age-badge" data-i18n="tag_alllevels">Tots els nivells</span>
+      <span class="age-badge" data-i18n="tag_alllevels">Todos los niveles</span>
     </div>
-
   </div>
 
-  <!-- MUSIC SECTION -->
+  <!-- MÚSICA -->
   <div class="section-accent reveal" style="margin-top:60px;">
     <div class="accent-line"></div>
     <span class="accent-diamond">♪</span>
-    <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;" data-i18n="classes_music">Música</span>
+    <span class="accent-label" data-i18n="classes_music">Música</span>
     <span class="accent-diamond">♪</span>
     <div class="accent-line right"></div>
   </div>
@@ -1080,35 +133,47 @@
   <div class="classes-grid reveal">
     <div class="class-card">
       <span class="class-icon">🎤</span>
-      <div class="class-name" data-i18n="card_singing">Cant</div>
-      <p class="class-desc" data-i18n="card_singing_desc">Desenvolupa la teva veu, respiració i confiança mentre et diverteixes.</p>
-      <div class="class-tags"><span class="tag" data-i18n="tag_kids">Nens</span><span class="tag" data-i18n="tag_adults">Adults</span></div>
+      <div class="class-name" data-i18n="card_singing">Canto</div>
+      <p class="class-desc" data-i18n="card_singing_desc">Desarrolla tu voz, respiración y confianza mientras te diviertes.</p>
+      <div class="class-tags">
+        <span class="tag" data-i18n="tag_kids">Niños</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
+      </div>
     </div>
     <div class="class-card">
       <span class="class-icon">💃</span>
-      <div class="class-name" data-i18n="card_flamenco_sing">Cant Flamenc</div>
-      <p class="class-desc" data-i18n="card_flamenco_sing_desc">Coneix la força i l'emoció del flamenc. Ritme, compàs i expressió.</p>
-      <div class="class-tags"><span class="tag" data-i18n="tag_kids">Nens</span><span class="tag" data-i18n="tag_adults">Adults</span></div>
+      <div class="class-name" data-i18n="card_flamenco_sing">Cante Flamenco</div>
+      <p class="class-desc" data-i18n="card_flamenco_sing_desc">Conoce la fuerza y la emoción del flamenco. Ritmo, compás y expresión.</p>
+      <div class="class-tags">
+        <span class="tag" data-i18n="tag_kids">Niños</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
+      </div>
     </div>
     <div class="class-card">
       <span class="class-icon">🥁</span>
-      <div class="class-name" data-i18n="card_percusion">Percussió &amp; Bateria</div>
-      <p class="class-desc" data-i18n="card_percusion_desc">Explora ritmes, coordina el teu cos i millora la teva concentració. Aprèn ritme i disciplina d'una manera divertida.</p>
-      <div class="class-tags"><span class="tag" data-i18n="tag_kids">Nens</span><span class="tag" data-i18n="tag_adults">Adults</span></div>
+      <div class="class-name" data-i18n="card_percusion">Percusión &amp; Batería</div>
+      <p class="class-desc" data-i18n="card_percusion_desc">Explora ritmos, coordina tu cuerpo y mejora tu concentración. Aprende ritmo y disciplina de forma divertida.</p>
+      <div class="class-tags">
+        <span class="tag" data-i18n="tag_kids">Niños</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
+      </div>
     </div>
     <div class="class-card">
       <span class="class-icon">🎸</span>
-      <div class="class-name" data-i18n="card_guitar">Guitarra &amp; Més</div>
-      <p class="class-desc" data-i18n="card_guitar_desc">Guitarra, teclat, baix, ukelele i iniciació musical. Acompanya les teves cançons preferides.</p>
-      <div class="class-tags"><span class="tag" data-i18n="tag_kids">Nens</span><span class="tag" data-i18n="tag_adults">Adults</span></div>
+      <div class="class-name" data-i18n="card_guitar">Guitarra &amp; Más</div>
+      <p class="class-desc" data-i18n="card_guitar_desc">Guitarra, teclado, bajo, ukelele e iniciación musical. Acompaña tus canciones favoritas.</p>
+      <div class="class-tags">
+        <span class="tag" data-i18n="tag_kids">Niños</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
+      </div>
     </div>
   </div>
 
-  <!-- DANCE SECTION -->
+  <!-- DANZA -->
   <div class="section-accent reveal" style="margin-top:60px;">
     <div class="accent-line"></div>
     <span class="accent-diamond">✦</span>
-    <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;" data-i18n="classes_dance">Dansa</span>
+    <span class="accent-label" data-i18n="classes_dance">Danza</span>
     <span class="accent-diamond">✦</span>
     <div class="accent-line right"></div>
   </div>
@@ -1116,32 +181,31 @@
   <div class="classes-grid reveal">
     <div class="class-card wide">
       <span class="class-icon">🩰</span>
-      <div class="class-name" data-i18n="card_dance">Classes i Tallers de Dansa</div>
-      <p class="class-desc" data-i18n="card_dance_desc">Per a nens, nenes i adults. Un ampli repertori d'estils per descobrir el moviment que et fa brillar.</p>
+      <div class="class-name" data-i18n="card_dance">Clases y Talleres de Danza</div>
+      <p class="class-desc" data-i18n="card_dance_desc">Para niños, niñas y adultos. Un amplio repertorio de estilos para descubrir el movimiento que te hace brillar.</p>
       <div class="disciplines-list">
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_flamenco">Flamenc</span></div>
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_sevillanas">Sevillanes</span></div>
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_salsa">Salsa i Bachata en Línia</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_flamenco">Flamenco</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_sevillanas">Sevillanas</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_salsa">Salsa y Bachata en Línea</span></div>
         <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_broadway">Broadway</span></div>
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_urban">Danses Urbanes</span></div>
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_belly">Dansa del Ventre</span></div>
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_polynesian">Danses Polinèsies</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_urban">Danzas Urbanas</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_belly">Danza del Vientre</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_polynesian">Danzas Polinesias</span></div>
         <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_bollywood">Bollywood</span></div>
         <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_zumba">Zumba</span></div>
-        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_individual">Balls Individuals</span></div>
+        <div class="discipline-item"><span class="discipline-dot"></span><span data-i18n="dance_individual">Bailes Individuales</span></div>
       </div>
     </div>
 
-    <!-- WELLNESS -->
     <div class="class-card">
       <span class="class-icon">🧘</span>
-      <div class="class-name" data-i18n="card_wellness">Ioga · Pilates · Entrenament</div>
-      <p class="class-desc" data-i18n="card_wellness_desc">Classes reduïdes i personalitzades de ioga, pilates i entrenament funcional. Cos, ment i benestar.</p>
+      <div class="class-name" data-i18n="card_wellness">Yoga · Pilates · Entrenamiento</div>
+      <p class="class-desc" data-i18n="card_wellness_desc">Clases reducidas y personalizadas de yoga, pilates y entrenamiento funcional. Cuerpo, mente y bienestar.</p>
       <div class="class-tags">
-        <span class="tag" data-i18n="tag_adults">Adults</span>
-        <span class="tag" data-i18n="tag_reduced">Grups reduïts</span>
+        <span class="tag" data-i18n="tag_adults">Adultos</span>
+        <span class="tag" data-i18n="tag_reduced">Grupos reducidos</span>
       </div>
-      <span class="age-badge" data-i18n="tag_alllevels">Tots els nivells</span>
+      <span class="age-badge" data-i18n="tag_alllevels">Todos los niveles</span>
     </div>
   </div>
 
@@ -1150,27 +214,27 @@
 <!-- BENEFITS BAND -->
 <div class="benefits-band reveal">
   <div class="benefits-inner">
-    <p class="benefits-title" data-i18n="benefits_title">Beneficis de les nostres classes</p>
+    <p class="benefits-title" data-i18n="benefits_title">Beneficios de nuestras clases</p>
     <div class="benefits-row">
       <div class="benefit-item">
         <div class="benefit-icon">⭐</div>
-        <div class="benefit-text" data-i18n="benefit1">Fomenta la creativitat i la imaginació</div>
+        <div class="benefit-text" data-i18n="benefit1">Fomenta la creatividad y la imaginación</div>
       </div>
       <div class="benefit-item">
         <div class="benefit-icon">🧠</div>
-        <div class="benefit-text" data-i18n="benefit2">Millora la concentració i la paciència</div>
+        <div class="benefit-text" data-i18n="benefit2">Mejora la concentración y la paciencia</div>
       </div>
       <div class="benefit-item">
         <div class="benefit-icon">💛</div>
-        <div class="benefit-text" data-i18n="benefit3">Augmenta l'autoestima i la confiança</div>
+        <div class="benefit-text" data-i18n="benefit3">Aumenta la autoestima y la confianza</div>
       </div>
       <div class="benefit-item">
         <div class="benefit-icon">🤝</div>
-        <div class="benefit-text" data-i18n="benefit4">Desenvolupa la motricitat fina i l'expressió emocional</div>
+        <div class="benefit-text" data-i18n="benefit4">Desarrolla la motricidad fina y la expresión emocional</div>
       </div>
       <div class="benefit-item">
         <div class="benefit-icon">😊</div>
-        <div class="benefit-text" data-i18n="benefit5">I, sobretot... es diverteixen creant!</div>
+        <div class="benefit-text" data-i18n="benefit5">Y, sobre todo... ¡se divierten creando!</div>
       </div>
     </div>
   </div>
@@ -1189,51 +253,51 @@
 <section id="rental">
 
   <div class="section-intro reveal">
-    <p class="eyebrow" data-i18n="rental_eyebrow">Sala d'Events</p>
-    <h2 class="section-title" data-i18n="rental_title">Sala de Lloguers</h2>
+    <p class="eyebrow" data-i18n="rental_eyebrow">Sala de Eventos</p>
+    <h2 class="section-title" data-i18n="rental_title">Sala de Alquileres</h2>
     <div class="gold-rule"></div>
-    <p class="section-desc" data-i18n="rental_desc">El lloc perfecte per a cada ocasió. Un espai versàtil, ampli i equipat per als teus moments més especials.</p>
+    <p class="section-desc" data-i18n="rental_desc">El lugar perfecto para cada ocasión. Un espacio versátil, amplio y equipado para tus momentos más especiales.</p>
   </div>
 
   <div class="rental-hero-banner reveal">
-    <div class="rental-big-title" data-i18n="rental_headline">El teu event, el nostre espai</div>
-    <div class="rental-sub" data-i18n="rental_headline_sub">Creem moments inoblidables · Carrer dels Velers, 50 · Reus</div>
+    <div class="rental-big-title" data-i18n="rental_headline">Tu evento, nuestro espacio</div>
+    <div class="rental-sub" data-i18n="rental_headline_sub">Creamos momentos inolvidables · Calle dels Velers, 50 · Reus</div>
   </div>
 
-  <!-- FOR PROS & PARTICULARS -->
+  <!-- PARA PROFESIONALES Y PARTICULARES -->
   <div class="events-split reveal">
     <div class="events-col">
       <div class="events-col-title">👔 <span data-i18n="rental_pros">Para Profesionales</span></div>
       <ul class="events-list">
-        <li data-i18n="pro1">Reunions i congressos</li>
-        <li data-i18n="pro2">Tallers multidisciplinaris</li>
-        <li data-i18n="pro3">Esdeveniments culturals</li>
-        <li data-i18n="pro4">Sopars d'empresa</li>
-        <li data-i18n="pro5">Conferències i presentacions</li>
-        <li data-i18n="pro6">Estudi fotogràfic o audiovisual</li>
-        <li data-i18n="pro7">Desfilades i exposicions</li>
+        <li data-i18n="pro1">Reuniones y congresos</li>
+        <li data-i18n="pro2">Talleres multidisciplinares</li>
+        <li data-i18n="pro3">Eventos culturales</li>
+        <li data-i18n="pro4">Cenas de empresa</li>
+        <li data-i18n="pro5">Conferencias y presentaciones</li>
+        <li data-i18n="pro6">Estudio fotográfico o audiovisual</li>
+        <li data-i18n="pro7">Desfiles y exposiciones</li>
       </ul>
     </div>
     <div class="events-col">
       <div class="events-col-title">🎉 <span data-i18n="rental_particulars">Para Particulares</span></div>
       <ul class="events-list">
-        <li data-i18n="part1">Aniversaris (noces d'or, de plata, 18 anys...)</li>
+        <li data-i18n="part1">Aniversarios (bodas de oro, de plata, 18 años...)</li>
         <li data-i18n="part2">Baby shower</li>
-        <li data-i18n="part3">Graduacions</li>
-        <li data-i18n="part4">Despedides de soltera</li>
-        <li data-i18n="part5">Festes de henna</li>
-        <li data-i18n="part6">Casaments i batejos</li>
-        <li data-i18n="part7">Festes de Chiqui Park per a nens</li>
-        <li data-i18n="part8">I molt més...</li>
+        <li data-i18n="part3">Graduaciones</li>
+        <li data-i18n="part4">Despedidas de soltera</li>
+        <li data-i18n="part5">Fiestas de henna</li>
+        <li data-i18n="part6">Bodas y bautizos</li>
+        <li data-i18n="part7">Fiestas Chiqui Park para niños</li>
+        <li data-i18n="part8">Y mucho más...</li>
       </ul>
     </div>
   </div>
 
-  <!-- SERVICES -->
+  <!-- SERVICIOS -->
   <div class="section-accent reveal">
     <div class="accent-line"></div>
     <span class="accent-diamond">✦</span>
-    <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;" data-i18n="services_title">Serveis</span>
+    <span class="accent-label" data-i18n="services_title">Servicios</span>
     <span class="accent-diamond">✦</span>
     <div class="accent-line right"></div>
   </div>
@@ -1245,11 +309,11 @@
     </div>
     <div class="service-card">
       <span class="service-icon">🌸</span>
-      <div class="service-name" data-i18n="svc_deco">Decoració</div>
+      <div class="service-name" data-i18n="svc_deco">Decoración</div>
     </div>
     <div class="service-card">
       <span class="service-icon">🍽️</span>
-      <div class="service-name" data-i18n="svc_catering">Càtering</div>
+      <div class="service-name" data-i18n="svc_catering">Catering</div>
     </div>
     <div class="service-card">
       <span class="service-icon">🎧</span>
@@ -1257,7 +321,7 @@
     </div>
     <div class="service-card">
       <span class="service-icon">🎭</span>
-      <div class="service-name" data-i18n="svc_shows">Espectacles</div>
+      <div class="service-name" data-i18n="svc_shows">Espectáculos</div>
     </div>
     <div class="service-card">
       <span class="service-icon">🏰</span>
@@ -1265,11 +329,11 @@
     </div>
   </div>
 
-  <!-- WORKSHOPS -->
+  <!-- TALLERES -->
   <div class="section-accent reveal">
     <div class="accent-line"></div>
     <span class="accent-diamond">✦</span>
-    <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;" data-i18n="workshops_title">Tallers i Activitats</span>
+    <span class="accent-label" data-i18n="workshops_title">Talleres y Actividades</span>
     <span class="accent-diamond">✦</span>
     <div class="accent-line right"></div>
   </div>
@@ -1277,40 +341,40 @@
   <div class="workshops-grid reveal">
     <div class="workshop-card">
       <span class="workshop-icon">💃</span>
-      <div class="workshop-name" data-i18n="ws_dance">Tallers de Dansa</div>
-      <div class="workshop-desc" data-i18n="ws_dance_desc">Dansa del ventre, Salsa, Bachata i més</div>
+      <div class="workshop-name" data-i18n="ws_dance">Talleres de Danza</div>
+      <div class="workshop-desc" data-i18n="ws_dance_desc">Danza del vientre, Salsa, Bachata y más</div>
     </div>
     <div class="workshop-card">
       <span class="workshop-icon">🎂</span>
-      <div class="workshop-name" data-i18n="ws_pastry">Tallers de Pastisseria</div>
-      <div class="workshop-desc" data-i18n="ws_pastry_desc">Per a aniversaris, despedides de soltera...</div>
+      <div class="workshop-name" data-i18n="ws_pastry">Talleres de Pastelería</div>
+      <div class="workshop-desc" data-i18n="ws_pastry_desc">Para cumpleaños, despedidas de soltera...</div>
     </div>
     <div class="workshop-card">
       <span class="workshop-icon">✂️</span>
-      <div class="workshop-name" data-i18n="ws_crafts">Tallers de Manualitats</div>
-      <div class="workshop-desc" data-i18n="ws_crafts_desc">Festes infantils i aniversaris de nens</div>
+      <div class="workshop-name" data-i18n="ws_crafts">Talleres de Manualidades</div>
+      <div class="workshop-desc" data-i18n="ws_crafts_desc">Fiestas infantiles y cumpleaños de niños</div>
     </div>
     <div class="workshop-card">
       <span class="workshop-icon">🌊</span>
-      <div class="workshop-name" data-i18n="ws_resin">Tallers de Resina</div>
-      <div class="workshop-desc" data-i18n="ws_resin_desc">Crea peces úniques amb tècniques de resina</div>
+      <div class="workshop-name" data-i18n="ws_resin">Talleres de Resina</div>
+      <div class="workshop-desc" data-i18n="ws_resin_desc">Crea piezas únicas con técnicas de resina</div>
     </div>
     <div class="workshop-card">
       <span class="workshop-icon">💑</span>
-      <div class="workshop-name" data-i18n="ws_choreo">Coreografies per a Nuvis</div>
-      <div class="workshop-desc" data-i18n="ws_choreo_desc">Fes inoblidable el teu primer ball</div>
+      <div class="workshop-name" data-i18n="ws_choreo">Coreografías para Novios</div>
+      <div class="workshop-desc" data-i18n="ws_choreo_desc">Haz inolvidable tu primer baile</div>
     </div>
   </div>
 
 </section>
 
-<!-- CONTACT -->
+<!-- CONTACTO -->
 <section id="contact">
   <div class="contact-inner reveal">
-    <p class="eyebrow" data-i18n="contact_eyebrow">Contacte</p>
-    <h2 class="section-title" data-i18n="contact_title">Vine a Conèixer-nos</h2>
+    <p class="eyebrow" data-i18n="contact_eyebrow">Contacto</p>
+    <h2 class="section-title" data-i18n="contact_title">Ven a Conocernos</h2>
     <div class="gold-rule"></div>
-    <p class="section-desc" data-i18n="contact_desc">Estem al Carrer dels Velers, 50 de Reus. Vine a descobrir la teva passió i fes realitat les teves idees.</p>
+    <p class="section-desc" data-i18n="contact_desc">Estamos en la Calle dels Velers, 50 de Reus. Ven a descubrir tu pasión y haz realidad tus ideas.</p>
 
     <div class="contact-details">
       <div class="contact-item">
@@ -1323,7 +387,7 @@
       </div>
     </div>
 
-    <a href="tel:647501547" class="btn btn-gold" data-i18n="contact_cta">Contactar Ara</a>
+    <a href="tel:647501547" class="btn btn-gold" data-i18n="contact_cta">Contactar Ahora</a>
 
     <div class="contact-social">
       <a href="#" class="social-link" title="Instagram">📸</a>
@@ -1335,273 +399,11 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">✦ ATELIER DELS SOMNIS</div>
+  <div class="footer-logo">✦ Atelier dels Somnis</div>
   <div class="footer-tagline" data-i18n="footer_tagline">on cada creació explica una història</div>
   <div class="footer-copy">© 2026 · Carrer dels Velers, 50 · Reus</div>
 </footer>
 
-<script>
-// ── STARS ──
-const starsEl = document.getElementById('stars');
-for (let i = 0; i < 80; i++) {
-  const s = document.createElement('div');
-  s.className = 'star';
-  s.style.cssText = `
-    left:${Math.random()*100}%;
-    top:${Math.random()*100}%;
-    --d:${2+Math.random()*4}s;
-    --delay:${Math.random()*4}s;
-    width:${1+Math.random()*2}px;
-    height:${1+Math.random()*2}px;
-  `;
-  starsEl.appendChild(s);
-}
-
-// ── REVEAL ON SCROLL ──
-const reveals = document.querySelectorAll('.reveal');
-const io = new IntersectionObserver((entries) => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      setTimeout(() => e.target.classList.add('visible'), i * 80);
-    }
-  });
-}, { threshold: 0.1 });
-reveals.forEach(el => io.observe(el));
-
-// ── I18N DATA ──
-const i18n = {
-  es: {
-    nav_classes: "Clases",
-    nav_rental: "Sala de Alquiler",
-    nav_contact: "Contacto",
-    hero_tagline: "Crea · Imagina · Sueña",
-    hero_cta1: "Descubrir Clases",
-    hero_cta2: "Sala de Alquiler",
-    scroll: "Explorar",
-    classes_eyebrow: "Escuela de Artes",
-    classes_title: "Clases & Talleres",
-    classes_desc: "Aprende, crea y diviértete explorando tu talento en un ambiente inspirador. Clases para niños a partir de 5 años y adultos de todos los niveles.",
-    classes_arts: "Artes Plásticas",
-    classes_music: "Música",
-    classes_dance: "Danza",
-    card_drawing: "Dibujo a Lápiz",
-    card_drawing_desc: "Sombras, proporciones, volumen y perspectiva. Desarrolla tu mirada artística desde cero.",
-    card_paint: "Pintura Acrílica y Acuarela",
-    card_paint_desc: "Mezcla de colores, texturas, degradados y técnicas húmedas. Crea obras llenas de luz.",
-    card_crafts: "Manualidades Creativas",
-    card_crafts_desc: "Reciclaje, collage, papelería creativa, foamy, telas y mucho más. La creatividad no tiene límites.",
-    card_manga: "Manga & Ilustración",
-    card_manga_desc: "Aprende el estilo manga japonés: personajes, expresiones y narrativa visual. Para fans del anime.",
-    card_singing: "Canto",
-    card_singing_desc: "Desarrolla tu voz, respiración y confianza mientras te diviertes.",
-    card_flamenco_sing: "Cante Flamenco",
-    card_flamenco_sing_desc: "Conoce la fuerza y la emoción del flamenco. Ritmo, compás y expresión.",
-    card_percusion: "Percusión & Batería",
-    card_percusion_desc: "Explora ritmos, coordina tu cuerpo y mejora tu concentración. Aprende ritmo y disciplina de forma divertida.",
-    card_guitar: "Guitarra & Más",
-    card_guitar_desc: "Guitarra, teclado, bajo, ukelele e iniciación musical. Acompaña tus canciones favoritas.",
-    card_dance: "Clases y Talleres de Danza",
-    card_dance_desc: "Para niños, niñas y adultos. Un amplio repertorio de estilos para descubrir el movimiento que te hace brillar.",
-    card_wellness: "Yoga · Pilates · Entrenamiento",
-    card_wellness_desc: "Clases reducidas y personalizadas de yoga, pilates y entrenamiento funcional. Cuerpo, mente y bienestar.",
-    dance_flamenco: "Flamenco",
-    dance_sevillanas: "Sevillanas",
-    dance_salsa: "Salsa y Bachata en Línea",
-    dance_broadway: "Broadway",
-    dance_urban: "Danzas Urbanas",
-    dance_belly: "Danza del Vientre",
-    dance_polynesian: "Danzas Polinesias",
-    dance_bollywood: "Bollywood",
-    dance_zumba: "Zumba",
-    dance_individual: "Bailes Individuales",
-    tag_kids: "Niños +5",
-    tag_adults: "Adultos",
-    tag_alllevels: "Todos los niveles",
-    tag_from5: "A partir de 5 años",
-    tag_reduced: "Grupos reducidos",
-    benefits_title: "Beneficios de nuestras clases",
-    benefit1: "Fomenta la creatividad y la imaginación",
-    benefit2: "Mejora la concentración y la paciencia",
-    benefit3: "Aumenta la autoestima y la confianza",
-    benefit4: "Desarrolla la motricidad fina y la expresión emocional",
-    benefit5: "Y, sobre todo... ¡se divierten creando!",
-    divider_rental: "Sala de Alquiler",
-    divider_sub: "Tu evento, nuestro espacio",
-    rental_eyebrow: "Sala de Eventos",
-    rental_title: "Sala de Alquileres",
-    rental_desc: "El lugar perfecto para cada ocasión. Un espacio versátil, amplio y equipado para tus momentos más especiales.",
-    rental_headline: "Tu evento, nuestro espacio",
-    rental_headline_sub: "Creamos momentos inolvidables · Calle dels Velers, 50 · Reus",
-    rental_pros: "Para Profesionales",
-    rental_particulars: "Para Particulares",
-    pro1: "Reuniones y congresos",
-    pro2: "Talleres multidisciplinares",
-    pro3: "Eventos culturales",
-    pro4: "Cenas de empresa",
-    pro5: "Conferencias y presentaciones",
-    pro6: "Estudio fotográfico o audiovisual",
-    pro7: "Desfiles y exposiciones",
-    part1: "Aniversarios (bodas de oro, de plata, 18 años...)",
-    part2: "Baby shower",
-    part3: "Graduaciones",
-    part4: "Despedidas de soltera",
-    part5: "Fiestas de henna",
-    part6: "Bodas y bautizos",
-    part7: "Fiestas Chiqui Park para niños",
-    part8: "Y mucho más...",
-    services_title: "Servicios",
-    svc_wedding: "Wedding Planner",
-    svc_deco: "Decoración",
-    svc_catering: "Catering",
-    svc_dj: "DJ",
-    svc_shows: "Espectáculos",
-    svc_chiquipark: "Chiqui Park",
-    workshops_title: "Talleres y Actividades",
-    ws_dance: "Talleres de Danza",
-    ws_dance_desc: "Danza del vientre, Salsa, Bachata y más",
-    ws_pastry: "Talleres de Pastelería",
-    ws_pastry_desc: "Para cumpleaños, despedidas de soltera...",
-    ws_crafts: "Talleres de Manualidades",
-    ws_crafts_desc: "Fiestas infantiles y cumpleaños de niños",
-    ws_resin: "Talleres de Resina",
-    ws_resin_desc: "Crea piezas únicas con técnicas de resina",
-    ws_choreo: "Coreografías para Novios",
-    ws_choreo_desc: "Haz inolvidable tu primer baile",
-    contact_eyebrow: "Contacto",
-    contact_title: "Ven a Conocernos",
-    contact_desc: "Estamos en la Calle dels Velers, 50 de Reus. Ven a descubrir tu pasión y haz realidad tus ideas.",
-    contact_cta: "Contactar Ahora",
-    footer_tagline: "donde cada creación cuenta una historia",
-  },
-  ca: {
-    nav_classes: "Classes",
-    nav_rental: "Sala de Lloguer",
-    nav_contact: "Contacte",
-    hero_tagline: "Crea · Imagina · Somia",
-    hero_cta1: "Descobrir Classes",
-    hero_cta2: "Sala de Lloguer",
-    scroll: "Explorar",
-    classes_eyebrow: "Escola d'Arts",
-    classes_title: "Classes & Tallers",
-    classes_desc: "Aprèn, crea i diverteix-te explorant el teu talent en un ambient inspirador. Classes per a nens a partir de 5 anys i adults de tots els nivells.",
-    classes_arts: "Arts Plàstiques",
-    classes_music: "Música",
-    classes_dance: "Dansa",
-    card_drawing: "Dibuix a Llapis",
-    card_drawing_desc: "Ombres, proporcions, volum i perspectiva. Desenvolupa la teva mirada artística des de zero.",
-    card_paint: "Pintura Acrílica i Aquarel·la",
-    card_paint_desc: "Barreja de colors, textures, degradats i tècniques humides. Crea obres plenes de llum.",
-    card_crafts: "Manualitats Creatives",
-    card_crafts_desc: "Reciclatge, collage, papereria creativa, foamy, teles i molt més. La creativitat no té límits.",
-    card_manga: "Manga & Il·lustració",
-    card_manga_desc: "Aprèn l'estil manga japonès: personatges, expressions i narrativa visual. Per a fans de l'anime.",
-    card_singing: "Cant",
-    card_singing_desc: "Desenvolupa la teva veu, respiració i confiança mentre et diverteixes.",
-    card_flamenco_sing: "Cant Flamenc",
-    card_flamenco_sing_desc: "Coneix la força i l'emoció del flamenc. Ritme, compàs i expressió.",
-    card_percusion: "Percussió & Bateria",
-    card_percusion_desc: "Explora ritmes, coordina el teu cos i millora la teva concentració. Aprèn ritme i disciplina d'una manera divertida.",
-    card_guitar: "Guitarra & Més",
-    card_guitar_desc: "Guitarra, teclat, baix, ukelele i iniciació musical. Acompanya les teves cançons preferides.",
-    card_dance: "Classes i Tallers de Dansa",
-    card_dance_desc: "Per a nens, nenes i adults. Un ampli repertori d'estils per descobrir el moviment que et fa brillar.",
-    card_wellness: "Ioga · Pilates · Entrenament",
-    card_wellness_desc: "Classes reduïdes i personalitzades de ioga, pilates i entrenament funcional. Cos, ment i benestar.",
-    dance_flamenco: "Flamenc",
-    dance_sevillanas: "Sevillanes",
-    dance_salsa: "Salsa i Bachata en Línia",
-    dance_broadway: "Broadway",
-    dance_urban: "Danses Urbanes",
-    dance_belly: "Dansa del Ventre",
-    dance_polynesian: "Danses Polinèsies",
-    dance_bollywood: "Bollywood",
-    dance_zumba: "Zumba",
-    dance_individual: "Balls Individuals",
-    tag_kids: "Nens +5",
-    tag_adults: "Adults",
-    tag_alllevels: "Tots els nivells",
-    tag_from5: "A partir de 5 anys",
-    tag_reduced: "Grups reduïts",
-    benefits_title: "Beneficis de les nostres classes",
-    benefit1: "Fomenta la creativitat i la imaginació",
-    benefit2: "Millora la concentració i la paciència",
-    benefit3: "Augmenta l'autoestima i la confiança",
-    benefit4: "Desenvolupa la motricitat fina i l'expressió emocional",
-    benefit5: "I, sobretot... es diverteixen creant!",
-    divider_rental: "Sala de Lloguer",
-    divider_sub: "El teu event, el nostre espai",
-    rental_eyebrow: "Sala d'Events",
-    rental_title: "Sala de Lloguers",
-    rental_desc: "El lloc perfecte per a cada ocasió. Un espai versàtil, ampli i equipat per als teus moments més especials.",
-    rental_headline: "El teu event, el nostre espai",
-    rental_headline_sub: "Creem moments inoblidables · Carrer dels Velers, 50 · Reus",
-    rental_pros: "Per a Professionals",
-    rental_particulars: "Per a Particulars",
-    pro1: "Reunions i congressos",
-    pro2: "Tallers multidisciplinaris",
-    pro3: "Esdeveniments culturals",
-    pro4: "Sopars d'empresa",
-    pro5: "Conferències i presentacions",
-    pro6: "Estudi fotogràfic o audiovisual",
-    pro7: "Desfilades i exposicions",
-    part1: "Aniversaris (noces d'or, de plata, 18 anys...)",
-    part2: "Baby shower",
-    part3: "Graduacions",
-    part4: "Despedides de soltera",
-    part5: "Festes de henna",
-    part6: "Casaments i batejos",
-    part7: "Festes Chiqui Park per a nens",
-    part8: "I molt més...",
-    services_title: "Serveis",
-    svc_wedding: "Wedding Planner",
-    svc_deco: "Decoració",
-    svc_catering: "Càtering",
-    svc_dj: "DJ",
-    svc_shows: "Espectacles",
-    svc_chiquipark: "Chiqui Park",
-    workshops_title: "Tallers i Activitats",
-    ws_dance: "Tallers de Dansa",
-    ws_dance_desc: "Dansa del ventre, Salsa, Bachata i més",
-    ws_pastry: "Tallers de Pastisseria",
-    ws_pastry_desc: "Per a aniversaris, despedides de soltera...",
-    ws_crafts: "Tallers de Manualitats",
-    ws_crafts_desc: "Festes infantils i aniversaris de nens",
-    ws_resin: "Tallers de Resina",
-    ws_resin_desc: "Crea peces úniques amb tècniques de resina",
-    ws_choreo: "Coreografies per a Nuvis",
-    ws_choreo_desc: "Fes inoblidable el teu primer ball",
-    contact_eyebrow: "Contacte",
-    contact_title: "Vine a Conèixer-nos",
-    contact_desc: "Estem al Carrer dels Velers, 50 de Reus. Vine a descobrir la teva passió i fes realitat les teves idees.",
-    contact_cta: "Contactar Ara",
-    footer_tagline: "on cada creació explica una història",
-  }
-};
-
-let currentLang = 'es';
-
-function applyLang(lang) {
-  currentLang = lang;
-  const dict = i18n[lang];
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (dict[key]) el.textContent = dict[key];
-  });
-  document.documentElement.lang = lang;
-
-  document.getElementById('label-es').classList.toggle('active', lang === 'es');
-  document.getElementById('label-ca').classList.toggle('active', lang === 'ca');
-  document.getElementById('toggle-thumb').classList.toggle('ca', lang === 'ca');
-}
-
-function setLang(lang) { applyLang(lang); }
-
-function toggleLang() {
-  applyLang(currentLang === 'es' ? 'ca' : 'es');
-}
-
-// Initial
-applyLang('es');
-</script>
+<script src="main.js"></script>
 </body>
 </html>
