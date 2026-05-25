@@ -391,9 +391,16 @@ section {
 }
 
 .class-icon {
-  font-size: 2.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 20px;
-  display: block;
+}
+
+.class-icon img {
+  width: 4.8rem;
+  height: 4.8rem;
+  vertical-align: middle;
 }
 
 .class-name {
