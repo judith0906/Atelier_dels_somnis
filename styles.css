@@ -788,6 +788,12 @@ section {
   transition: all 0.3s;
 }
 
+.social-link img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 .social-link:hover {
   background: rgba(201,168,76,0.1);
   border-color: var(--gold);
