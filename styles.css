@@ -800,6 +800,29 @@ section {
   transform: translateY(-3px);
 }
 
+/* Imágenes en lugar de emojis */
+.benefit-icon img,
+.service-icon img,
+.workshop-icon img,
+.divider-icon img,
+.events-col-title img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.contact-item img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.social-link img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 /* ── FOOTER ── */
 footer {
   background: var(--black-mid);
