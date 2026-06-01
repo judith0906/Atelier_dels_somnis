@@ -935,3 +935,60 @@ footer {
   footer { flex-direction: column; text-align: center; }
   .rental-hero-banner { margin-left: 12px; margin-right: 12px; padding: 40px 24px; }
 }
+
+/* ── HOVER FOTOS ── */
+.class-card:hover {
+  background: #ffffff;
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.class-card > *:not(.hover-overlay) {
+  position: relative;
+  z-index: 2;
+}
+
+.class-card .hover-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.class-card .hover-overlay img {
+  position: absolute;
+  object-fit: contain;
+  border-radius: 0;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.class-card:hover .hover-overlay img {
+  opacity: 0.92;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Foto 1 — esquina superior derecha */
+.class-card .hover-overlay img:nth-child(1) {
+  width: 28%; height: 30%;
+  top: 4%; right: 3%;
+  transition-delay: 0s;
+  transform-origin: top right;
+}
+
+/* Foto 2 — esquina inferior izquierda */
+.class-card .hover-overlay img:nth-child(2) {
+  width: 25%; height: 28%;
+  bottom: 4%; left: 3%;
+  transition-delay: 0.08s;
+  transform-origin: bottom left;
+}
+
+/* Foto 3 — esquina inferior derecha (si existe) */
+.class-card .hover-overlay img:nth-child(3) {
+  width: 22%; height: 24%;
+  bottom: 4%; right: 3%;
+  transition-delay: 0.16s;
+  transform-origin: bottom right;
+}

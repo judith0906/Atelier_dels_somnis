@@ -49,3 +49,16 @@ function toggleLang() {
 
 // Init
 applyLang('es');
+
+// Hover fotos
+document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
+  const imgs = card.getAttribute('data-hover-imgs').split(',');
+  const overlay = document.createElement('div');
+  overlay.className = 'hover-overlay';
+  imgs.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src.trim();
+    overlay.appendChild(img);
+  });
+  card.appendChild(overlay);
+});
