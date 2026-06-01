@@ -61,8 +61,12 @@ nav {
 
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 36px;
   list-style: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .nav-links a {
@@ -531,8 +535,6 @@ section {
   border: 1px solid rgba(201,168,76,0.25);
   overflow: hidden;
   text-align: center;
-  margin-left: 24px;
-  margin-right: 24px;
 }
 
 .rental-hero-banner::before {
@@ -612,7 +614,7 @@ section {
 /* Services grid */
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   max-width: 1400px;
   margin: 0 auto 60px;
@@ -633,7 +635,7 @@ section {
   transform: translateY(-3px);
 }
 
-.service-icon { font-size: 2rem; margin-bottom: 12px; display: block; }
+.service-icon { font-size: 2rem; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; }
 
 .service-name {
   font-family: 'Cinzel', serif;
