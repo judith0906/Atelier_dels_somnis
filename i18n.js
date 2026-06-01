@@ -201,7 +201,7 @@ const i18n = {
     ws_choreo: "Coreografies per a Nuvis",
     ws_choreo_desc: "Fes inoblidable el teu primer ball",
     contact_eyebrow: "Contacte",
-    contact_title: "Vine a Conèixer-nos",
+    contact_title: "Vine a Coneixe'ns",
     contact_desc: "Estem al Carrer dels Velers, 50 de Reus. Vine a descobrir la teva passió i fes realitat les teves idees.",
     contact_cta: "Contactar Ara",
     footer_tagline: "on cada creació explica una història",
