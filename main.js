@@ -64,62 +64,84 @@ document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
   });
   card.appendChild(overlay);
 
-  /* 2. Guardar src original del emoticono y preparar versión hover */
+  /* 2. Emoticono hover */
   const iconImg = card.querySelector('.class-icon img');
   if (iconImg) {
     const originalSrc = iconImg.getAttribute('src');
-    // Construye la ruta hover añadiendo -hover antes de la extensión
-    // Ej: "emoticonos/artes plasticas/lapiz.png" → "emoticonos/artes plasticas/lapiz-hover.png"
     const hoverSrc = originalSrc.replace(/(\.\w+)$/, '-hover$1');
     iconImg.setAttribute('data-src-default', originalSrc);
     iconImg.setAttribute('data-src-hover', hoverSrc);
-
-    // Precarga para evitar parpadeo al hover
     const preload = new Image();
     preload.src = hoverSrc;
   }
 
-  /* 3. Manchas de pintura aleatorias en los bordes */
+  /* 3. Manchas de pintura — posiciones fijas en bordes, rotaciones libres */
   const splashContainer = document.createElement('div');
   splashContainer.className = 'paint-splashes';
 
-  // Pool de posiciones posibles alrededor del perímetro
-  const positions = [
-    { top: '-18px',  left:  `${10 + Math.random() * 25}%`, rotation: Math.random() * 60 - 30 },
-    { top: '-18px',  right: `${10 + Math.random() * 25}%`, rotation: Math.random() * 60 - 30 },
-    { bottom: '-18px', left:  `${10 + Math.random() * 30}%`, rotation: 180 + Math.random() * 40 - 20 },
-    { bottom: '-18px', right: `${10 + Math.random() * 20}%`, rotation: 180 + Math.random() * 40 - 20 },
-    { top:  `${15 + Math.random() * 30}%`, left:  '-18px', rotation: -90 + Math.random() * 40 - 20 },
-    { bottom: `${15 + Math.random() * 30}%`, left: '-16px', rotation: -90 + Math.random() * 30 - 15 },
-    { top:  `${10 + Math.random() * 35}%`, right: '-18px', rotation:  90 + Math.random() * 40 - 20 },
-    { bottom: `${10 + Math.random() * 30}%`, right: '-16px', rotation: 90 + Math.random() * 30 - 15 },
+  // Cada mancha tiene: anclaje al borde, desplazamiento, rotación y escala propios
+  // Se mezclan tamaños y rotaciones para que parezca orgánico
+  const splashDefs = [
+    // Borde superior
+    { side: 'top',    offset: '8%',  rotation:  14, scale: 0.55 },
+    { side: 'top',    offset: '55%', rotation: -22, scale: 0.90 },
+    { side: 'top',    offset: '35%', rotation:  38, scale: 0.40 },
+    // Borde inferior
+    { side: 'bottom', offset: '12%', rotation: 160, scale: 0.75 },
+    { side: 'bottom', offset: '60%', rotation: 200, scale: 0.50 },
+    { side: 'bottom', offset: '40%', rotation: 185, scale: 1.10 },
+    // Borde izquierdo
+    { side: 'left',   offset: '18%', rotation: -75, scale: 0.65 },
+    { side: 'left',   offset: '55%', rotation: -55, scale: 0.85 },
+    // Borde derecho
+    { side: 'right',  offset: '22%', rotation:  80, scale: 0.45 },
+    { side: 'right',  offset: '62%', rotation: 110, scale: 0.95 },
   ];
 
-  // Seleccionar entre 4 y 6 manchas aleatorias
-  const shuffled = positions.sort(() => Math.random() - 0.5).slice(0, 4 + Math.floor(Math.random() * 3));
+  // Seleccionar 5-7 manchas aleatorias del pool
+  const count = 5 + Math.floor(Math.random() * 3);
+  const chosen = splashDefs.sort(() => Math.random() - 0.5).slice(0, count);
 
-  shuffled.forEach(pos => {
+  const BASE_SIZE = 110; // px base antes de aplicar scale
+
+  chosen.forEach(def => {
     const splash = document.createElement('img');
     splash.src = 'assets/images/pintura-hover.png';
     splash.className = 'paint-splash';
 
-    // Tamaño aleatorio para variedad visual (entre 55px y 100px)
-    const size = 55 + Math.random() * 45;
+    const size = BASE_SIZE * def.scale;
     splash.style.width  = size + 'px';
     splash.style.height = size + 'px';
 
-    if (pos.top    !== undefined) splash.style.top    = pos.top;
-    if (pos.bottom !== undefined) splash.style.bottom = pos.bottom;
-    if (pos.left   !== undefined) splash.style.left   = pos.left;
-    if (pos.right  !== undefined) splash.style.right  = pos.right;
-    splash.style.transform = `rotate(${pos.rotation}deg)`;
+    // Pequeña variación aleatoria adicional sobre la rotación definida
+    const finalRotation = def.rotation + (Math.random() * 24 - 12);
 
+    switch (def.side) {
+      case 'top':
+        splash.style.top  = (-size * 0.45) + 'px';
+        splash.style.left = def.offset;
+        break;
+      case 'bottom':
+        splash.style.bottom = (-size * 0.45) + 'px';
+        splash.style.left   = def.offset;
+        break;
+      case 'left':
+        splash.style.left = (-size * 0.45) + 'px';
+        splash.style.top  = def.offset;
+        break;
+      case 'right':
+        splash.style.right = (-size * 0.45) + 'px';
+        splash.style.top   = def.offset;
+        break;
+    }
+
+    splash.style.transform = `rotate(${finalRotation}deg)`;
     splashContainer.appendChild(splash);
   });
 
   card.appendChild(splashContainer);
 
-  /* 4. Eventos de hover para intercambiar el emoticono */
+  /* 4. Eventos hover */
   card.addEventListener('mouseenter', () => {
     if (iconImg) {
       const hoverSrc = iconImg.getAttribute('data-src-hover');
