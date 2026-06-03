@@ -156,3 +156,65 @@ document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
     }
   });
 });
+
+/* ── FLYERS DINÁMICOS ── */
+// Carga imágenes f1, f2, f3... hasta que una falle.
+// Para añadir flyers solo tienes que meter f4.jpg, f5.jpg, etc. en la carpeta.
+// Soporta .jpg, .jpeg, .png y .webp
+
+function loadFlyers(folder, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+  let index = 1;
+  let loaded = 0;
+
+  function tryNext() {
+    const extIndex = 0;
+    tryExtension(index, extIndex);
+  }
+
+  function tryExtension(i, extIdx) {
+    if (extIdx >= extensions.length) {
+      // Ninguna extensión funcionó para este número: paramos
+      if (loaded === 0) {
+        container.innerHTML = '<p class="flyers-empty">Próximamente...</p>';
+      }
+      return;
+    }
+
+    const src = `assets/images/flyers/${folder}/f${i}.${extensions[extIdx]}`;
+    const img = new Image();
+
+    img.onload = () => {
+      // La imagen existe: crear la card y continuar con la siguiente
+      const card = document.createElement('div');
+      card.className = 'flyer-card';
+
+      const imgEl = document.createElement('img');
+      imgEl.src = src;
+      imgEl.alt = `Flyer ${i}`;
+      imgEl.loading = 'lazy';
+
+      card.appendChild(imgEl);
+      container.appendChild(card);
+
+      loaded++;
+      index++;
+      tryNext();
+    };
+
+    img.onerror = () => {
+      // Esta extensión no existe, probar la siguiente
+      tryExtension(i, extIdx + 1);
+    };
+
+    img.src = src;
+  }
+
+  tryNext();
+}
+
+loadFlyers('clases',   'flyers-clases');
+loadFlyers('alquiler', 'flyers-alquiler');
