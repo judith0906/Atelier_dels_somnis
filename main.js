@@ -158,63 +158,108 @@ document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
 });
 
 /* ── FLYERS DINÁMICOS ── */
-// Carga imágenes f1, f2, f3... hasta que una falle.
-// Para añadir flyers solo tienes que meter f4.jpg, f5.jpg, etc. en la carpeta.
-// Soporta .jpg, .jpeg, .png y .webp
+const FLYER_INTERVAL = 4000; // ms entre cambio automático de foto
+const FLYER_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
-function loadFlyers(folder, containerId) {
+function initFlyerGallery(folder, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-  let index = 1;
-  let loaded = 0;
+  const track = container.querySelector('.flyer-track');
+  const dotsEl = container.querySelector('.flyer-dots');
+  const prevBtn = container.querySelector('.flyer-prev');
+  const nextBtn = container.querySelector('.flyer-next');
 
-  function tryNext() {
-    const extIndex = 0;
-    tryExtension(index, extIndex);
+  const images = [];   // srcs cargadas
+  let current = 0;
+  let timer = null;
+
+  // --- Carga encadenada de imágenes f1, f2, f3... ---
+  function loadChain(i, extIdx) {
+    if (extIdx >= FLYER_EXTENSIONS.length) {
+      // Número i no existe en ningún formato: fin de la cadena
+      onAllLoaded();
+      return;
+    }
+    const src = `assets/images/flyers/${folder}/f${i}.${FLYER_EXTENSIONS[extIdx]}`;
+    const probe = new Image();
+    probe.onload  = () => { images.push(src); loadChain(i + 1, 0); };
+    probe.onerror = () => { loadChain(i, extIdx + 1); };
+    probe.src = src;
   }
 
-  function tryExtension(i, extIdx) {
-    if (extIdx >= extensions.length) {
-      // Ninguna extensión funcionó para este número: paramos
-      if (loaded === 0) {
-        container.innerHTML = '<p class="flyers-empty">Próximamente...</p>';
-      }
+  // --- Una vez cargadas todas, construir la galería ---
+  function onAllLoaded() {
+    if (images.length === 0) {
+      container.innerHTML = '<p class="flyers-empty">Próximamente...</p>';
       return;
     }
 
-    const src = `assets/images/flyers/${folder}/f${i}.${extensions[extIdx]}`;
-    const img = new Image();
+    // Crear slides
+    images.forEach((src, idx) => {
+      const slide = document.createElement('div');
+      slide.className = 'flyer-slide' + (idx === 0 ? ' active' : '');
 
-    img.onload = () => {
-      // La imagen existe: crear la card y continuar con la siguiente
-      const card = document.createElement('div');
-      card.className = 'flyer-card';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = `Flyer ${idx + 1}`;
+      img.loading = 'lazy';
 
-      const imgEl = document.createElement('img');
-      imgEl.src = src;
-      imgEl.alt = `Flyer ${i}`;
-      imgEl.loading = 'lazy';
+      slide.appendChild(img);
+      track.appendChild(slide);
+    });
 
-      card.appendChild(imgEl);
-      container.appendChild(card);
+    // Crear dots
+    images.forEach((_, idx) => {
+      const dot = document.createElement('button');
+      dot.className = 'flyer-dot' + (idx === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', `Flyer ${idx + 1}`);
+      dot.addEventListener('click', () => goTo(idx));
+      dotsEl.appendChild(dot);
+    });
 
-      loaded++;
-      index++;
-      tryNext();
-    };
+    // Mostrar/ocultar flechas si solo hay 1 imagen
+    if (images.length <= 1) {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+    }
 
-    img.onerror = () => {
-      // Esta extensión no existe, probar la siguiente
-      tryExtension(i, extIdx + 1);
-    };
+    prevBtn.addEventListener('click', () => { goTo(current - 1); resetTimer(); });
+    nextBtn.addEventListener('click', () => { goTo(current + 1); resetTimer(); });
 
-    img.src = src;
+    // Pausa al hacer hover
+    container.addEventListener('mouseenter', () => clearInterval(timer));
+    container.addEventListener('mouseleave', () => startTimer());
+
+    startTimer();
   }
 
-  tryNext();
+  function goTo(idx) {
+    const slides = track.querySelectorAll('.flyer-slide');
+    const dots   = dotsEl.querySelectorAll('.flyer-dot');
+
+    slides[current].classList.remove('active');
+    dots[current]?.classList.remove('active');
+
+    // Wrap alrededor
+    current = ((idx % images.length) + images.length) % images.length;
+
+    slides[current].classList.add('active');
+    dots[current]?.classList.add('active');
+  }
+
+  function startTimer() {
+    if (images.length <= 1) return;
+    timer = setInterval(() => goTo(current + 1), FLYER_INTERVAL);
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    startTimer();
+  }
+
+  loadChain(1, 0);
 }
 
-loadFlyers('clases',   'flyers-clases');
-loadFlyers('alquiler', 'flyers-alquiler');
+initFlyerGallery('clases',   'flyers-clases');
+initFlyerGallery('alquiler', 'flyers-alquiler');
