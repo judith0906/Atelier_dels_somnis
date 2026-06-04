@@ -263,7 +263,6 @@ function initFlyerGallery(folder, containerId) {
 
 initFlyerGallery('clases',   'flyers-clases');
 initFlyerGallery('alquiler', 'flyers-alquiler');
-initPromoBoard('promocions', 'promo-grid', 'promo-empty');
 
 /* ── PROMOCIONS DINÀMIQUES ── */
 function initPromoBoard(folder, gridId, emptyId) {
@@ -278,7 +277,7 @@ function initPromoBoard(folder, gridId, emptyId) {
       onAllLoaded();
       return;
     }
-    const src = `assets/images/promos/${folder}/f${i}.${FLYER_EXTENSIONS[extIdx]}`;
+    const src = `assets/images/promos/f${i}.${FLYER_EXTENSIONS[extIdx]}`;
     const probe = new Image();
     probe.onload  = () => { images.push(src); loadChain(i + 1, 0); };
     probe.onerror = () => { loadChain(i, extIdx + 1); };
@@ -293,15 +292,7 @@ function initPromoBoard(folder, gridId, emptyId) {
 
     images.forEach((src, idx) => {
       const card = document.createElement('div');
-      card.className = 'promo-card reveal';
-
-      // Badge "OFERTA" en el primer cartell
-      if (idx === 0) {
-        const badge = document.createElement('span');
-        badge.className = 'promo-badge';
-        badge.textContent = 'Oferta';
-        card.appendChild(badge);
-      }
+      card.className = 'promo-card';
 
       const img = document.createElement('img');
       img.src = src;
@@ -315,3 +306,5 @@ function initPromoBoard(folder, gridId, emptyId) {
 
   loadChain(1, 0);
 }
+
+initPromoBoard('promos', 'promo-grid', 'promo-empty');
