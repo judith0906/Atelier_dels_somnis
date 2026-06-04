@@ -263,3 +263,55 @@ function initFlyerGallery(folder, containerId) {
 
 initFlyerGallery('clases',   'flyers-clases');
 initFlyerGallery('alquiler', 'flyers-alquiler');
+initPromoBoard('promocions', 'promo-grid', 'promo-empty');
+
+/* ── PROMOCIONS DINÀMIQUES ── */
+function initPromoBoard(folder, gridId, emptyId) {
+  const grid  = document.getElementById(gridId);
+  const empty = document.getElementById(emptyId);
+  if (!grid) return;
+
+  const images = [];
+
+  function loadChain(i, extIdx) {
+    if (extIdx >= FLYER_EXTENSIONS.length) {
+      onAllLoaded();
+      return;
+    }
+    const src = `assets/images/promos/${folder}/f${i}.${FLYER_EXTENSIONS[extIdx]}`;
+    const probe = new Image();
+    probe.onload  = () => { images.push(src); loadChain(i + 1, 0); };
+    probe.onerror = () => { loadChain(i, extIdx + 1); };
+    probe.src = src;
+  }
+
+  function onAllLoaded() {
+    if (images.length === 0) {
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+
+    images.forEach((src, idx) => {
+      const card = document.createElement('div');
+      card.className = 'promo-card reveal';
+
+      // Badge "OFERTA" en el primer cartell
+      if (idx === 0) {
+        const badge = document.createElement('span');
+        badge.className = 'promo-badge';
+        badge.textContent = 'Oferta';
+        card.appendChild(badge);
+      }
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = `Promoció ${idx + 1}`;
+      img.loading = 'lazy';
+
+      card.appendChild(img);
+      grid.appendChild(card);
+    });
+  }
+
+  loadChain(1, 0);
+}
