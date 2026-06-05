@@ -925,12 +925,14 @@ footer {
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .nav-logo { font-size: 1rem; letter-spacing: 0.08em; }
-.nav-links {
+  .nav-links {
     display: none;
     flex-direction: column;
-    position: fixed;
+    position: fixed !important;
     top: 70px;
-    right: 0;
+    left: auto !important;
+    right: 0 !important;
+    transform: none !important;
     width: 220px;
     background: rgba(10,10,10,0.98);
     backdrop-filter: blur(12px);
