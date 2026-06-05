@@ -57,6 +57,7 @@ nav {
   letter-spacing: 0.12em;
   color: var(--gold);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .nav-links {
@@ -923,16 +924,19 @@ footer {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
-  .nav-links {
+  .nav-logo { font-size: 1rem; letter-spacing: 0.08em; }
+.nav-links {
     display: none;
     flex-direction: column;
     position: fixed;
     top: 70px;
-    left: 0; right: 0;
+    right: 0;
+    width: 220px;
     background: rgba(10,10,10,0.98);
     backdrop-filter: blur(12px);
+    border-left: 1px solid rgba(201,168,76,0.2);
     border-bottom: 1px solid rgba(201,168,76,0.2);
-    padding: 24px 0;
+    padding: 16px 0;
     gap: 0;
     z-index: 99;
     list-style: none;
@@ -942,11 +946,11 @@ footer {
   }
   .nav-links li {
     width: 100%;
-    text-align: center;
+    text-align: right;
   }
   .nav-links a {
     display: block;
-    padding: 14px 0;
+    padding: 14px 24px;
     font-size: 0.85rem;
     letter-spacing: 0.2em;
   }
