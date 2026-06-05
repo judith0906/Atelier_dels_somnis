@@ -308,3 +308,20 @@ function initPromoBoard(folder, gridId, emptyId) {
 }
 
 initPromoBoard('promos', 'promo-grid', 'promo-empty');
+
+/* ── HAMBURGER MENU ── */
+const hamburger = document.querySelector('.hamburger');
+const navLinks = document.querySelector('.nav-links');
+
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open');
+  navLinks.classList.toggle('open');
+});
+
+// Cierra el menú al hacer click en un enlace
+navLinks.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    hamburger.classList.remove('open');
+    navLinks.classList.remove('open');
+  });
+});
