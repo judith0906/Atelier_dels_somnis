@@ -20,6 +20,7 @@
   <a href="#" class="nav-logo">✦ Atelier dels Somnis</a>
 
   <ul class="nav-links">
+    <li><a href="#horarios" data-i18n="nav_horarios">Horarios</a></li>
     <li><a href="#promocions" data-i18n="nav_promocions">Promociones</a></li>
     <li><a href="#classes" data-i18n="nav_classes">Clases</a></li>
     <li><a href="#rental" data-i18n="nav_rental">Sala de Alquiler</a></li>
@@ -57,6 +58,25 @@
 </section>
 
 <!-- ══════════════════════════════
+     HORARIOS
+══════════════════════════════ -->
+<section id="horarios">
+  <div class="section-intro reveal">
+    <p class="eyebrow" data-i18n="horarios_eyebrow">Horario semanal</p>
+    <h2 class="section-title" data-i18n="horarios_title">Horarios</h2>
+    <div class="gold-rule"></div>
+    <p class="section-desc" data-i18n="horarios_desc">Consulta el horario semanal de nuestras clases, talleres y actividades.</p>
+  </div>
+
+  <div class="horarios-filter reveal">
+    <input type="text" id="horarios-search" class="horarios-search" autocomplete="off" placeholder="Buscar clase, actividad o profesor...">
+  </div>
+
+  <div class="horarios-grid reveal" id="horarios-grid"></div>
+  <p class="flyers-empty" id="horarios-empty" style="display:none" data-i18n="horarios_empty"></p>
+</section>
+
+<!-- ══════════════════════════════
      PROMOCIONS
 ══════════════════════════════ -->
 <section id="promocions">
@@ -85,7 +105,7 @@
   </div>
 
   <!-- ARTES PLÁSTICAS -->
-  <div class="section-accent reveal">
+  <div class="section-accent accent-arts reveal">
     <div class="accent-line"></div>
     <span class="accent-diamond">✦</span>
     <span class="accent-label" data-i18n="classes_arts">Artes Plásticas</span>
@@ -94,7 +114,7 @@
   </div>
 
   <div class="classes-grid reveal">
-    <div class="class-card" data-hover-imgs="assets/images/hover/artes plasticas/lapiz/lapiz1.png,assets/images/hover/artes plasticas/lapiz/lapiz2.png,assets/images/hover/artes plasticas/lapiz/lapiz3.png">
+    <div class="class-card accent-arts" data-hover-imgs="assets/images/hover/artes plasticas/lapiz/lapiz1.png,assets/images/hover/artes plasticas/lapiz/lapiz2.png,assets/images/hover/artes plasticas/lapiz/lapiz3.png">
       <span class="class-icon">
         <img class="class-icon" src="assets/images/emoticonos/artes plasticas/lapiz.png" alt="lápiz">
       </span>
@@ -107,7 +127,7 @@
       <span class="age-badge" data-i18n="tag_alllevels">Todos los niveles</span>
     </div>
 
-    <div class="class-card" data-hover-imgs="assets/images/hover/artes plasticas/acrilica/acrilica1.png,assets/images/hover/artes plasticas/acrilica/acrilica2.png,assets/images/hover/artes plasticas/acrilica/acrilica3.png">
+    <div class="class-card accent-arts" data-hover-imgs="assets/images/hover/artes plasticas/acrilica/acrilica1.png,assets/images/hover/artes plasticas/acrilica/acrilica2.png,assets/images/hover/artes plasticas/acrilica/acrilica3.png">
       <span class="class-icon">
         <img class="class-icon" src="assets/images/emoticonos/artes plasticas/pintura.png" alt="pintura">
       </span>
@@ -120,7 +140,7 @@
       <span class="age-badge" data-i18n="tag_alllevels">Todos los niveles</span>
     </div>
 
-    <div class="class-card" data-hover-imgs="assets/images/hover/artes plasticas/manualidades/man1.png,assets/images/hover/artes plasticas/manualidades/man2.png,assets/images/hover/artes plasticas/manualidades/man3.png">
+    <div class="class-card accent-arts" data-hover-imgs="assets/images/hover/artes plasticas/manualidades/man1.png,assets/images/hover/artes plasticas/manualidades/man2.png,assets/images/hover/artes plasticas/manualidades/man3.png">
       <span class="class-icon">
         <img class="class-icon" src="assets/images/emoticonos/artes plasticas/tijeras.png" alt="tijeras">
       </span>
@@ -132,7 +152,7 @@
       <span class="age-badge" data-i18n="tag_from5">A partir de 5 años</span>
     </div>
 
-    <div class="class-card" data-hover-imgs="assets/images/hover/artes plasticas/manga/mang1.png,assets/images/hover/artes plasticas/manga/mang2.png,assets/images/hover/artes plasticas/manga/mang3.png">
+    <div class="class-card accent-arts" data-hover-imgs="assets/images/hover/artes plasticas/manga/mang1.png,assets/images/hover/artes plasticas/manga/mang2.png,assets/images/hover/artes plasticas/manga/mang3.png">
       <span class="class-icon">
         <img class="class-icon" src="assets/images/emoticonos/artes plasticas/manga.png" alt="manga">
       </span>
@@ -147,7 +167,7 @@
   </div>
 
   <!-- MÚSICA -->
-  <div class="section-accent reveal" style="margin-top:60px;">
+  <div class="section-accent accent-music reveal" style="margin-top:60px;">
     <div class="accent-line"></div>
     <span class="accent-diamond">♪</span>
     <span class="accent-label" data-i18n="classes_music">Música</span>
@@ -156,7 +176,7 @@
   </div>
 
   <div class="classes-grid reveal">
-    <div class="class-card" data-hover-imgs="assets/images/hover/musica/canto/c1.png,assets/images/hover/musica/canto/c2.png">
+    <div class="class-card accent-music" data-hover-imgs="assets/images/hover/musica/canto/c1.png,assets/images/hover/musica/canto/c2.png">
       <span class="class-icon">
         <img class="class-icon" src="assets/images/emoticonos/musica/micro.png" alt="microfono">
       </span>
@@ -167,7 +187,7 @@
         <span class="tag" data-i18n="tag_adults">Adultos</span>
       </div>
     </div>
-    <div class="class-card" data-hover-imgs="assets/images/hover/musica/flamenco/f1.png,assets/images/hover/musica/flamenco/f2.png">
+    <div class="class-card accent-music" data-hover-imgs="assets/images/hover/musica/flamenco/f1.png,assets/images/hover/musica/flamenco/f2.png">
       <span class="class-icon"><img src="assets/images/emoticonos/musica/flamenca.png" alt="flamenco"></span>
       <div class="class-name" data-i18n="card_flamenco_sing">Cante Flamenco</div>
       <p class="class-desc" data-i18n="card_flamenco_sing_desc">Conoce la fuerza y la emoción del flamenco. Ritmo, compás y expresión.</p>
@@ -176,7 +196,7 @@
         <span class="tag" data-i18n="tag_adults">Adultos</span>
       </div>
     </div>
-    <div class="class-card" data-hover-imgs="assets/images/hover/musica/percusion/p1.png,assets/images/hover/musica/percusion/p2.png,assets/images/hover/musica/percusion/p3.png">
+    <div class="class-card accent-music" data-hover-imgs="assets/images/hover/musica/percusion/p1.png,assets/images/hover/musica/percusion/p2.png,assets/images/hover/musica/percusion/p3.png">
       <span class="class-icon"><img src="assets/images/emoticonos/musica/bateria.png" alt="batería"></span>
       <div class="class-name" data-i18n="card_percusion">Percusión &amp; Batería</div>
       <p class="class-desc" data-i18n="card_percusion_desc">Explora ritmos, coordina tu cuerpo y mejora tu concentración. Aprende ritmo y disciplina de forma divertida.</p>
@@ -185,7 +205,7 @@
         <span class="tag" data-i18n="tag_adults">Adultos</span>
       </div>
     </div>
-    <div class="class-card" data-hover-imgs="assets/images/hover/musica/guitarra/g1.png,assets/images/hover/musica/guitarra/g2.png">
+    <div class="class-card accent-music" data-hover-imgs="assets/images/hover/musica/guitarra/g1.png,assets/images/hover/musica/guitarra/g2.png">
       <span class="class-icon"><img src="assets/images/emoticonos/musica/guitarra.png" alt="guitarra"></span>
       <div class="class-name" data-i18n="card_guitar">Guitarra &amp; Más</div>
       <p class="class-desc" data-i18n="card_guitar_desc">Guitarra, teclado, bajo, ukelele e iniciación musical. Acompaña tus canciones favoritas.</p>
@@ -197,7 +217,7 @@
   </div>
 
   <!-- DANZA -->
-  <div class="section-accent reveal" style="margin-top:60px;">
+  <div class="section-accent accent-dance reveal" style="margin-top:60px;">
     <div class="accent-line"></div>
     <span class="accent-diamond">✦</span>
     <span class="accent-label" data-i18n="classes_dance">Danza</span>
@@ -206,7 +226,7 @@
   </div>
 
   <div class="classes-grid reveal">
-    <div class="class-card wide" data-hover-imgs="assets/images/hover/danza/clases/d1.png,assets/images/hover/danza/clases/d2.png">
+    <div class="class-card wide accent-dance" data-hover-imgs="assets/images/hover/danza/clases/d1.png,assets/images/hover/danza/clases/d2.png">
       <span class="class-icon"><img src="assets/images/emoticonos/danza/puntas.png" alt="danza"></span>
       <div class="class-name" data-i18n="card_dance">Clases y Talleres de Danza</div>
       <p class="class-desc" data-i18n="card_dance_desc">Para niños, niñas y adultos. Un amplio repertorio de estilos para descubrir el movimiento que te hace brillar.</p>
@@ -224,7 +244,7 @@
       </div>
     </div>
 
-    <div class="class-card" data-hover-imgs="assets/images/hover/danza/yoga/y1.png,assets/images/hover/danza/yoga/y2.png">
+    <div class="class-card accent-wellness" data-hover-imgs="assets/images/hover/danza/yoga/y1.png,assets/images/hover/danza/yoga/y2.png">
       <span class="class-icon"><img src="assets/images/emoticonos/danza/yoga.png" alt="yoga"></span>
       <div class="class-name" data-i18n="card_wellness">Yoga · Pilates · Entrenamiento</div>
       <p class="class-desc" data-i18n="card_wellness_desc">Clases reducidas y personalizadas de yoga, pilates y entrenamiento funcional. Cuerpo, mente y bienestar.</p>

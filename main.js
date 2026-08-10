@@ -39,6 +39,7 @@ function applyLang(lang) {
   document.getElementById('label-es').classList.toggle('active', lang === 'es');
   document.getElementById('label-ca').classList.toggle('active', lang === 'ca');
   document.getElementById('toggle-thumb').classList.toggle('ca', lang === 'ca');
+  renderHorarios();
 }
 
 function setLang(lang) { applyLang(lang); }
@@ -47,8 +48,267 @@ function toggleLang() {
   applyLang(currentLang === 'es' ? 'ca' : 'es');
 }
 
+/* ── HORARIOS ── */
+const HORARIOS = {
+  es: [
+    { day: 'Lunes', classes: [
+      { time: '09:30 – 10:30', activity: 'Yoga', teacher: 'Elisabet' },
+      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Danza 5-7' },
+      { time: '17:30 – 18:30', activity: 'Danza 3-5' },
+      { time: '18:30 – 19:30', activity: 'Danza 8-11' },
+      { time: '18:30 – 19:30', activity: 'Bachata inicio', teacher: 'Sara', pending: true },
+      { time: '19:30 – 20:30', activity: 'Bachata inicio', teacher: 'Sara', pending: true },
+      { time: '20:00 – 22:00', activity: 'Salsa y bachata', teacher: 'Por confirmar', pending: true },
+      { time: '20:30 – 21:30', activity: 'Bachata básico', teacher: 'Sara' },
+      { time: '21:30 – 22:30', activity: 'Salsa', teacher: 'Sara' }
+    ]},
+    { day: 'Martes', classes: [
+      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Danzas urbanas +11', teacher: 'Marina' },
+      { time: '18:00 – 19:00', activity: 'Yogalates', teacher: 'Elisabet' },
+      { time: '18:00 – 19:00', activity: 'Flamenco peques', teacher: 'Mónica' },
+      { time: '19:00 – 20:00', activity: 'Flamenco nivel medio', teacher: 'Mónica' },
+      { time: '20:00 – 21:00', activity: 'Sevillanas perfeccionamiento', teacher: 'Mónica' },
+      { time: '21:00 – 22:00', activity: 'Sevillanas iniciación', teacher: 'Mónica' }
+    ]},
+    { day: 'Miércoles', classes: [
+      { time: '09:30 – 10:30', activity: 'Yoga', teacher: 'Elisabet' },
+      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Danza 5-7' },
+      { time: '17:30 – 18:30', activity: 'Danza 3-5' },
+      { time: '18:30 – 19:30', activity: 'Danza 8-11' },
+      { time: '18:30 – 19:30', activity: 'Bachata parejas', teacher: 'Sara Luna' },
+      { time: '19:30 – 20:30', activity: 'Estilo chica (bachata/salsa alternando)', teacher: 'Sara Luna' },
+      { time: '19:30 – 20:30', activity: 'Estilo chico bachata', teacher: 'Sara Luna' },
+      { time: '20:30 – 21:30', activity: 'Estilo chica', teacher: 'Sara' },
+      { time: '21:30 – 22:30', activity: 'Bachata pre-avanzado', teacher: 'Sara', pending: true }
+    ]},
+    { day: 'Jueves', classes: [
+      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Danzas urbanas +11', teacher: 'Marina' },
+      { time: '18:00 – 19:00', activity: 'Yogalates', teacher: 'Elisabet' },
+      { time: '18:00 – 19:00', activity: 'Flamenco peques', teacher: 'Mónica' },
+      { time: '19:00 – 20:00', activity: 'Flamenco nivel medio', teacher: 'Mónica' },
+      { time: '20:00 – 21:00', activity: 'Flamenco iniciación', teacher: 'Mónica' },
+      { time: '21:30 – 22:30', activity: 'Bachata inicio', teacher: 'Sara' }
+    ]},
+    { day: 'Viernes', classes: [
+      { time: '09:30 – 10:30', activity: 'Yoga', teacher: 'Elisabet' },
+      { time: '19:30 – 21:00', activity: 'Flamenco profesional', teacher: 'Mónica' },
+      { time: '19:30 – 20:30', activity: 'Bachata inicio', teacher: 'Sara', pending: true }
+    ]}
+  ],
+  ca: [
+    { day: 'Dilluns', classes: [
+      { time: '09:30 – 10:30', activity: 'Ioga', teacher: 'Elisabet' },
+      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Dansa 5-7' },
+      { time: '17:30 – 18:30', activity: 'Dansa 3-5' },
+      { time: '18:30 – 19:30', activity: 'Dansa 8-11' },
+      { time: '18:30 – 19:30', activity: 'Bachata inici', teacher: 'Sara', pending: true },
+      { time: '19:30 – 20:30', activity: 'Bachata inici', teacher: 'Sara', pending: true },
+      { time: '20:00 – 22:00', activity: 'Salsa i bachata', teacher: 'Per confirmar', pending: true },
+      { time: '20:30 – 21:30', activity: 'Bachata bàsic', teacher: 'Sara' },
+      { time: '21:30 – 22:30', activity: 'Salsa', teacher: 'Sara' }
+    ]},
+    { day: 'Dimarts', classes: [
+      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Danses urbanes +11', teacher: 'Marina' },
+      { time: '18:00 – 19:00', activity: 'Iogalates', teacher: 'Elisabet' },
+      { time: '18:00 – 19:00', activity: 'Flamenc petits', teacher: 'Mónica' },
+      { time: '19:00 – 20:00', activity: 'Flamenc nivell mitjà', teacher: 'Mónica' },
+      { time: '20:00 – 21:00', activity: 'Sevillanes perfeccionament', teacher: 'Mónica' },
+      { time: '21:00 – 22:00', activity: 'Sevillanes iniciació', teacher: 'Mónica' }
+    ]},
+    { day: 'Dimecres', classes: [
+      { time: '09:30 – 10:30', activity: 'Ioga', teacher: 'Elisabet' },
+      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Dansa 5-7' },
+      { time: '17:30 – 18:30', activity: 'Dansa 3-5' },
+      { time: '18:30 – 19:30', activity: 'Dansa 8-11' },
+      { time: '18:30 – 19:30', activity: 'Bachata parelles', teacher: 'Sara Luna' },
+      { time: '19:30 – 20:30', activity: 'Estil noia (bachata/salsa alternant)', teacher: 'Sara Luna' },
+      { time: '19:30 – 20:30', activity: 'Estil noi bachata', teacher: 'Sara Luna' },
+      { time: '20:30 – 21:30', activity: 'Estil noia', teacher: 'Sara' },
+      { time: '21:30 – 22:30', activity: 'Bachata pre-avançat', teacher: 'Sara', pending: true }
+    ]},
+    { day: 'Dijous', classes: [
+      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
+      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
+      { time: '17:30 – 18:30', activity: 'Danses urbanes +11', teacher: 'Marina' },
+      { time: '18:00 – 19:00', activity: 'Iogalates', teacher: 'Elisabet' },
+      { time: '18:00 – 19:00', activity: 'Flamenc petits', teacher: 'Mónica' },
+      { time: '19:00 – 20:00', activity: 'Flamenc nivell mitjà', teacher: 'Mónica' },
+      { time: '20:00 – 21:00', activity: 'Flamenc iniciació', teacher: 'Mónica' },
+      { time: '21:30 – 22:30', activity: 'Bachata inici', teacher: 'Sara' }
+    ]},
+    { day: 'Divendres', classes: [
+      { time: '09:30 – 10:30', activity: 'Ioga', teacher: 'Elisabet' },
+      { time: '19:30 – 21:00', activity: 'Flamenc professional', teacher: 'Mónica' },
+      { time: '19:30 – 20:30', activity: 'Bachata inici', teacher: 'Sara', pending: true }
+    ]}
+  ]
+};
+
+let horariosData = null;
+
+function getHorariosForLang(lang) {
+  return (horariosData && horariosData[lang]) ? horariosData[lang] : HORARIOS[lang];
+}
+
+function renderHorarios() {
+  const grid = document.getElementById('horarios-grid');
+  const days = getHorariosForLang(currentLang);
+  if (!grid || !days) return;
+
+  grid.innerHTML = '';
+
+  days.forEach((d, dayIdx) => {
+    const card = document.createElement('div');
+    card.className = 'horario-day hd-' + dayIdx;
+
+    const header = document.createElement('div');
+    header.className = 'horario-day-header';
+
+    const d1 = document.createElement('span');
+    d1.className = 'horario-day-name-diamond';
+    d1.textContent = '✦';
+
+    const name = document.createElement('span');
+    name.className = 'horario-day-name';
+    name.textContent = d.day;
+
+    const d2 = document.createElement('span');
+    d2.className = 'horario-day-name-diamond';
+    d2.textContent = '✦';
+
+    header.appendChild(d1);
+    header.appendChild(name);
+    header.appendChild(d2);
+    card.appendChild(header);
+
+    d.classes.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'horario-class' + (c.pending ? ' pending' : '');
+
+      const time = document.createElement('div');
+      time.className = 'horario-class-time';
+      time.textContent = c.time;
+      row.appendChild(time);
+
+      const activity = document.createElement('div');
+      activity.className = 'horario-class-activity';
+      activity.textContent = c.activity;
+      row.appendChild(activity);
+
+      if (c.teacher) {
+        const teacher = document.createElement('div');
+        teacher.className = 'horario-class-teacher';
+        teacher.textContent = c.teacher;
+        row.appendChild(teacher);
+      }
+
+      if (c.pending) {
+        const badge = document.createElement('span');
+        badge.className = 'horario-pending-badge';
+        badge.textContent = i18n[currentLang].horarios_pending;
+        row.appendChild(badge);
+      }
+
+      card.appendChild(row);
+    });
+
+    grid.appendChild(card);
+  });
+
+  const searchInput = document.getElementById('horarios-search');
+  if (searchInput) searchInput.placeholder = i18n[currentLang].horarios_search;
+  filterHorarios();
+}
+
+/* ── FILTRO DE BÚSQUEDA ── */
+let horariosQuery = '';
+
+function filterHorarios() {
+  const grid = document.getElementById('horarios-grid');
+  if (!grid) return;
+
+  let anyVisible = false;
+
+  grid.querySelectorAll('.horario-day').forEach(card => {
+    let dayVisible = false;
+    card.querySelectorAll('.horario-class').forEach(row => {
+      const text = (row.textContent || '').toLowerCase();
+      const match = !horariosQuery || text.includes(horariosQuery);
+      row.classList.toggle('hidden', !match);
+      if (match) dayVisible = true;
+    });
+    card.classList.toggle('hidden', !dayVisible);
+    if (dayVisible) anyVisible = true;
+  });
+
+  const empty = document.getElementById('horarios-empty');
+  if (empty) empty.style.display = (horariosQuery && !anyVisible) ? 'block' : 'none';
+}
+
+const horariosSearch = document.getElementById('horarios-search');
+if (horariosSearch) {
+  horariosSearch.addEventListener('input', () => {
+    horariosQuery = horariosSearch.value.trim().toLowerCase();
+    filterHorarios();
+  });
+}
+
+/* ── CARGA DEL HORARIO DESDE NEON ── */
+function groupHorarios(rows) {
+  const map = {};
+  rows.forEach(r => {
+    if (!map[r.lang]) map[r.lang] = {};
+    if (!map[r.lang][r.dia]) map[r.lang][r.dia] = [];
+    map[r.lang][r.dia].push({
+      time: r.horas,
+      activity: r.clase,
+      teacher: r.profe || null,
+      pending: !!r.pendiente
+    });
+  });
+  const result = {};
+  Object.keys(map).forEach(lang => {
+    result[lang] = Object.keys(map[lang]).map(dia => ({
+      day: dia,
+      classes: map[lang][dia]
+    }));
+  });
+  return result;
+}
+
+async function loadHorarios() {
+  try {
+    const res = await fetch('/api/horarios');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    horariosData = groupHorarios(rows);
+  } catch (e) {
+    horariosData = null;
+  }
+  renderHorarios();
+}
+
 // Init
 applyLang('es');
+loadHorarios();
 
 /* ── HOVER FOTOS + EMOTICONO HOVER + MANCHAS ── */
 document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
@@ -75,73 +335,7 @@ document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
     preload.src = hoverSrc;
   }
 
-  /* 3. Manchas de pintura — posiciones fijas en bordes, rotaciones libres */
-  const splashContainer = document.createElement('div');
-  splashContainer.className = 'paint-splashes';
-
-  // Cada mancha tiene: anclaje al borde, desplazamiento, rotación y escala propios
-  // Se mezclan tamaños y rotaciones para que parezca orgánico
-  const splashDefs = [
-    // Borde superior
-    { side: 'top',    offset: '8%',  rotation:  14, scale: 0.55 },
-    { side: 'top',    offset: '55%', rotation: -22, scale: 0.90 },
-    { side: 'top',    offset: '35%', rotation:  38, scale: 0.40 },
-    // Borde inferior
-    { side: 'bottom', offset: '12%', rotation: 160, scale: 0.75 },
-    { side: 'bottom', offset: '60%', rotation: 200, scale: 0.50 },
-    { side: 'bottom', offset: '40%', rotation: 185, scale: 1.10 },
-    // Borde izquierdo
-    { side: 'left',   offset: '18%', rotation: -75, scale: 0.65 },
-    { side: 'left',   offset: '55%', rotation: -55, scale: 0.85 },
-    // Borde derecho
-    { side: 'right',  offset: '22%', rotation:  80, scale: 0.45 },
-    { side: 'right',  offset: '62%', rotation: 110, scale: 0.95 },
-  ];
-
-  // Seleccionar 5-7 manchas aleatorias del pool
-  const count = 5 + Math.floor(Math.random() * 3);
-  const chosen = splashDefs.sort(() => Math.random() - 0.5).slice(0, count);
-
-  const BASE_SIZE = 110; // px base antes de aplicar scale
-
-  chosen.forEach(def => {
-    const splash = document.createElement('img');
-    splash.src = 'assets/images/pintura-hover.png';
-    splash.className = 'paint-splash';
-
-    const size = BASE_SIZE * def.scale;
-    splash.style.width  = size + 'px';
-    splash.style.height = size + 'px';
-
-    // Pequeña variación aleatoria adicional sobre la rotación definida
-    const finalRotation = def.rotation + (Math.random() * 24 - 12);
-
-    switch (def.side) {
-      case 'top':
-        splash.style.top  = (-size * 0.45) + 'px';
-        splash.style.left = def.offset;
-        break;
-      case 'bottom':
-        splash.style.bottom = (-size * 0.45) + 'px';
-        splash.style.left   = def.offset;
-        break;
-      case 'left':
-        splash.style.left = (-size * 0.45) + 'px';
-        splash.style.top  = def.offset;
-        break;
-      case 'right':
-        splash.style.right = (-size * 0.45) + 'px';
-        splash.style.top   = def.offset;
-        break;
-    }
-
-    splash.style.transform = `rotate(${finalRotation}deg)`;
-    splashContainer.appendChild(splash);
-  });
-
-  card.appendChild(splashContainer);
-
-  /* 4. Eventos hover */
+  /* 3. Eventos hover */
   card.addEventListener('mouseenter', () => {
     if (iconImg) {
       const hoverSrc = iconImg.getAttribute('data-src-hover');
