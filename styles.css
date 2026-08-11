@@ -1245,6 +1245,66 @@ footer {
   .flyer-next { right: -32px; }
 }
 
+/* ── CASALS SECTION ── */
+#casals { padding-bottom: 100px; }
+
+.casals-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.casals-lead {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.25rem;
+  color: var(--white-dim);
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+
+.casals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.casals-item {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.casals-icon {
+  font-size: 1.3rem;
+  color: var(--gold);
+  line-height: 1.4;
+}
+
+.casals-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: var(--gold-light);
+  margin-bottom: 6px;
+}
+
+.casals-desc {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--white-dim);
+}
+
+.casals-gallery .flyer-gallery { margin-bottom: 0; }
+
+@media (max-width: 900px) {
+  .casals-layout { grid-template-columns: 1fr; gap: 48px; }
+  .casals-gallery .flyer-gallery { max-width: 80vw; }
+}
+
 /* ══════════════════════════════
    SECCIÓN HORARIOS
 ══════════════════════════════ */

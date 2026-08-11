@@ -355,7 +355,7 @@ document.querySelectorAll('.class-card[data-hover-imgs]').forEach(card => {
 const FLYER_INTERVAL = 4000; // ms entre cambio automático de foto
 const FLYER_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
-function initFlyerGallery(folder, containerId) {
+function initFlyerGallery(path, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -375,7 +375,7 @@ function initFlyerGallery(folder, containerId) {
       onAllLoaded();
       return;
     }
-    const src = `assets/images/flyers/${folder}/f${i}.${FLYER_EXTENSIONS[extIdx]}`;
+    const src = `assets/images/${path}/f${i}.${FLYER_EXTENSIONS[extIdx]}`;
     const probe = new Image();
     probe.onload  = () => { images.push(src); loadChain(i + 1, 0); };
     probe.onerror = () => { loadChain(i, extIdx + 1); };
@@ -455,8 +455,9 @@ function initFlyerGallery(folder, containerId) {
   loadChain(1, 0);
 }
 
-initFlyerGallery('clases',   'flyers-clases');
-initFlyerGallery('alquiler', 'flyers-alquiler');
+initFlyerGallery('flyers/clases',   'flyers-clases');
+initFlyerGallery('flyers/alquiler', 'flyers-alquiler');
+initFlyerGallery('casals',          'flyers-casals');
 
 /* ── PROMOCIONS DINÀMIQUES ── */
 function initPromoBoard(folder, gridId, emptyId) {
