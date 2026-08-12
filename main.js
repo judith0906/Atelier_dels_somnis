@@ -35,6 +35,10 @@ function applyLang(lang) {
     const key = el.getAttribute('data-i18n');
     if (dict[key]) el.textContent = dict[key];
   });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (dict[key]) el.placeholder = dict[key];
+  });
   document.documentElement.lang = lang;
   document.getElementById('label-es').classList.toggle('active', lang === 'es');
   document.getElementById('label-ca').classList.toggle('active', lang === 'ca');
@@ -520,3 +524,65 @@ navLinks.querySelectorAll('a').forEach(link => {
     navLinks.classList.remove('open');
   });
 });
+
+/* ── FORMULARIO DE CONTACTO (EMAILJS) ── */
+/* Sustituir los [..] por los valores reales de tu cuenta EmailJS */
+const EMAILJS_PUBLIC_KEY  = '6G_XcLBlJOl_sngk5';
+const EMAILJS_SERVICE_ID  = 'service_me3rq8d';
+const EMAILJS_TEMPLATE_ID = 'template_17jq4zx';
+
+function initContactForm() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  const status = document.getElementById('form-status');
+  const success = document.getElementById('form-success');
+
+  function showStatus(type, i18nKey) {
+    status.textContent = i18n[currentLang]?.[i18nKey] || '';
+    status.className = 'form-status ' + type;
+    status.style.display = 'block';
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const configMissing =
+      EMAILJS_PUBLIC_KEY.startsWith('[') ||
+      EMAILJS_SERVICE_ID.startsWith('[') ||
+      EMAILJS_TEMPLATE_ID.startsWith('[');
+
+    if (configMissing || typeof emailjs === 'undefined') {
+      showStatus('error', 'form_error_config');
+      return;
+    }
+
+    const submitBtn = form.querySelector('.form-submit');
+    submitBtn.disabled = true;
+    status.style.display = 'none';
+
+    const templateParams = {
+      nombre:    document.getElementById('cf-nombre').value.trim(),
+      apellidos: document.getElementById('cf-apellidos').value.trim(),
+      correo:    document.getElementById('cf-correo').value.trim(),
+      telefono:  document.getElementById('cf-telefono').value.trim(),
+      asunto:    document.getElementById('cf-asunto').value.trim(),
+      cuerpo:    document.getElementById('cf-cuerpo').value.trim(),
+    };
+
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+      .then(() => {
+        form.style.display = 'none';
+        success.style.display = 'block';
+      })
+      .catch((error) => {
+        console.error('Error enviando el mensaje:', error);
+        submitBtn.disabled = false;
+        showStatus('error', 'form_error');
+      });
+  });
+}
+
+initContactForm();
