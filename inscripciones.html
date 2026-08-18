@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscripción · Atelier dels Somnis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C; --gold-light: #E8C96A; --gold-pale: #F5E6B8;
+    --black: #0A0A0A; --black-mid: #111111; --black-card: #161616;
+    --white: #FAF7F0; --white-dim: #D4C9B0; --text-muted: #8A7A5A;
+    --terracotta: #C2703D; --teal: #3E8E7E; --plum: #7C5C8E;
+    --crimson: #B8505A; --amber: #D98A3C; --rose: #C97B84;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #161616 0%, var(--black) 55%);
+    color: var(--white);
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 24px 20px 60px;
+  }
+  .top {
+    max-width: 820px; margin: 0 auto 26px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  }
+  .brand { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.15rem; letter-spacing: 2px; color: var(--gold-light); }
+  .brand small { display: block; font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0; color: var(--text-muted); font-size: .9rem; }
+  .lang { display: flex; border: 1px solid var(--gold); border-radius: 999px; overflow: hidden; }
+  .lang button { background: none; border: 0; color: var(--white-dim); font-family: 'Lato', sans-serif; font-size: .75rem; padding: 6px 16px; cursor: pointer; }
+  .lang button.active { background: var(--gold); color: #1A1202; font-weight: 700; }
+
+  .card {
+    max-width: 820px; margin: 0 auto;
+    background: var(--black-card);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 12px;
+    padding: 40px 44px;
+  }
+
+  /* steps bar */
+  .steps { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 34px; }
+  .step-chip { flex: 1; text-align: center; padding: 10px 6px; border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .step-chip .n { display: block; font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); margin-bottom: 4px; }
+  .step-chip.active { border-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--white-dim); }
+
+  .step { display: none; }
+  .step.active { display: block; animation: fade .35s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  h2.step-title { font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 700; color: var(--gold-light); margin-bottom: 14px; }
+  h3.sub { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); letter-spacing: .06em; margin: 26px 0 12px; }
+  p.desc { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 18px; }
+  p.aviso { font-size: .85rem; color: var(--amber); border: 1px dashed rgba(217,138,60,0.5); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; line-height: 1.6; }
+  p.pend { font-style: italic; color: var(--text-muted); font-size: .9rem; }
+
+  .terms { max-height: 320px; overflow-y: auto; background: var(--black); border: 1px solid rgba(201,168,76,0.22); border-radius: 8px; padding: 20px 22px; margin-bottom: 12px; scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.5) transparent; }
+  .terms h4 { font-family: 'Cinzel', serif; font-size: .95rem; color: var(--gold-light); letter-spacing: .06em; margin: 18px 0 8px; }
+  .terms h4:first-child { margin-top: 0; }
+  .terms p { font-size: .88rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 8px; }
+  .terms ul { margin: 0 0 10px 18px; }
+  .terms li { font-size: .88rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 4px; }
+  .terms a { color: var(--gold-light); text-decoration: underline; }
+  .terms-hint { font-size: .8rem; color: var(--text-muted); font-style: italic; margin-bottom: 14px; }
+
+  .check-line { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: border-color .25s, background .25s; }
+  .check-line:hover { border-color: var(--gold); }
+  .check-line input { width: 18px; height: 18px; accent-color: var(--gold); margin-top: 2px; flex: none; }
+  .check-line span { font-size: .95rem; color: var(--white-dim); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+  .field label { display: block; font-size: .65rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  .field input {
+    width: 100%; background: var(--black); border: 1px solid rgba(201,168,76,0.22);
+    color: var(--white); font-family: 'Lato', sans-serif; font-size: .95rem;
+    padding: 12px 14px; border-radius: 6px; transition: border-color .25s, box-shadow .25s;
+  }
+  .field input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
+  .field input::placeholder { color: rgba(138,122,90,0.6); font-style: italic; }
+
+  .nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; }
+  .btn {
+    font-family: 'Lato', sans-serif; font-size: .85rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; padding: 13px 26px;
+    border-radius: 999px; cursor: pointer; border: 1px solid var(--gold);
+    transition: background .25s, box-shadow .25s, opacity .25s;
+  }
+  .btn-prev { background: transparent; color: var(--gold-light); }
+  .btn-prev:hover { background: rgba(201,168,76,0.12); }
+  .btn-next { background: var(--gold); color: #1A1202; border-color: var(--gold); }
+  .btn-next:hover { background: var(--gold-light); box-shadow: 0 8px 26px rgba(201,168,76,0.35); }
+  .btn:disabled { opacity: .45; cursor: default; box-shadow: none; }
+
+  .opts { display: grid; gap: 14px; }
+  .opt {
+    border: 1px solid rgba(201,168,76,0.25); border-radius: 10px; padding: 22px 24px;
+    cursor: pointer; transition: all .25s; background: linear-gradient(120deg, #141210, #191713);
+  }
+  .opt:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 12px 34px rgba(0,0,0,0.45); }
+  .opt .t { font-family: 'Cinzel', serif; font-size: 1.05rem; color: var(--gold-light); letter-spacing: .06em; margin-bottom: 6px; }
+  .opt .d { font-size: .88rem; color: var(--white-dim); line-height: 1.6; }
+  .opt.cta { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+
+  .alumno-card { border: 1px solid rgba(201,168,76,0.25); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; background: linear-gradient(120deg, #151310, #1B1812); }
+  .alumno-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .alumno-name { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--white); }
+  .alumno-type { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(201,168,76,0.4); padding: 3px 10px; border-radius: 999px; }
+  .alumno-fn { font-size: .8rem; color: var(--text-muted); margin-top: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .chip { font-size: .72rem; color: var(--white-dim); background: var(--black); border: 1px solid rgba(201,168,76,0.3); padding: 4px 10px; border-radius: 999px; }
+  .chip.none { font-style: italic; color: var(--text-muted); border-style: dashed; }
+  .alumno-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .mini { font-family: 'Lato', sans-serif; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(201,168,76,0.45); background: transparent; color: var(--gold-light); cursor: pointer; transition: all .2s; }
+  .mini:hover { background: rgba(201,168,76,0.14); }
+  .mini.danger { border-color: rgba(184,80,90,0.6); color: var(--rose); }
+  .mini.danger:hover { background: rgba(184,80,90,0.14); }
+
+  .empty { text-align: center; padding: 26px; color: var(--text-muted); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; }
+
+  /* modal */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(5,5,5,0.82); backdrop-filter: blur(3px); z-index: 60; align-items: center; justify-content: center; padding: 20px; }
+  .overlay.open { display: flex; }
+  .modal { width: 100%; max-width: 640px; max-height: 88vh; overflow: auto; background: var(--black-card); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 30px 32px; }
+  .modal h3 { font-family: 'Cinzel', serif; font-size: 1.25rem; color: var(--gold-light); margin-bottom: 16px; }
+  .modal .hint { font-size: .85rem; color: var(--white-dim); margin-bottom: 16px; }
+  .cats, .days { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .pill { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(201,168,76,0.4); background: transparent; color: var(--white-dim); cursor: pointer; transition: all .2s; }
+  .pill.on { background: var(--gold); color: #1A1202; border-color: var(--gold); font-weight: 700; }
+  .list { max-height: 40vh; overflow: auto; border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; }
+  .lrow { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid rgba(201,168,76,0.1); cursor: pointer; }
+  .lrow:last-child { border-bottom: 0; }
+  .lrow:hover { background: rgba(201,168,76,0.05); }
+  .lrow input { width: 17px; height: 17px; accent-color: var(--gold); flex: none; }
+  .lrow .tt { font-size: .92rem; color: var(--white); }
+  .lrow .dd { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+  .modal .nav { margin-top: 20px; }
+  .err { display: none; color: var(--rose); font-size: .85rem; font-style: italic; margin-top: 12px; text-align: center; }
+  .toggle-lbl { display: flex; align-items: center; gap: 10px; }
+
+  /* resumen */
+  .res { border: 1px solid rgba(201,168,76,0.18); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+  .res .k { font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .res .kv { display: flex; justify-content: space-between; gap: 12px; font-size: .88rem; color: var(--white-dim); padding: 4px 0; border-bottom: 1px dashed rgba(201,168,76,0.12); }
+  .res .kv:last-child { border-bottom: 0; }
+  .res .kv b { color: var(--white); font-weight: 400; text-align: right; }
+
+  .ok { text-align: center; padding: 40px 20px; }
+  .ok .ico { font-size: 2.4rem; color: var(--gold); margin-bottom: 14px; }
+  .ok h3 { font-family: 'Cinzel', serif; color: var(--gold-light); font-size: 1.4rem; margin-bottom: 10px; }
+  .ok p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--white-dim); }
+
+  @media (max-width: 640px) {
+    .card { padding: 26px 20px; }
+    .grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">✦ ATELIER DELS SOMNIS<small>Inscripciones</small></div>
+  <div class="lang">
+    <button id="lb-es" class="active">ES</button>
+    <button id="lb-ca">CA</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="steps">
+    <div class="step-chip active" id="chip1"><span class="n">1</span><span data-t="st1">Términos</span></div>
+    <div class="step-chip" id="chip2"><span class="n">2</span><span data-t="st2">Datos personales</span></div>
+    <div class="step-chip" id="chip3"><span class="n">3</span><span data-t="st3">Detalles</span></div>
+    <div class="step-chip" id="chip4"><span class="n">4</span><span data-t="st4">Confirmación</span></div>
+  </div>
+
+  <!-- PASO 1 -->
+  <section class="step active" id="paso1">
+    <h2 class="step-title" data-t="p1_title">Términos y condiciones</h2>
+    <p class="desc" data-t="p1_intro">Antes de inscribirte, revisa y acepta nuestros términos y condiciones.</p>
+    <div class="terms" id="terms-box"></div>
+    <p class="terms-hint" data-t="p1_scroll">Desplázate hasta el final del texto para poder marcar las casillas.</p>
+    <label class="check-line">
+      <input type="checkbox" id="tos-leido" disabled>
+      <span data-t="tos_leido">He leído los términos y condiciones</span>
+    </label>
+    <label class="check-line">
+      <input type="checkbox" id="tos-acuerdo" disabled>
+      <span data-t="tos_acuerdo">Acepto los términos y condiciones</span>
+    </label>
+    <p class="err" id="err-p1" data-t="p1_needs">Falta marcar las dos casillas para continuar.</p>
+    <div class="nav">
+      <div></div>
+      <button class="btn btn-next" id="p1-next" data-t="continuar" disabled>Continuar →</button>
+    </div>
+  </section>
+
+  <!-- PASO 2 -->
+  <section class="step" id="paso2">
+    <h2 class="step-title" data-t="p2_title">Datos personales</h2>
+    <p class="aviso" data-t="p2_aviso">Importante: introduce TUS datos personales. Si vas a inscribir a otra persona, los datos de esa persona se piden en el siguiente paso.</p>
+    <div class="grid">
+      <div class="field"><label data-t="nombre">Nombre</label><input type="text" id="d-nombre" data-tph="ph_nombre" placeholder="Tu nombre"></div>
+      <div class="field"><label data-t="apellidos">Apellidos</label><input type="text" id="d-apellidos" data-tph="ph_apellidos" placeholder="Tus apellidos"></div>
+      <div class="field"><label data-t="email">Correo electrónico</label><input type="email" id="d-email" data-tph="ph_email" placeholder="tu@correo.com"></div>
+      <div class="field"><label data-t="telefono">Teléfono</label><input type="tel" id="d-telefono" data-tph="ph_telefono" placeholder="600 000 000"></div>
+      <div class="field"><label data-t="fechaNac">Fecha de nacimiento</label><input type="date" id="d-fechaNac"></div>
+      <div class="field"><label data-t="cp">Código postal</label><input type="text" id="d-cp" data-tph="ph_cp" placeholder="43003"></div>
+      <div class="field"><label data-t="ciudad">Ciudad</label><input type="text" id="d-ciudad" data-tph="ph_ciudad" placeholder="Reus"></div>
+      <div class="field"><label data-t="iban">Número de cuenta bancaria (IBAN)</label><input type="text" id="d-iban" data-tph="ph_iban" placeholder="ES00 0000 0000 0000 0000 0000"></div>
+      <div class="field"><label data-t="dni">Documento de identidad (DNI/NIE)</label><input type="text" id="d-dni" data-tph="ph_dni" placeholder="12345678A"></div>
+    </div>
+    <p class="err" id="err-p2"></p>
+    <div class="nav">
+      <button class="btn btn-prev" id="p2-prev" data-t="anterior">← Anterior</button>
+      <button class="btn btn-next" id="p2-next" data-t="siguiente">Siguiente →</button>
+    </div>
+  </section>
+
+  <!-- PASO 3 -->
+  <section class="step" id="paso3">
+    <h2 class="step-title" data-t="p3_title">Detalles de la inscripción</h2>
+    <p class="desc" data-t="p3_desc">Elige qué alumno se inscribe y selecciona sus clases. Puedes inscribir hasta 5 personas.</p>
+
+    <h3 class="sub" data-t="alumnos_title">Alumnos inscritos</h3>
+    <div id="alumnos-list"></div>
+
+    <div class="opts" id="opciones">
+      <div class="opt" id="opt-a">
+        <div class="t" data-t="opt_a">Inscribirme a mí mismo</div>
+        <div class="d" data-t="opt_a_desc">Te selecciono como alumno con tus datos personales y eliges tus clases.</div>
+      </div>
+      <div class="opt" id="opt-b">
+        <div class="t" data-t="opt_b">Inscribir a un familiar</div>
+        <div class="d" data-t="opt_b_desc">Introduzco los datos de un familiar y luego elijo sus clases.</div>
+      </div>
+      <p class="empty" id="alumnos-max" style="display:none" data-t="alumnos_max">Has llegado al máximo de 5 alumnos.</p>
+      <div class="opt cta" id="opt-c" style="display:none">
+        <div class="t" data-t="opt_c">Continuar inscripción</div>
+        <div class="d" data-t="opt_c_desc">He terminado de añadir alumnas y alumnos.</div>
+      </div>
+    </div>
+
+    <p class="err" id="err-p3"></p>
+    <div class="nav">
+      <button class="btn btn-prev" id="p3-prev" data-t="anterior">← Anterior</button>
+      <button class="btn btn-next" id="p3-next" data-t="continuar">Continuar →</button>
+    </div>
+  </section>
+
+  <!-- PASO 4 -->
+  <section class="step" id="paso4">
+    <h2 class="step-title" data-t="p4_title">Confirmación</h2>
+    <p class="desc" data-t="p4_desc">Revisa todos los datos antes de finalizar la inscripción.</p>
+
+    <div class="res"><div class="k" data-t="resumen_persona">Tus datos</div><div id="res-persona"></div></div>
+    <div class="res"><div class="k" data-t="resumen_alumnos">Inscripciones</div><div id="res-alumnos"></div></div>
+    <p class="aviso" data-t="resumen_acciones">Puedes volver con «Anterior» para corregir cualquier dato.</p>
+
+    <label class="check-line">
+      <input type="checkbox" id="robot">
+      <span data-t="robot">No soy un robot</span>
+    </label>
+    <p class="err" id="err-p4"></p>
+
+    <div class="nav">
+      <button class="btn btn-prev" id="p4-prev" data-t="anterior">← Anterior</button>
+      <button class="btn btn-next" id="p4-next" data-t="btn_inscribir">Finalizar inscripción</button>
+    </div>
+  </section>
+
+  <div class="ok" id="ok-box" style="display:none">
+    <div class="ico">✦</div>
+    <h3 data-t="done_title">¡Inscripción enviada!</h3>
+    <p data-t="done_ok">Recibiremos tu solicitud y te confirmaremos por correo.</p>
+    <button class="btn btn-next" id="ok-reopen" style="display:none;margin-top:18px" data-t="reopen_form">Continuar con mi inscripción</button>
+  </div>
+</div>
+
+<!-- MODAL CLASES -->
+<div class="overlay" id="mclases">
+  <div class="modal">
+    <h3 data-t="modal_clases_title">Selecciona sus clases</h3>
+    <div class="hint" data-t="modal_lista">Marca las clases para este alumno:</div>
+    <div class="cats" id="m-cats"></div>
+    <div class="days" id="m-days"></div>
+    <div class="list" id="m-list"></div>
+    <p class="err" id="err-mclases" data-t="err_clases">Selecciona al menos una clase.</p>
+    <div class="nav">
+      <button class="btn btn-prev" id="m-cancelar" data-t="modal_cancelar">Cancelar</button>
+      <button class="btn btn-next" id="m-aceptar" data-t="modal_aceptar">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALUMNO FAMILIAR -->
+<div class="overlay" id="malumno">
+  <div class="modal">
+    <h3 id="malumno-title" data-t="modal_alumno_title">Datos del familiar</h3>
+    <div class="grid" style="grid-template-columns:1fr;">
+      <div class="field"><label data-t="nombre">Nombre</label><input type="text" id="a-nombre"></div>
+      <div class="field"><label data-t="apellidos">Apellidos</label><input type="text" id="a-apellidos"></div>
+      <div class="field"><label data-t="fechaNac">Fecha de nacimiento</label><input type="date" id="a-fechaNac"></div>
+    </div>
+    <p class="err" id="err-malumno" data-t="err_required">Completa todos los campos.</p>
+    <div class="nav">
+      <button class="btn btn-prev" id="a-cancelar" data-t="modal_cancelar">Cancelar</button>
+      <button class="btn btn-next" id="a-aceptar" data-t="btn_inscribir_alumno">Inscribir alumno</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── I18N ── */
+const T = {
+  es: {
+    app_title:'Inscripciones', st1:'Términos', st2:'Datos personales', st3:'Detalles', st4:'Confirmación',
+    p1_title:'Términos y condiciones', p1_intro:'Antes de inscribirte, revisa y acepta nuestros términos y condiciones.', p1_scroll:'Desplázate hasta el final del texto para poder marcar las casillas.',
+    tos_leido:'He leído los términos y condiciones', tos_acuerdo:'Acepto los términos y condiciones', p1_needs:'Falta marcar las dos casillas para continuar.',
+    term_text:`<h4>1. Pago y cobro</h4><p>La inscripción da acceso a la actividad o actividades elegidas en este formulario. El importe mensual de cada actividad puede variar según la actividad contratada.</p><ul><li>La cuota mensual se cobra por domiciliación bancaria (SEPA) mediante el IBAN facilitado en el formulario, entre los días 1 y 5 de cada mes.</li><li>Al completar la inscripción autorizas a Atelier dels Somnis a domiciliar las cuotas mensuales en la cuenta indicada.</li><li>Si un cargo no puede cobrarse, se reintentará una vez. Si el segundo intento también falla, la plaza quedará suspendida hasta que se regularice el pago.</li><li>En caso de inscripción de menores, el padre, la madre o el tutor legal acepta estos términos en nombre del menor.</li></ul><h4>2. Bajas y cancelaciones</h4><ul><li>Para darse de baja hay que comunicarlo por escrito, a través del <a href="index.html#contact">formulario de contacto de la página web</a>, con un mínimo de 15 días de antelación al siguiente cobro.</li><li>Las cuotas ya cobradas no se devuelven, salvo que el error sea imputable a Atelier dels Somnis.</li><li>Si la baja se comunica a mitad de mes, la cuota de ese mes ya cargada no se devuelve.</li><li>Atelier dels Somnis podrá cancelar una actividad por causas justificadas (por ejemplo, número insuficiente de alumnos), avisando con antelación y devolviendo la parte de cuota no disfrutada.</li></ul><h4>3. Protección de datos (RGPD)</h4><p>Responsable del tratamiento: Atelier dels Somnis, Carrer dels Velers, 50, 43205 Reus (Tarragona).</p><ul><li>Finalidad: gestionar la inscripción, la facturación y la comunicación relacionada con la actividad contratada.</li><li>Base legal: la ejecución del contrato de inscripción.</li><li>Los datos no se ceden a terceros, salvo obligación legal o proveedores necesarios para la prestación del servicio (alojamiento web, pasarela de pago).</li><li>Conservación: mientras dure la relación contractual y, después, durante los plazos legales aplicables.</li><li>Derechos: puedes ejercer los derechos de acceso, rectificación, supresión, portabilidad y oposición, a través del <a href="index.html#contact">formulario de contacto de la página web</a>.</li><li>Reclamación: puedes dirigir cualquier reclamación ante la Agencia Española de Protección de Datos (www.aepd.es).</li></ul>`,
+    continuar:'Continuar →', siguiente:'Siguiente →', anterior:'← Anterior',
+    p2_title:'Datos personales', p2_aviso:'Importante: introduce TUS datos personales. Si vas a inscribir a otra persona, los datos de esa persona se piden en el siguiente paso.',
+    nombre:'Nombre', apellidos:'Apellidos', email:'Correo electrónico', telefono:'Teléfono', fechaNac:'Fecha de nacimiento', cp:'Código postal', ciudad:'Ciudad', iban:'Número de cuenta bancaria (IBAN)', dni:'Documento de identidad (DNI/NIE)',
+    ph_nombre:'Tu nombre', ph_apellidos:'Tus apellidos', ph_email:'tu@correo.com', ph_telefono:'600 000 000', ph_cp:'43003', ph_ciudad:'Reus', ph_iban:'ES00 0000 0000 0000 0000 0000', ph_dni:'12345678A',
+    err_required:'Completa todos los campos.', err_email:'Introduce un correo electrónico válido.',
+    p3_title:'Detalles de la inscripción', p3_desc:'Elige qué alumno se inscribe y selecciona sus clases. Puedes inscribir hasta 5 personas.',
+    opt_a:'Inscribirme a mí mismo', opt_a_desc:'Te selecciono como alumno con tus datos personales y eliges tus clases.',
+    opt_b:'Inscribir a un familiar', opt_b_desc:'Introduzco los datos de un familiar y luego elijo sus clases.',
+    opt_c:'Continuar inscripción', opt_c_desc:'He terminado de añadir alumnas y alumnos.',
+    alumnos_title:'Alumnos inscritos', alumnos_vacio:'Aún no hay alumnos inscritos.', alumnos_max:'Has llegado al máximo de 5 alumnos.',
+    tipo_yo:'Alumno principal', tipo_fam:'Familiar', nac:'Nacimiento:',
+    btn_editar_clases:'Editar clases', btn_editar_datos:'Editar datos', btn_eliminar:'Eliminar',
+    label_clases:'Clases:', sin_clases:'sin clases seleccionadas',
+    modal_clases_title:'Selecciona sus clases', modal_categoria:'Categoría:', modal_dias:'Días:', modal_lista:'Marca las clases para este alumno:',
+    modal_cancelar:'Cancelar', modal_aceptar:'Aceptar', err_clases:'Selecciona al menos una clase.',
+    modal_alumno_title:'Datos del familiar', btn_inscribir_alumno:'Inscribir alumno', btn_guardar:'Guardar',
+    p4_title:'Confirmación', p4_desc:'Revisa todos los datos antes de finalizar la inscripción.',
+    resumen_persona:'Tus datos', resumen_alumnos:'Inscripciones', resumen_acciones:'Puedes volver con «Anterior» para corregir cualquier dato.',
+    robot:'No soy un robot', btn_inscribir:'Finalizar inscripción', err_robot:'Marca la casilla «No soy un robot» para continuar.',
+    done_title:'¡Inscripción enviada!', done_ok:'Recibiremos tu solicitud y te confirmaremos por correo.',
+    reopen_form:'Continuar con mi inscripción',
+    submit_fail:'No se ha podido enviar la inscripción. Inténtalo de nuevo.'
+  },
+  ca: {
+    app_title:'Inscripcions', st1:'Termes', st2:'Dades personals', st3:'Detalls', st4:'Confirmació',
+    p1_title:'Termes i condicions', p1_intro:'Abans d\'inscriure\'t, revisa i accepta els nostres termes i condicions.', p1_scroll:'Desplaça\'t fins al final del text per poder marcar les caselles.',
+    tos_leido:'He llegit els termes i condicions', tos_acuerdo:'Accepto els termes i condicions', p1_needs:'Falten marcar les dues caselles per continuar.',
+    term_text:`<h4>1. Pagament i cobrament</h4><p>La inscripció dóna accés a l'activitat o activitats triades en aquest formulari. L'import mensual de cada activitat pot variar segons l'activitat contractada.</p><ul><li>La quota mensual es cobra per domiciliació bancària (SEPA) mitjançant l'IBAN facilitat al formulari, entre els dies 1 i 5 de cada mes.</li><li>En completar la inscripció autoritzes Atelier dels Somnis a domiciliar les quotes mensuals al compte indicat.</li><li>Si un càrrec no es pot cobrar, es tornarà a intentar una vegada. Si el segon intent també falla, la plaça quedarà suspesa fins que es regularitzi el pagament.</li><li>En cas d'inscripció de menors, el pare, la mare o el tutor legal accepta aquests termes en nom del menor.</li></ul><h4>2. Baixes i cancel·lacions</h4><ul><li>Per donar-se de baixa cal comunicar-ho per escrit, mitjançant el <a href="index.html#contact">formulari de contacte de la pàgina web</a>, amb un mínim de 15 dies d'antelació al següent cobrament.</li><li>Les quotes ja cobrades no es retornen, llevat que l'error sigui imputable a Atelier dels Somnis.</li><li>Si la baixa es comunica a mitjan mes, la quota d'aquell mes ja carregada no es retorna.</li><li>Atelier dels Somnis podrà cancel·lar una activitat per causes justificades (per exemple, nombre insuficient d'alumnes), avisant amb antelació i retornant la part de quota no gaudida.</li></ul><h4>3. Protecció de dades (RGPD)</h4><p>Responsable del tractament: Atelier dels Somnis, Carrer dels Velers, 50, 43205 Reus (Tarragona).</p><ul><li>Finalitat: gestionar la inscripció, la facturació i la comunicació relacionada amb l'activitat contractada.</li><li>Base legal: l'execució del contracte d'inscripció.</li><li>Les dades no es cedeixen a tercers, llevat d'obligació legal o proveïdors necessaris per a la prestació del servei (allotjament web, passarel·la de pagament).</li><li>Conservació: mentre duri la relació contractual i, després, durant els terminis legals aplicables.</li><li>Drets: pots exercir els drets d'accés, rectificació, supressió, portabilitat i oposició, mitjançant el <a href="index.html#contact">formulari de contacte de la pàgina web</a>.</li><li>Reclamació: pots adreçar qualsevol reclamació davant l'Agència Espanyola de Protecció de Dades (www.aepd.es).</li></ul>`,
+    continuar:'Continua →', siguiente:'Següent →', anterior:'← Enrere',
+    p2_title:'Dades personals', p2_aviso:'Important: introdueix LES TEVES dades personals. Si inscrius una altra persona, les dades d\'aquesta persona es demanen al pas següent.',
+    nombre:'Nom', apellidos:'Cognoms', email:'Correu electrònic', telefono:'Telèfon', fechaNac:'Data de naixement', cp:'Codi postal', ciudad:'Ciutat', iban:'Número de compte bancari (IBAN)', dni:'Document d\'identitat (DNI/NIE)',
+    ph_nombre:'El teu nom', ph_apellidos:'Els teus cognoms', ph_email:'tu@correu.com', ph_telefono:'600 000 000', ph_cp:'43003', ph_ciudad:'Reus', ph_iban:'ES00 0000 0000 0000 0000 0000', ph_dni:'12345678A',
+    err_required:'Completa tots els camps.', err_email:'Introdueix un correu electrònic vàlid.',
+    p3_title:'Detalls de la inscripció', p3_desc:'Tria quin alumne s\'inscriu i selecciona les seves classes. Pots inscriure fins a 5 persones.',
+    opt_a:'Inscriure\'m a mi mateix', opt_a_desc:'Et selecciono com a alumne amb les teves dades personals i tries les teves classes.',
+    opt_b:'Inscriure un familiar', opt_b_desc:'Introdueixo les dades d\'un familiar i després trio les seves classes.',
+    opt_c:'Continuar inscripció', opt_c_desc:'He acabat d\'afegir alumnes.',
+    alumnos_title:'Alumnes inscrits', alumnos_vacio:'Encara no hi ha alumnes inscrits.', alumnos_max:'Has arribat al màxim de 5 alumnes.',
+    tipo_yo:'Alumne principal', tipo_fam:'Familiar', nac:'Naixement:',
+    btn_editar_clases:'Editar classes', btn_editar_datos:'Editar dades', btn_eliminar:'Eliminar',
+    label_clases:'Classes:', sin_clases:'sense classes seleccionades',
+    modal_clases_title:'Selecciona les seves classes', modal_categoria:'Categoria:', modal_dias:'Dies:', modal_lista:'Marca les classes per a aquest alumne:',
+    modal_cancelar:'Cancel·lar', modal_aceptar:'Acceptar', err_clases:'Selecciona com a mínim una classe.',
+    modal_alumno_title:'Dades del familiar', btn_inscribir_alumno:'Inscriure alumne', btn_guardar:'Desar',
+    p4_title:'Confirmació', p4_desc:'Revisa totes les dades abans de finalitzar la inscripció.',
+    resumen_persona:'Les teves dades', resumen_alumnos:'Inscripcions', resumen_acciones:'Pots tornar amb «Enrere» per corregir qualsevol dada.',
+    robot:'No sóc un robot', btn_inscribir:'Finalitzar inscripció', err_robot:'Marca la casella «No sóc un robot» per continuar.',
+    done_title:'Inscripció enviada!', done_ok:'Rebrem la teva sol·licitud i et confirmarem per correu.',
+    reopen_form:'Continuar amb la meva inscripció',
+    submit_fail:'No s\'ha pogut enviar la inscripció. Torna-ho a intentar.'
+  }
+};
+let lng = 'es';
+function applyT() {
+  const d = T[lng];
+  document.querySelectorAll('[data-t]').forEach(el => { const k = el.getAttribute('data-t'); if (d[k]) el.textContent = d[k]; });
+  document.querySelectorAll('[data-tph]').forEach(el => { const k = el.getAttribute('data-tph'); if (d[k]) el.placeholder = d[k]; });
+  const tb = $('terms-box');
+  if (tb) {
+    tb.innerHTML = d.term_text;
+    $('tos-leido').disabled = true;
+    $('tos-acuerdo').disabled = true;
+    $('tos-leido').checked = false;
+    $('tos-acuerdo').checked = false;
+    $('p1-next').disabled = true;
+    p1InitLeido();
+  }
+}
+function tt(k){ return T[lng][k] || k; }
+
+/* ── HORARIO (catálogo de clases) ── */
+const HORARIO_ES = [{"day":"Lunes","classes":[{"time":"09:30 – 10:30","activity":"Yoga","teacher":"Elisabet"},{"time":"10:30 – 11:30","activity":"Toning + Gap","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Pilates","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danza 5-7"},{"time":"17:30 – 18:30","activity":"Danza 3-5"},{"time":"18:30 – 19:30","activity":"Danza 8-11"},{"time":"18:30 – 19:30","activity":"Bachata inicio","teacher":"Sara","pending":true},{"time":"19:30 – 20:30","activity":"Bachata inicio","teacher":"Sara","pending":true},{"time":"20:00 – 22:00","activity":"Salsa y bachata","teacher":"Por confirmar","pending":true},{"time":"20:30 – 21:30","activity":"Bachata básico","teacher":"Sara"},{"time":"21:30 – 22:30","activity":"Salsa","teacher":"Sara"}]},{"day":"Martes","classes":[{"time":"09:30 – 10:30","activity":"Pilates","teacher":"Gaby"},{"time":"10:30 – 11:30","activity":"Zumba","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Zumba","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danzas urbanas +11","teacher":"Marina"},{"time":"18:00 – 19:00","activity":"Yogalates","teacher":"Elisabet"},{"time":"18:00 – 19:00","activity":"Flamenco peques","teacher":"Mónica"},{"time":"19:00 – 20:00","activity":"Flamenco nivel medio","teacher":"Mónica"},{"time":"20:00 – 21:00","activity":"Sevillanas perfeccionamiento","teacher":"Mónica"},{"time":"21:00 – 22:00","activity":"Sevillanas iniciación","teacher":"Mónica"}]},{"day":"Miércoles","classes":[{"time":"09:30 – 10:30","activity":"Yoga","teacher":"Elisabet"},{"time":"10:30 – 11:30","activity":"Toning + Gap","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Pilates","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danza 5-7"},{"time":"17:30 – 18:30","activity":"Danza 3-5"},{"time":"18:30 – 19:30","activity":"Danza 8-11"},{"time":"18:30 – 19:30","activity":"Bachata parejas","teacher":"Sara Luna"},{"time":"19:30 – 20:30","activity":"Estilo chica (bachata/salsa alternando)","teacher":"Sara Luna"},{"time":"19:30 – 20:30","activity":"Estilo chico bachata","teacher":"Sara Luna"},{"time":"20:30 – 21:30","activity":"Estilo chica","teacher":"Sara"},{"time":"21:30 – 22:30","activity":"Bachata pre-avanzado","teacher":"Sara","pending":true}]},{"day":"Jueves","classes":[{"time":"09:30 – 10:30","activity":"Pilates","teacher":"Gaby"},{"time":"10:30 – 11:30","activity":"Zumba","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Zumba","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danzas urbanas +11","teacher":"Marina"},{"time":"18:00 – 19:00","activity":"Yogalates","teacher":"Elisabet"},{"time":"18:00 – 19:00","activity":"Flamenco peques","teacher":"Mónica"},{"time":"19:00 – 20:00","activity":"Flamenco nivel medio","teacher":"Mónica"},{"time":"20:00 – 21:00","activity":"Flamenco iniciación","teacher":"Mónica"},{"time":"21:30 – 22:30","activity":"Bachata inicio","teacher":"Sara"}]},{"day":"Viernes","classes":[{"time":"09:30 – 10:30","activity":"Yoga","teacher":"Elisabet"},{"time":"19:30 – 21:00","activity":"Flamenco profesional","teacher":"Mónica"},{"time":"19:30 – 20:30","activity":"Bachata inicio","teacher":"Sara","pending":true}]}];
+
+const CAT = n => n;
+const CATALOGO = [];
+HORARIO_ES.forEach(d => d.classes.forEach(c => {
+  const a = c.activity.toLowerCase();
+  let cat = 'Otras';
+  if (/(danza|bachata|salsa|sevillanas|flamenco|zumba|broadway|urban|puntas)/.test(a)) cat = CAT('Danza');
+  else if (/(yoga|pilates|yogalates|toning|gap|entrenamiento)/.test(a)) cat = 'Yoga & Bienestar';
+  else if (/(canto|guitarra|percusi|bater|teclado|ukelele|bajo|coro)/.test(a)) cat = CAT('Música');
+  else if (/(dibujo|pintura|acuarela|manualidades|manga|resina|collage)/.test(a)) cat = CAT('Artes Plásticas');
+  CATALOGO.push({ clase: c.activity, dia: d.day, hora: c.time, cat: cat });
+}));
+const DIAS = [];
+HORARIO_ES.forEach(d => { if (DIAS.indexOf(d.day) < 0) DIAS.push(d.day); });
+const CATS = [];
+CATALOGO.forEach(c => { if (CATS.indexOf(c.cat) < 0) CATS.push(c.cat); });
+const DIAS_N = { 'Lunes':1,'Martes':2,'Miércoles':3,'Jueves':4,'Viernes':5,'Sábado':6,'Domingo':7 };
+
+/* ── ESTADO ── */
+const $ = id => document.getElementById(id);
+let paso = 1;
+let datos = {};
+let tos = { leido: false, acuerdo: false };
+let alumnos = [];   // { tipo:'yo'|'familiar', nombre, apellidos, fechaNac, clases:[{clase,dia,hora}] }
+let noRobot = false;
+let editandoIdx = -1;
+let selKeys = new Set();
+let modalCat = null;
+let modalDias = new Set();
+let alumnoModal = { nombre:'', apellidos:'', fechaNac:'' };
+let editDatosIdx = -1;
+
+/* ── NAVEGACIÓN ── */
+function go(n) {
+  paso = n;
+  document.querySelectorAll('.step').forEach((s,i) => s.id === ('paso'+n) ? s.classList.add('active') : s.classList.remove('active'));
+  for (let i=1;i<=4;i++) $('chip'+i).classList.toggle('active', i===n);
+  if (n === 4) renderResumen();
+  $('paso'+n).scrollIntoView({ block:'start', behavior:'smooth' });
+}
+
+function leerDatos() {
+  datos = {
+    nombre: $('d-nombre').value.trim(), apellidos: $('d-apellidos').value.trim(),
+    email: $('d-email').value.trim(), telefono: $('d-telefono').value.trim(),
+    fechaNac: $('d-fechaNac').value, cp: $('d-cp').value.trim(),
+    ciudad: $('d-ciudad').value.trim(), iban: $('d-iban').value.trim(), dni: $('d-dni').value.trim()
+  };
+}
+function validarDatos() {
+  leerDatos();
+  const v = Object.values(datos);
+  if (v.some(x => !x)) { $('err-p2').textContent = tt('err_required'); $('err-p2').style.display='block'; return false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) { $('err-p2').textContent = tt('err_email'); $('err-p2').style.display='block'; return false; }
+  $('err-p2').style.display='none';
+  return true;
+}
+
+/* ── PASO 1 ── */
+function p1InitLeido() {
+  const t = $('terms-box');
+  if (t.scrollTop + t.clientHeight >= t.scrollHeight - 4) $('tos-leido').disabled = false;
+}
+function p1Actualizar() {
+  const leido = $('tos-leido').checked;
+  const acuerdo = $('tos-acuerdo').checked;
+  $('tos-acuerdo').disabled = !leido;
+  $('p1-next').disabled = !(leido && acuerdo);
+  if (leido && acuerdo) $('err-p1').style.display = 'none';
+}
+$('terms-box').addEventListener('scroll', p1InitLeido);
+$('tos-leido').addEventListener('change', () => {
+  if (!$('tos-leido').checked) $('tos-acuerdo').checked = false;
+  p1Actualizar();
+});
+$('tos-acuerdo').addEventListener('change', p1Actualizar);
+function p1Check() {
+  tos.leido = $('tos-leido').checked;
+  tos.acuerdo = $('tos-acuerdo').checked;
+  if (tos.leido && tos.acuerdo) { $('err-p1').style.display='none'; return true; }
+  return false;
+}
+$('p1-next').addEventListener('click', () => {
+  if (!p1Check()) { $('err-p1').style.display='block'; return; }
+  go(2);
+});
+
+/* ── PASO 2 ── */
+$('p2-prev').addEventListener('click', () => { $('err-p2').style.display='none'; go(1); });
+$('p2-next').addEventListener('click', () => { if (validarDatos()) go(3); });
+
+/* ── PASO 3 ── */
+function renderAlumnos() {
+  const list = $('alumnos-list');
+  if (alumnos.length === 0) { list.innerHTML = '<p class="empty">'+tt('alumnos_vacio')+'</p>'; }
+  else {
+    list.innerHTML = '';
+    alumnos.forEach((a, i) => {
+      const card = document.createElement('div');
+      card.className = 'alumno-card';
+      const chips = a.clases.length ? a.clases.map(c => '<span class="chip">'+c.clase+' · '+c.dia+' '+c.hora+'</span>').join('') : '<span class="chip none">'+tt('sin_clases')+'</span>';
+      card.innerHTML =
+        '<div class="alumno-head"><span class="alumno-name">'+a.nombre+' '+a.apellidos+'</span><span class="alumno-type">'+(a.tipo==='yo'?tt('tipo_yo'):tt('tipo_fam'))+'</span></div>'+
+        '<div class="alumno-fn">'+tt('nac')+' '+a.fechaNac+'</div>'+
+        '<div class="chips">'+chips+'</div>'+
+        '<div class="alumno-actions">'+
+          '<button class="mini" data-edc="'+i+'">'+tt('btn_editar_clases')+'</button>'+
+          '<button class="mini" data-edd="'+i+'">'+tt('btn_editar_datos')+'</button>'+
+          '<button class="mini danger" data-del="'+i+'">'+tt('btn_eliminar')+'</button>'+
+        '</div>';
+      list.appendChild(card);
+    });
+    list.querySelectorAll('[data-edc]').forEach(b => b.addEventListener('click', () => abrirModalClases(+b.dataset.edc)));
+    list.querySelectorAll('[data-edd]').forEach(b => b.addEventListener('click', () => abrirModalAlumno(+b.dataset.edd)));
+    list.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      alumnos.splice(+b.dataset.del, 1);
+      renderAlumnos();
+      renderOpciones();
+    }));
+  }
+  renderOpciones();
+}
+function renderOpciones() {
+  $('alumnos-max').style.display = alumnos.length >= 5 ? 'block' : 'none';
+  $('opt-a').style.display = alumnos.length >= 5 ? 'none' : 'block';
+  $('opt-b').style.display = alumnos.length >= 5 ? 'none' : 'block';
+  $('opt-c').style.display = alumnos.length >= 1 ? 'block' : 'none';
+  $('p3-next').disabled = alumnos.length === 0;
+}
+
+$('opt-a').addEventListener('click', () => {
+  if (alumnos.length >= 5) return;
+  alumnos.push({ tipo:'yo', nombre: datos.nombre, apellidos: datos.apellidos, fechaNac: datos.fechaNac, clases: [] });
+  renderAlumnos();
+  abrirModalClases(alumnos.length - 1);
+});
+$('opt-b').addEventListener('click', () => {
+  if (alumnos.length >= 5) return;
+  editDatosIdx = -1;
+  abrirModalAlumno(-1);
+});
+$('opt-c').addEventListener('click', () => { if (alumnos.length>0) go(4); });
+$('p3-prev').addEventListener('click', () => { $('err-p3').style.display='none'; go(2); });
+$('p3-next').addEventListener('click', () => { if (alumnos.length>0) go(4); });
+
+/* ── MODAL ALUMNO ── */
+function abrirModalAlumno(idx) {
+  editDatosIdx = idx;
+  if (idx >= 0) {
+    const a = alumnos[idx];
+    $('a-nombre').value = a.nombre; $('a-apellidos').value = a.apellidos; $('a-fechaNac').value = a.fechaNac;
+    $('malumno-title').textContent = tt('btn_editar_datos');
+    $('a-aceptar').textContent = tt('btn_guardar');
+  } else {
+    $('a-nombre').value = ''; $('a-apellidos').value = ''; $('a-fechaNac').value = '';
+    $('malumno-title').textContent = tt('modal_alumno_title');
+    $('a-aceptar').textContent = tt('btn_inscribir_alumno');
+  }
+  $('err-malumno').style.display='none';
+  $('malumno').classList.add('open');
+}
+$('a-cancelar').addEventListener('click', () => $('malumno').classList.remove('open'));
+$('a-aceptar').addEventListener('click', () => {
+  const nom = $('a-nombre').value.trim(), ap = $('a-apellidos').value.trim(), fn = $('a-fechaNac').value;
+  if (!nom || !ap || !fn) { $('err-malumno').style.display='block'; return; }
+  if (editDatosIdx >= 0) {
+    const a = alumnos[editDatosIdx];
+    a.nombre = nom; a.apellidos = ap; a.fechaNac = fn;
+    $('malumno').classList.remove('open');
+    renderAlumnos();
+  } else {
+    alumnos.push({ tipo:'familiar', nombre: nom, apellidos: ap, fechaNac: fn, clases: [] });
+    $('malumno').classList.remove('open');
+    renderAlumnos();
+    abrirModalClases(alumnos.length - 1);
+  }
+});
+
+/* ── MODAL CLASES ── */
+function abrirModalClases(idx) {
+  editandoIdx = idx;
+  selKeys = new Set();
+  (alumnos[idx].clases||[]).forEach(c => {
+    const i = CATALOGO.findIndex(x => x.clase===c.clase && x.dia===c.dia && x.hora===c.hora);
+    if (i>=0) selKeys.add(i);
+  });
+  modalCat = CATS[0];
+  modalDias = new Set();
+  $('m-cats').innerHTML = '';
+  CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'pill' + (c===modalCat ? ' on' : '');
+    b.textContent = c;
+    b.addEventListener('click', () => { modalCat = c; $('m-cats').querySelectorAll('.pill').forEach(x => x.classList.remove('on')); b.classList.add('on'); renderLista(); });
+    $('m-cats').appendChild(b);
+  });
+  $('m-days').innerHTML = '';
+  DIAS.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'pill';
+    b.textContent = d;
+    b.addEventListener('click', () => {
+      if (modalDias.has(d)) modalDias.delete(d); else modalDias.add(d);
+      b.classList.toggle('on');
+      renderLista();
+    });
+    $('m-days').appendChild(b);
+  });
+  $('err-mclases').style.display='none';
+  $('mclases').classList.add('open');
+  renderLista();
+}
+function renderLista() {
+  const list = $('m-list');
+  list.innerHTML = '';
+  const items = [];
+  CATALOGO.forEach((c, i) => {
+    if (c.cat !== modalCat) return;
+    if (modalDias.size > 0 && !modalDias.has(c.dia)) return;
+    items.push({ i, c });
+  });
+  items.sort((a,b) => (DIAS_N[a.c.dia]||9) - (DIAS_N[b.c.dia]||9) || a.c.hora.localeCompare(b.c.hora));
+  if (items.length === 0) { list.innerHTML = '<p class="empty">—</p>'; return; }
+  items.forEach(({ i, c }) => {
+    const row = document.createElement('label');
+    row.className = 'lrow';
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = selKeys.has(i);
+    box.addEventListener('change', () => { if (box.checked) selKeys.add(i); else selKeys.delete(i); });
+    const info = document.createElement('div');
+    info.innerHTML = '<div class="tt">'+c.clase+'</div><div class="dd">'+c.dia+' · '+c.hora+'</div>';
+    row.appendChild(box); row.appendChild(info);
+    list.appendChild(row);
+  });
+}
+$('m-cancelar').addEventListener('click', () => { if (alumnos[editandoIdx] && alumnos[editandoIdx].clases.length===0 && alumnos[editandoIdx].tipo==='familiar') alumnos.splice(editandoIdx,1); $('mclases').classList.remove('open'); renderAlumnos(); });
+$('m-aceptar').addEventListener('click', () => {
+  if (selKeys.size === 0) { $('err-mclases').style.display='block'; return; }
+  const a = alumnos[editandoIdx];
+  a.clases = [...selKeys].map(i => ({ clase: CATALOGO[i].clase, dia: CATALOGO[i].dia, hora: CATALOGO[i].hora }));
+  $('mclases').classList.remove('open');
+  renderAlumnos();
+});
+
+/* ── PASO 4 ── */
+function renderResumen() {
+  leerDatos();
+  let hp = '';
+  hp += kv('Nombre', datos.nombre + ' ' + datos.apellidos);
+  hp += kv(tt('email'), datos.email);
+  hp += kv(tt('telefono'), datos.telefono);
+  hp += kv(tt('fechaNac'), datos.fechaNac);
+  hp += kv(tt('cp')+' / '+tt('ciudad'), datos.cp + ' · ' + datos.ciudad);
+  hp += kv(tt('dni'), datos.dni);
+  hp += kv(tt('iban'), datos.iban);
+  $('res-persona').innerHTML = hp;
+
+  let ha = '';
+  if (alumnos.length === 0) ha = '<p class="empty">'+tt('alumnos_vacio')+'</p>';
+  alumnos.forEach((a, i) => {
+    ha += '<div class="kv"><span>'+(a.tipo==='yo'?tt('tipo_yo'):tt('tipo_fam'))+' · '+(i+1)+'</span><b>'+a.nombre+' '+a.apellidos+' ('+a.fechaNac+')</b></div>';
+    a.clases.forEach(c => { ha += '<div class="kv"><span>'+tt('label_clases')+'</span><b>'+c.clase+' · '+c.dia+' '+c.hora+'</b></div>'; });
+  });
+  $('res-alumnos').innerHTML = ha;
+}
+function kv(k, v) { return '<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>'; }
+
+$('p4-prev').addEventListener('click', () => { $('err-p4').style.display='none'; go(3); });
+$('robot').addEventListener('change', () => { noRobot = $('robot').checked; $('err-p4').style.display='none'; });
+
+$('p4-next').addEventListener('click', () => {
+  if (!noRobot) { $('err-p4').textContent = tt('err_robot'); $('err-p4').style.display='block'; return; }
+  $('err-p4').style.display='none';
+  enviar();
+});
+
+/* ── ENVÍO (Make webhook) ── */
+const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/nqecqc7a8tvwa1gmr5e3vcfqrhsfcks9';
+
+const GFORM = {
+  base: 'https://docs.google.com/forms/d/e/1FAIpQLSfRRkrLXf1F7xE4avY4n5dUcsifQot8xVdAAkReC8jg1lP7fw/viewform?usp=pp_url',
+  entries: {
+    nombre: 'entry.240952209', apellidos: 'entry.1212354002', email: 'entry.1216231430',
+    telefono: 'entry.1480325778', fechaNac: 'entry.1804051934', cp: 'entry.107514898',
+    ciudad: 'entry.1979438284', dni: 'entry.1134366163', iban: 'entry.1589440649',
+    aceptaTos: 'entry.287404523', alumnos: 'entry.2097961158'
+  }
+};
+let lastFormUrl = '';
+
+function buildFormUrl() {
+  leerDatos();
+  const a = GFORM.entries;
+  const lista = alumnos.map(x => {
+    let s = '• ' + x.nombre + ' ' + x.apellidos + ' (Nac.: ' + x.fechaNac + ')';
+    if (!x.clases.length) s += ' — ' + tt('sin_clases');
+    x.clases.forEach(c => { s += '\n   · ' + c.clase + ' · ' + c.dia + ' ' + c.hora; });
+    return s;
+  }).join('\n');
+  const q = new URLSearchParams();
+  q.set(a.nombre, datos.nombre);
+  q.set(a.apellidos, datos.apellidos);
+  q.set(a.email, datos.email);
+  q.set(a.telefono, datos.telefono);
+  q.set(a.fechaNac, datos.fechaNac);
+  q.set(a.cp, datos.cp);
+  q.set(a.ciudad, datos.ciudad);
+  q.set(a.dni, datos.dni);
+  q.set(a.iban, datos.iban);
+  q.set(a.aceptaTos, tos.acuerdo ? 'Sí' : 'No');
+  q.set(a.alumnos, lista);
+  return GFORM.base + '&' + q.toString();
+}
+
+function enviar() {
+  $('p4-next').disabled = true;
+  leerDatos();
+  const payload = {
+    lang: lng,
+    nombre: datos.nombre, apellidos: datos.apellidos, email: datos.email,
+    telefono: datos.telefono, fechaNac: datos.fechaNac, codigoPostal: datos.cp,
+    ciudad: datos.ciudad, iban: datos.iban, dni: datos.dni,
+    aceptaTos: !!tos.acuerdo,
+    alumnos: alumnos.map(x => {
+      let s = '• ' + x.nombre + ' ' + x.apellidos + ' (Nac.: ' + x.fechaNac + ')';
+      if (!x.clases.length) s += ' — ' + tt('sin_clases');
+      x.clases.forEach(c => { s += '\n   · ' + c.clase + ' · ' + c.dia + ' ' + c.hora; });
+      return s;
+    }).join('\n')
+  };
+  fetch(MAKE_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(res => { if (res.ok) terminar(tt('done_ok'), false); else terminar(tt('submit_fail'), true); })
+    .catch(() => terminar(tt('submit_fail'), true));
+}
+
+function terminar(msg, esError, title) {
+  $('paso4').classList.remove('active');
+  $('chip4').classList.remove('active');
+  $('ok-box').style.display = 'block';
+  const ico = document.querySelector('.ok .ico');
+  const h3 = document.querySelector('.ok h3');
+  const p = document.querySelector('.ok p');
+  if (esError) {
+    ico.textContent = '⚠';
+    h3.textContent = title || msg;
+    p.textContent = '';
+  } else {
+    ico.textContent = '✦';
+    h3.textContent = title || tt('done_title');
+    p.textContent = msg;
+  }
+}
+
+$('ok-reopen').addEventListener('click', () => { if (lastFormUrl) window.open(lastFormUrl, '_blank'); });
+
+/* ── LANG ── */
+$('lb-es').addEventListener('click', () => { lng = 'es'; applyT(); $('lb-es').classList.add('active'); $('lb-ca').classList.remove('active'); document.documentElement.lang='es'; });
+$('lb-ca').addEventListener('click', () => { lng = 'ca'; applyT(); $('lb-ca').classList.add('active'); $('lb-es').classList.remove('active'); document.documentElement.lang='ca'; });
+
+applyT();
+</script>
+</body>
+</html>
