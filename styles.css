@@ -1645,17 +1645,20 @@ footer {
   padding: 0 20px;
 }
 
-/* Grid tipo tabloide: columnas de ancho fijo que se ajustan */
+/* Grid tipo cartelera: columnas de ancho fijo para que todas las fotos
+   se vean igual de grandes. auto-fit colapsa las columnas vacías, así el
+   conjunto (1, 2 o más fotos) queda siempre centrado en el medio. */
 .promo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(auto-fit, 260px);
   justify-content: center;
+  gap: 28px;
 }
 
-/* Cada cartell / póster */
+/* Ancho fijo de cada cartel / póster colgado en la cartelera */
 .promo-card {
   position: relative;
+  width: 260px;
   background: var(--black-card);
   border: 1px solid rgba(201, 168, 76, 0.3);
   overflow: hidden;
@@ -1697,7 +1700,7 @@ footer {
 .promo-card img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   aspect-ratio: 3 / 4;
 }
@@ -1733,14 +1736,70 @@ footer {
   #promocions { padding: 80px 20px 60px; }
 
   .promo-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, 200px);
     gap: 16px;
+  }
+
+  .promo-card {
+    width: 200px;
   }
 }
 
 @media (max-width: 480px) {
   .promo-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, 150px);
     gap: 12px;
   }
+
+  .promo-card {
+    width: 150px;
+  }
+}
+
+/* ── LIGHTBOX (ampliar foto al pulsarla) ── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 24px;
+}
+
+.lightbox.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border: 2px solid rgba(201, 168, 76, 0.5);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 2.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.lightbox-close:hover {
+  transform: scale(1.15);
 }

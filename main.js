@@ -500,6 +500,8 @@ function initPromoBoard(folder, gridId, emptyId) {
 
       card.appendChild(img);
       grid.appendChild(card);
+
+      card.addEventListener('click', () => openLightbox(src));
     });
   }
 
@@ -507,6 +509,37 @@ function initPromoBoard(folder, gridId, emptyId) {
 }
 
 initPromoBoard('promos', 'promo-grid', 'promo-empty');
+
+/* ── LIGHTBOX NOVETATS ── */
+const lightbox   = document.getElementById('promo-lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxClose = document.getElementById('lightbox-close');
+
+function openLightbox(src) {
+  if (!lightbox || !lightboxImg) return;
+  lightboxImg.src = src;
+  lightbox.classList.add('open');
+  lightbox.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  if (!lightbox) return;
+  lightbox.classList.remove('open');
+  lightbox.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  lightboxImg.src = '';
+}
+
+if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+if (lightbox) {
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeLightbox();
+});
 
 /* ── HAMBURGER MENU ── */
 const hamburger = document.querySelector('.hamburger');

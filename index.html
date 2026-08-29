@@ -21,7 +21,7 @@
 
   <ul class="nav-links">
     <li><a href="#horarios" data-i18n="nav_horarios">Horarios</a></li>
-    <li><a href="#promocions" data-i18n="nav_promocions">Promociones</a></li>
+    <li><a href="#promocions" data-i18n="nav_promocions">Novedades</a></li>
     <li><a href="#classes" data-i18n="nav_classes">Clases</a></li>
     <li><a href="#casals" data-i18n="nav_casals">Casals</a></li>
     <li><a href="#rental" data-i18n="nav_rental">Sala de Alquiler</a></li>
@@ -97,10 +97,10 @@
 ══════════════════════════════ -->
 <section id="promocions">
   <div class="section-intro reveal">
-    <p class="eyebrow" data-i18n="promocions_eyebrow">Ofertas especiales</p>
-    <h2 class="section-title" data-i18n="promocions_title">Promociones</h2>
+    <p class="eyebrow" data-i18n="promocions_eyebrow">Novedades</p>
+    <h2 class="section-title" data-i18n="promocions_title">Novedades</h2>
     <div class="gold-rule"></div>
-    <p class="section-desc" data-i18n="promocions_desc">¡Descubre nuestras ofertas y promociones especiales!</p>
+    <p class="section-desc" data-i18n="promocions_desc">¡Descubre las últimas novedades del Atelier!</p>
   </div>
 
   <div class="promo-board reveal" id="promo-board">
@@ -108,6 +108,12 @@
     <p class="flyers-empty" data-i18n="promocions_prox" id="promo-empty" style="display:none">Próximamente...</p>
   </div>
 </section>
+
+<!-- Lightbox para ver las fotos grandes al pulsarlas -->
+<div class="lightbox" id="promo-lightbox" aria-hidden="true">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Cerrar">&times;</button>
+  <img class="lightbox-img" id="lightbox-img" src="" alt="">
+</div>
 
 <!-- ══════════════════════════════
      CLASES
