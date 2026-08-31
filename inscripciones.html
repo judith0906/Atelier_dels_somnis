@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://www.google.com/recaptcha/api.js?render=explicit&onload=onRecaptchaLoad" async defer></script>
 <style>
   :root {
     --gold: #C9A84C; --gold-light: #E8C96A; --gold-pale: #F5E6B8;
@@ -71,6 +72,7 @@
   .check-line:hover { border-color: var(--gold); }
   .check-line input { width: 18px; height: 18px; accent-color: var(--gold); margin-top: 2px; flex: none; }
   .check-line span { font-size: .95rem; color: var(--white-dim); }
+  #robot-box { margin-bottom: 16px; }
 
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
   .field label { display: block; font-size: .65rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
@@ -212,7 +214,6 @@
       <div class="field"><label data-t="fechaNac">Fecha de nacimiento</label><input type="date" id="d-fechaNac"></div>
       <div class="field"><label data-t="cp">Código postal</label><input type="text" id="d-cp" data-tph="ph_cp" placeholder="43003"></div>
       <div class="field"><label data-t="ciudad">Ciudad</label><input type="text" id="d-ciudad" data-tph="ph_ciudad" placeholder="Reus"></div>
-      <div class="field"><label data-t="iban">Número de cuenta bancaria (IBAN)</label><input type="text" id="d-iban" data-tph="ph_iban" placeholder="ES00 0000 0000 0000 0000 0000"></div>
       <div class="field"><label data-t="dni">Documento de identidad (DNI/NIE)</label><input type="text" id="d-dni" data-tph="ph_dni" placeholder="12345678A"></div>
     </div>
     <p class="err" id="err-p2"></p>
@@ -262,10 +263,7 @@
     <div class="res"><div class="k" data-t="resumen_alumnos">Inscripciones</div><div id="res-alumnos"></div></div>
     <p class="aviso" data-t="resumen_acciones">Puedes volver con «Anterior» para corregir cualquier dato.</p>
 
-    <label class="check-line">
-      <input type="checkbox" id="robot">
-      <span data-t="robot">No soy un robot</span>
-    </label>
+    <div class="g-recaptcha" id="robot-box"></div>
     <p class="err" id="err-p4"></p>
 
     <div class="nav">
@@ -288,7 +286,6 @@
     <h3 data-t="modal_clases_title">Selecciona sus clases</h3>
     <div class="hint" data-t="modal_lista">Marca las clases para este alumno:</div>
     <div class="cats" id="m-cats"></div>
-    <div class="days" id="m-days"></div>
     <div class="list" id="m-list"></div>
     <p class="err" id="err-mclases" data-t="err_clases">Selecciona al menos una clase.</p>
     <div class="nav">
@@ -322,11 +319,11 @@ const T = {
     app_title:'Inscripciones', st1:'Términos', st2:'Datos personales', st3:'Detalles', st4:'Confirmación',
     p1_title:'Términos y condiciones', p1_intro:'Antes de inscribirte, revisa y acepta nuestros términos y condiciones.', p1_scroll:'Desplázate hasta el final del texto para poder marcar las casillas.',
     tos_leido:'He leído los términos y condiciones', tos_acuerdo:'Acepto los términos y condiciones', p1_needs:'Falta marcar las dos casillas para continuar.',
-    term_text:`<h4>1. Pago y cobro</h4><p>La inscripción da acceso a la actividad o actividades elegidas en este formulario. El importe mensual de cada actividad puede variar según la actividad contratada.</p><ul><li>La cuota mensual se cobra por domiciliación bancaria (SEPA) mediante el IBAN facilitado en el formulario, entre los días 1 y 5 de cada mes.</li><li>Al completar la inscripción autorizas a Atelier dels Somnis a domiciliar las cuotas mensuales en la cuenta indicada.</li><li>Si un cargo no puede cobrarse, se reintentará una vez. Si el segundo intento también falla, la plaza quedará suspendida hasta que se regularice el pago.</li><li>En caso de inscripción de menores, el padre, la madre o el tutor legal acepta estos términos en nombre del menor.</li></ul><h4>2. Bajas y cancelaciones</h4><ul><li>Para darse de baja hay que comunicarlo por escrito, a través del <a href="index.html#contact">formulario de contacto de la página web</a>, con un mínimo de 15 días de antelación al siguiente cobro.</li><li>Las cuotas ya cobradas no se devuelven, salvo que el error sea imputable a Atelier dels Somnis.</li><li>Si la baja se comunica a mitad de mes, la cuota de ese mes ya cargada no se devuelve.</li><li>Atelier dels Somnis podrá cancelar una actividad por causas justificadas (por ejemplo, número insuficiente de alumnos), avisando con antelación y devolviendo la parte de cuota no disfrutada.</li></ul><h4>3. Protección de datos (RGPD)</h4><p>Responsable del tratamiento: Atelier dels Somnis, Carrer dels Velers, 50, 43205 Reus (Tarragona).</p><ul><li>Finalidad: gestionar la inscripción, la facturación y la comunicación relacionada con la actividad contratada.</li><li>Base legal: la ejecución del contrato de inscripción.</li><li>Los datos no se ceden a terceros, salvo obligación legal o proveedores necesarios para la prestación del servicio (alojamiento web, pasarela de pago).</li><li>Conservación: mientras dure la relación contractual y, después, durante los plazos legales aplicables.</li><li>Derechos: puedes ejercer los derechos de acceso, rectificación, supresión, portabilidad y oposición, a través del <a href="index.html#contact">formulario de contacto de la página web</a>.</li><li>Reclamación: puedes dirigir cualquier reclamación ante la Agencia Española de Protección de Datos (www.aepd.es).</li></ul>`,
+    term_text:`<h4>1. Inscripción y pago</h4><p>La inscripción da acceso a la actividad o actividades elegidas en este formulario. No genera ningún cargo automático: una vez recibida, una persona de Atelier dels Somnis revisará tu solicitud y se pondrá en contacto contigo para concretar días, horarios y condiciones de la actividad.</p><ul><li>El importe de cada actividad, la forma de pago y su calendario se acordarán e informarán personalmente (por correo, por teléfono o en el centro) antes del inicio de la actividad.</li><li>La reserva de plaza queda condicionada a que confirmes y aceptes las condiciones comunicadas.</li><li>En caso de inscripción de menores, el padre, la madre o el tutor legal acepta estos términos en nombre del menor.</li></ul><h4>2. Bajas y cancelaciones</h4><ul><li>Para darse de baja hay que comunicarlo por escrito, a través del <a href="index.html#contact">formulario de contacto de la página web</a>.</li><li>Atelier dels Somnis podrá cancelar una actividad por causas justificadas (por ejemplo, número insuficiente de alumnos), avisando con antelación.</li><li>Los importes ya abonados y cualquier compromiso de permanencia se regirán por lo acordado en el momento de la contratación.</li></ul><h4>3. Protección de datos (RGPD)</h4><p>Responsable del tratamiento: Atelier dels Somnis, Carrer dels Velers, 50, 43205 Reus (Tarragona).</p><ul><li>Finalidad: gestionar la inscripción, la facturación y la comunicación relacionada con la actividad contratada.</li><li>Base legal: la ejecución del contrato de inscripción.</li><li>Los datos no se ceden a terceros, salvo obligación legal o proveedores necesarios para la prestación del servicio (por ejemplo, alojamiento web).</li><li>Conservación: mientras dure la relación contractual y, después, durante los plazos legales aplicables.</li><li>Derechos: puedes ejercer los derechos de acceso, rectificación, supresión, portabilidad y oposición, a través del <a href="index.html#contact">formulario de contacto de la página web</a>.</li><li>Reclamación: puedes dirigir cualquier reclamación ante la Agencia Española de Protección de Datos (www.aepd.es).</li></ul>`,
     continuar:'Continuar →', siguiente:'Siguiente →', anterior:'← Anterior',
     p2_title:'Datos personales', p2_aviso:'Importante: introduce TUS datos personales. Si vas a inscribir a otra persona, los datos de esa persona se piden en el siguiente paso.',
-    nombre:'Nombre', apellidos:'Apellidos', email:'Correo electrónico', telefono:'Teléfono', fechaNac:'Fecha de nacimiento', cp:'Código postal', ciudad:'Ciudad', iban:'Número de cuenta bancaria (IBAN)', dni:'Documento de identidad (DNI/NIE)',
-    ph_nombre:'Tu nombre', ph_apellidos:'Tus apellidos', ph_email:'tu@correo.com', ph_telefono:'600 000 000', ph_cp:'43003', ph_ciudad:'Reus', ph_iban:'ES00 0000 0000 0000 0000 0000', ph_dni:'12345678A',
+    nombre:'Nombre', apellidos:'Apellidos', email:'Correo electrónico', telefono:'Teléfono', fechaNac:'Fecha de nacimiento', cp:'Código postal', ciudad:'Ciudad', dni:'Documento de identidad (DNI/NIE)',
+    ph_nombre:'Tu nombre', ph_apellidos:'Tus apellidos', ph_email:'tu@correo.com', ph_telefono:'600 000 000', ph_cp:'43003', ph_ciudad:'Reus', ph_dni:'12345678A',
     err_required:'Completa todos los campos.', err_email:'Introduce un correo electrónico válido.',
     p3_title:'Detalles de la inscripción', p3_desc:'Elige qué alumno se inscribe y selecciona sus clases. Puedes inscribir hasta 5 personas.',
     opt_a:'Inscribirme a mí mismo', opt_a_desc:'Te selecciono como alumno con tus datos personales y eliges tus clases.',
@@ -341,7 +338,7 @@ const T = {
     modal_alumno_title:'Datos del familiar', btn_inscribir_alumno:'Inscribir alumno', btn_guardar:'Guardar',
     p4_title:'Confirmación', p4_desc:'Revisa todos los datos antes de finalizar la inscripción.',
     resumen_persona:'Tus datos', resumen_alumnos:'Inscripciones', resumen_acciones:'Puedes volver con «Anterior» para corregir cualquier dato.',
-    robot:'No soy un robot', btn_inscribir:'Finalizar inscripción', err_robot:'Marca la casilla «No soy un robot» para continuar.',
+    robot:'No soy un robot', btn_inscribir:'Finalizar inscripción', err_robot:'Marca la casilla de verificación «No soy un robot» para continuar.',
     done_title:'¡Inscripción enviada!', done_ok:'Recibiremos tu solicitud y te confirmaremos por correo.',
     reopen_form:'Continuar con mi inscripción',
     submit_fail:'No se ha podido enviar la inscripción. Inténtalo de nuevo.'
@@ -350,11 +347,11 @@ const T = {
     app_title:'Inscripcions', st1:'Termes', st2:'Dades personals', st3:'Detalls', st4:'Confirmació',
     p1_title:'Termes i condicions', p1_intro:'Abans d\'inscriure\'t, revisa i accepta els nostres termes i condicions.', p1_scroll:'Desplaça\'t fins al final del text per poder marcar les caselles.',
     tos_leido:'He llegit els termes i condicions', tos_acuerdo:'Accepto els termes i condicions', p1_needs:'Falten marcar les dues caselles per continuar.',
-    term_text:`<h4>1. Pagament i cobrament</h4><p>La inscripció dóna accés a l'activitat o activitats triades en aquest formulari. L'import mensual de cada activitat pot variar segons l'activitat contractada.</p><ul><li>La quota mensual es cobra per domiciliació bancària (SEPA) mitjançant l'IBAN facilitat al formulari, entre els dies 1 i 5 de cada mes.</li><li>En completar la inscripció autoritzes Atelier dels Somnis a domiciliar les quotes mensuals al compte indicat.</li><li>Si un càrrec no es pot cobrar, es tornarà a intentar una vegada. Si el segon intent també falla, la plaça quedarà suspesa fins que es regularitzi el pagament.</li><li>En cas d'inscripció de menors, el pare, la mare o el tutor legal accepta aquests termes en nom del menor.</li></ul><h4>2. Baixes i cancel·lacions</h4><ul><li>Per donar-se de baixa cal comunicar-ho per escrit, mitjançant el <a href="index.html#contact">formulari de contacte de la pàgina web</a>, amb un mínim de 15 dies d'antelació al següent cobrament.</li><li>Les quotes ja cobrades no es retornen, llevat que l'error sigui imputable a Atelier dels Somnis.</li><li>Si la baixa es comunica a mitjan mes, la quota d'aquell mes ja carregada no es retorna.</li><li>Atelier dels Somnis podrà cancel·lar una activitat per causes justificades (per exemple, nombre insuficient d'alumnes), avisant amb antelació i retornant la part de quota no gaudida.</li></ul><h4>3. Protecció de dades (RGPD)</h4><p>Responsable del tractament: Atelier dels Somnis, Carrer dels Velers, 50, 43205 Reus (Tarragona).</p><ul><li>Finalitat: gestionar la inscripció, la facturació i la comunicació relacionada amb l'activitat contractada.</li><li>Base legal: l'execució del contracte d'inscripció.</li><li>Les dades no es cedeixen a tercers, llevat d'obligació legal o proveïdors necessaris per a la prestació del servei (allotjament web, passarel·la de pagament).</li><li>Conservació: mentre duri la relació contractual i, després, durant els terminis legals aplicables.</li><li>Drets: pots exercir els drets d'accés, rectificació, supressió, portabilitat i oposició, mitjançant el <a href="index.html#contact">formulari de contacte de la pàgina web</a>.</li><li>Reclamació: pots adreçar qualsevol reclamació davant l'Agència Espanyola de Protecció de Dades (www.aepd.es).</li></ul>`,
+    term_text:`<h4>1. Inscripció i pagament</h4><p>La inscripció dóna accés a l'activitat o activitats triades en aquest formulari. No genera cap càrrec automàtic: un cop rebuda, una persona d'Atelier dels Somnis revisarà la teva sol·licitud i es posarà en contacte amb tu per concretar dies, horaris i condicions de l'activitat.</p><ul><li>L'import de cada activitat, la forma de pagament i el seu calendari s'acordaran i s'informaran personalment (per correu, per telèfon o al centre) abans de l'inici de l'activitat.</li><li>La reserva de plaça queda condicionada que confirminis i acceptis les condicions comunicades.</li><li>En cas d'inscripció de menors, el pare, la mare o el tutor legal accepta aquests termes en nom del menor.</li></ul><h4>2. Baixes i cancel·lacions</h4><ul><li>Per donar-se de baixa cal comunicar-ho per escrit, mitjançant el <a href="index.html#contact">formulari de contacte de la pàgina web</a>.</li><li>Atelier dels Somnis podrà cancel·lar una activitat per causes justificades (per exemple, nombre insuficient d'alumnes), avisant amb antelació.</li><li>Els imports ja abonats i qualsevol compromís de permanència es regiran pel que s'acordi en el moment de la contractació.</li></ul><h4>3. Protecció de dades (RGPD)</h4><p>Responsable del tractament: Atelier dels Somnis, Carrer dels Velers, 50, 43205 Reus (Tarragona).</p><ul><li>Finalitat: gestionar la inscripció, la facturació i la comunicació relacionada amb l'activitat contractada.</li><li>Base legal: l'execució del contracte d'inscripció.</li><li>Les dades no es cedeixen a tercers, llevat d'obligació legal o proveïdors necessaris per a la prestació del servei (per exemple, allotjament web).</li><li>Conservació: mentre duri la relació contractual i, després, durant els terminis legals aplicables.</li><li>Drets: pots exercir els drets d'accés, rectificació, supressió, portabilitat i oposició, mitjançant el <a href="index.html#contact">formulari de contacte de la pàgina web</a>.</li><li>Reclamació: pots adreçar qualsevol reclamació davant l'Agència Espanyola de Protecció de Dades (www.aepd.es).</li></ul>`,
     continuar:'Continua →', siguiente:'Següent →', anterior:'← Enrere',
     p2_title:'Dades personals', p2_aviso:'Important: introdueix LES TEVES dades personals. Si inscrius una altra persona, les dades d\'aquesta persona es demanen al pas següent.',
-    nombre:'Nom', apellidos:'Cognoms', email:'Correu electrònic', telefono:'Telèfon', fechaNac:'Data de naixement', cp:'Codi postal', ciudad:'Ciutat', iban:'Número de compte bancari (IBAN)', dni:'Document d\'identitat (DNI/NIE)',
-    ph_nombre:'El teu nom', ph_apellidos:'Els teus cognoms', ph_email:'tu@correu.com', ph_telefono:'600 000 000', ph_cp:'43003', ph_ciudad:'Reus', ph_iban:'ES00 0000 0000 0000 0000 0000', ph_dni:'12345678A',
+    nombre:'Nom', apellidos:'Cognoms', email:'Correu electrònic', telefono:'Telèfon', fechaNac:'Data de naixement', cp:'Codi postal', ciudad:'Ciutat', dni:'Document d\'identitat (DNI/NIE)',
+    ph_nombre:'El teu nom', ph_apellidos:'Els teus cognoms', ph_email:'tu@correu.com', ph_telefono:'600 000 000', ph_cp:'43003', ph_ciudad:'Reus', ph_dni:'12345678A',
     err_required:'Completa tots els camps.', err_email:'Introdueix un correu electrònic vàlid.',
     p3_title:'Detalls de la inscripció', p3_desc:'Tria quin alumne s\'inscriu i selecciona les seves classes. Pots inscriure fins a 5 persones.',
     opt_a:'Inscriure\'m a mi mateix', opt_a_desc:'Et selecciono com a alumne amb les teves dades personals i tries les teves classes.',
@@ -369,7 +366,7 @@ const T = {
     modal_alumno_title:'Dades del familiar', btn_inscribir_alumno:'Inscriure alumne', btn_guardar:'Desar',
     p4_title:'Confirmació', p4_desc:'Revisa totes les dades abans de finalitzar la inscripció.',
     resumen_persona:'Les teves dades', resumen_alumnos:'Inscripcions', resumen_acciones:'Pots tornar amb «Enrere» per corregir qualsevol dada.',
-    robot:'No sóc un robot', btn_inscribir:'Finalitzar inscripció', err_robot:'Marca la casella «No sóc un robot» per continuar.',
+    robot:'No sóc un robot', btn_inscribir:'Finalitzar inscripció', err_robot:'Marca la casella de verificació «No sóc un robot» per continuar.',
     done_title:'Inscripció enviada!', done_ok:'Rebrem la teva sol·licitud i et confirmarem per correu.',
     reopen_form:'Continuar amb la meva inscripció',
     submit_fail:'No s\'ha pogut enviar la inscripció. Torna-ho a intentar.'
@@ -396,34 +393,55 @@ function tt(k){ return T[lng][k] || k; }
 /* ── HORARIO (catálogo de clases) ── */
 const HORARIO_ES = [{"day":"Lunes","classes":[{"time":"09:30 – 10:30","activity":"Yoga","teacher":"Elisabet"},{"time":"10:30 – 11:30","activity":"Toning + Gap","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Pilates","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danza 5-7"},{"time":"17:30 – 18:30","activity":"Danza 3-5"},{"time":"18:30 – 19:30","activity":"Danza 8-11"},{"time":"18:30 – 19:30","activity":"Bachata inicio","teacher":"Sara","pending":true},{"time":"19:30 – 20:30","activity":"Bachata inicio","teacher":"Sara","pending":true},{"time":"20:00 – 22:00","activity":"Salsa y bachata","teacher":"Por confirmar","pending":true},{"time":"20:30 – 21:30","activity":"Bachata básico","teacher":"Sara"},{"time":"21:30 – 22:30","activity":"Salsa","teacher":"Sara"}]},{"day":"Martes","classes":[{"time":"09:30 – 10:30","activity":"Pilates","teacher":"Gaby"},{"time":"10:30 – 11:30","activity":"Zumba","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Zumba","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danzas urbanas +11","teacher":"Marina"},{"time":"18:00 – 19:00","activity":"Yogalates","teacher":"Elisabet"},{"time":"18:00 – 19:00","activity":"Flamenco peques","teacher":"Mónica"},{"time":"19:00 – 20:00","activity":"Flamenco nivel medio","teacher":"Mónica"},{"time":"20:00 – 21:00","activity":"Sevillanas perfeccionamiento","teacher":"Mónica"},{"time":"21:00 – 22:00","activity":"Sevillanas iniciación","teacher":"Mónica"}]},{"day":"Miércoles","classes":[{"time":"09:30 – 10:30","activity":"Yoga","teacher":"Elisabet"},{"time":"10:30 – 11:30","activity":"Toning + Gap","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Pilates","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danza 5-7"},{"time":"17:30 – 18:30","activity":"Danza 3-5"},{"time":"18:30 – 19:30","activity":"Danza 8-11"},{"time":"18:30 – 19:30","activity":"Bachata parejas","teacher":"Sara Luna"},{"time":"19:30 – 20:30","activity":"Estilo chica (bachata/salsa alternando)","teacher":"Sara Luna"},{"time":"19:30 – 20:30","activity":"Estilo chico bachata","teacher":"Sara Luna"},{"time":"20:30 – 21:30","activity":"Estilo chica","teacher":"Sara"},{"time":"21:30 – 22:30","activity":"Bachata pre-avanzado","teacher":"Sara","pending":true}]},{"day":"Jueves","classes":[{"time":"09:30 – 10:30","activity":"Pilates","teacher":"Gaby"},{"time":"10:30 – 11:30","activity":"Zumba","teacher":"Gaby"},{"time":"15:30 – 16:30","activity":"Zumba","teacher":"Gaby"},{"time":"17:30 – 18:30","activity":"Danzas urbanas +11","teacher":"Marina"},{"time":"18:00 – 19:00","activity":"Yogalates","teacher":"Elisabet"},{"time":"18:00 – 19:00","activity":"Flamenco peques","teacher":"Mónica"},{"time":"19:00 – 20:00","activity":"Flamenco nivel medio","teacher":"Mónica"},{"time":"20:00 – 21:00","activity":"Flamenco iniciación","teacher":"Mónica"},{"time":"21:30 – 22:30","activity":"Bachata inicio","teacher":"Sara"}]},{"day":"Viernes","classes":[{"time":"09:30 – 10:30","activity":"Yoga","teacher":"Elisabet"},{"time":"19:30 – 21:00","activity":"Flamenco profesional","teacher":"Mónica"},{"time":"19:30 – 20:30","activity":"Bachata inicio","teacher":"Sara","pending":true}]}];
 
-const CAT = n => n;
+/* Categorías: títulos de los apartados de la web (Clases & Talleres) */
+const CATS_ORDEN = ['Artes Plásticas', 'Música', 'Danza', 'Yoga · Pilates · Entrenamiento'];
 const CATALOGO = [];
+const CLAVE = {};
+/* Clases del horario, cada una solo una vez (sin días ni horas) */
 HORARIO_ES.forEach(d => d.classes.forEach(c => {
+  if (CLAVE[c.activity]) return;
   const a = c.activity.toLowerCase();
   let cat = 'Otras';
-  if (/(danza|bachata|salsa|sevillanas|flamenco|zumba|broadway|urban|puntas)/.test(a)) cat = CAT('Danza');
-  else if (/(yoga|pilates|yogalates|toning|gap|entrenamiento)/.test(a)) cat = 'Yoga & Bienestar';
-  else if (/(canto|guitarra|percusi|bater|teclado|ukelele|bajo|coro)/.test(a)) cat = CAT('Música');
-  else if (/(dibujo|pintura|acuarela|manualidades|manga|resina|collage)/.test(a)) cat = CAT('Artes Plásticas');
-  CATALOGO.push({ clase: c.activity, dia: d.day, hora: c.time, cat: cat });
+  if (/(yoga|pilates|yogalates|toning|gap|entrenamiento)/.test(a)) cat = 'Yoga · Pilates · Entrenamiento';
+  else if (/(danza|bachata|salsa|sevillanas|flamenco|zumba|broadway|urban|puntas|estilo)/.test(a)) cat = 'Danza';
+  else if (/(canto|guitarra|percusi|bater|teclado|ukelele|bajo|coro)/.test(a)) cat = 'Música';
+  else if (/(dibujo|pintura|acuarela|manualidades|manga|resina|collage)/.test(a)) cat = 'Artes Plásticas';
+  CLAVE[c.activity] = 1;
+  CATALOGO.push({ clase: c.activity, cat: cat });
 }));
-const DIAS = [];
-HORARIO_ES.forEach(d => { if (DIAS.indexOf(d.day) < 0) DIAS.push(d.day); });
+/* Clases de la web no presentes en el horario (dança: los puntos del apartado) */
+[
+  ['Dibujo a Lápiz','Artes Plásticas'],
+  ['Pintura Acrílica y Acuarela','Artes Plásticas'],
+  ['Manualidades Creativas','Artes Plásticas'],
+  ['Manga & Ilustración','Artes Plásticas'],
+  ['Canto','Música'],
+  ['Cante Flamenco','Música'],
+  ['Percusión & Batería','Música'],
+  ['Guitarra & Más','Música'],
+  ['Broadway','Danza'],
+  ['Danza del Vientre','Danza'],
+  ['Danzas Polinesias','Danza'],
+  ['Bollywood','Danza'],
+  ['Bailes Individuales','Danza'],
+  ['Entrenamiento','Yoga · Pilates · Entrenamiento']
+].forEach(x => {
+  if (CLAVE[x[0]]) return;
+  CLAVE[x[0]] = 1;
+  CATALOGO.push({ clase: x[0], cat: x[1] });
+});
 const CATS = [];
-CATALOGO.forEach(c => { if (CATS.indexOf(c.cat) < 0) CATS.push(c.cat); });
-const DIAS_N = { 'Lunes':1,'Martes':2,'Miércoles':3,'Jueves':4,'Viernes':5,'Sábado':6,'Domingo':7 };
+CATS_ORDEN.forEach(cat => { if (CATALOGO.some(x => x.cat === cat)) CATS.push(cat); });
 
 /* ── ESTADO ── */
 const $ = id => document.getElementById(id);
 let paso = 1;
 let datos = {};
 let tos = { leido: false, acuerdo: false };
-let alumnos = [];   // { tipo:'yo'|'familiar', nombre, apellidos, fechaNac, clases:[{clase,dia,hora}] }
-let noRobot = false;
-let editandoIdx = -1;
+let alumnos = [];   // { tipo:'yo'|'familiar', nombre, apellidos, fechaNac, clases:[{clase}] }
 let selKeys = new Set();
+let editandoIdx = -1;
 let modalCat = null;
-let modalDias = new Set();
 let alumnoModal = { nombre:'', apellidos:'', fechaNac:'' };
 let editDatosIdx = -1;
 
@@ -432,7 +450,7 @@ function go(n) {
   paso = n;
   document.querySelectorAll('.step').forEach((s,i) => s.id === ('paso'+n) ? s.classList.add('active') : s.classList.remove('active'));
   for (let i=1;i<=4;i++) $('chip'+i).classList.toggle('active', i===n);
-  if (n === 4) renderResumen();
+  if (n === 4) { renderRecaptcha(); renderResumen(); }
   $('paso'+n).scrollIntoView({ block:'start', behavior:'smooth' });
 }
 
@@ -441,7 +459,7 @@ function leerDatos() {
     nombre: $('d-nombre').value.trim(), apellidos: $('d-apellidos').value.trim(),
     email: $('d-email').value.trim(), telefono: $('d-telefono').value.trim(),
     fechaNac: $('d-fechaNac').value, cp: $('d-cp').value.trim(),
-    ciudad: $('d-ciudad').value.trim(), iban: $('d-iban').value.trim(), dni: $('d-dni').value.trim()
+    ciudad: $('d-ciudad').value.trim(), dni: $('d-dni').value.trim()
   };
 }
 function validarDatos() {
@@ -495,7 +513,7 @@ function renderAlumnos() {
     alumnos.forEach((a, i) => {
       const card = document.createElement('div');
       card.className = 'alumno-card';
-      const chips = a.clases.length ? a.clases.map(c => '<span class="chip">'+c.clase+' · '+c.dia+' '+c.hora+'</span>').join('') : '<span class="chip none">'+tt('sin_clases')+'</span>';
+      const chips = a.clases.length ? a.clases.map(c => '<span class="chip">'+c.clase+'</span>').join('') : '<span class="chip none">'+tt('sin_clases')+'</span>';
       card.innerHTML =
         '<div class="alumno-head"><span class="alumno-name">'+a.nombre+' '+a.apellidos+'</span><span class="alumno-type">'+(a.tipo==='yo'?tt('tipo_yo'):tt('tipo_fam'))+'</span></div>'+
         '<div class="alumno-fn">'+tt('nac')+' '+a.fechaNac+'</div>'+
@@ -578,11 +596,10 @@ function abrirModalClases(idx) {
   editandoIdx = idx;
   selKeys = new Set();
   (alumnos[idx].clases||[]).forEach(c => {
-    const i = CATALOGO.findIndex(x => x.clase===c.clase && x.dia===c.dia && x.hora===c.hora);
+    const i = CATALOGO.findIndex(x => x.clase===c.clase);
     if (i>=0) selKeys.add(i);
   });
   modalCat = CATS[0];
-  modalDias = new Set();
   $('m-cats').innerHTML = '';
   CATS.forEach(c => {
     const b = document.createElement('button');
@@ -590,18 +607,6 @@ function abrirModalClases(idx) {
     b.textContent = c;
     b.addEventListener('click', () => { modalCat = c; $('m-cats').querySelectorAll('.pill').forEach(x => x.classList.remove('on')); b.classList.add('on'); renderLista(); });
     $('m-cats').appendChild(b);
-  });
-  $('m-days').innerHTML = '';
-  DIAS.forEach(d => {
-    const b = document.createElement('button');
-    b.className = 'pill';
-    b.textContent = d;
-    b.addEventListener('click', () => {
-      if (modalDias.has(d)) modalDias.delete(d); else modalDias.add(d);
-      b.classList.toggle('on');
-      renderLista();
-    });
-    $('m-days').appendChild(b);
   });
   $('err-mclases').style.display='none';
   $('mclases').classList.add('open');
@@ -613,10 +618,9 @@ function renderLista() {
   const items = [];
   CATALOGO.forEach((c, i) => {
     if (c.cat !== modalCat) return;
-    if (modalDias.size > 0 && !modalDias.has(c.dia)) return;
     items.push({ i, c });
   });
-  items.sort((a,b) => (DIAS_N[a.c.dia]||9) - (DIAS_N[b.c.dia]||9) || a.c.hora.localeCompare(b.c.hora));
+  items.sort((a,b) => a.c.clase.localeCompare(b.c.clase));
   if (items.length === 0) { list.innerHTML = '<p class="empty">—</p>'; return; }
   items.forEach(({ i, c }) => {
     const row = document.createElement('label');
@@ -626,7 +630,7 @@ function renderLista() {
     box.checked = selKeys.has(i);
     box.addEventListener('change', () => { if (box.checked) selKeys.add(i); else selKeys.delete(i); });
     const info = document.createElement('div');
-    info.innerHTML = '<div class="tt">'+c.clase+'</div><div class="dd">'+c.dia+' · '+c.hora+'</div>';
+    info.innerHTML = '<div class="tt">'+c.clase+'</div>';
     row.appendChild(box); row.appendChild(info);
     list.appendChild(row);
   });
@@ -635,7 +639,7 @@ $('m-cancelar').addEventListener('click', () => { if (alumnos[editandoIdx] && al
 $('m-aceptar').addEventListener('click', () => {
   if (selKeys.size === 0) { $('err-mclases').style.display='block'; return; }
   const a = alumnos[editandoIdx];
-  a.clases = [...selKeys].map(i => ({ clase: CATALOGO[i].clase, dia: CATALOGO[i].dia, hora: CATALOGO[i].hora }));
+  a.clases = [...selKeys].map(i => ({ clase: CATALOGO[i].clase }));
   $('mclases').classList.remove('open');
   renderAlumnos();
 });
@@ -650,37 +654,47 @@ function renderResumen() {
   hp += kv(tt('fechaNac'), datos.fechaNac);
   hp += kv(tt('cp')+' / '+tt('ciudad'), datos.cp + ' · ' + datos.ciudad);
   hp += kv(tt('dni'), datos.dni);
-  hp += kv(tt('iban'), datos.iban);
   $('res-persona').innerHTML = hp;
 
   let ha = '';
   if (alumnos.length === 0) ha = '<p class="empty">'+tt('alumnos_vacio')+'</p>';
   alumnos.forEach((a, i) => {
     ha += '<div class="kv"><span>'+(a.tipo==='yo'?tt('tipo_yo'):tt('tipo_fam'))+' · '+(i+1)+'</span><b>'+a.nombre+' '+a.apellidos+' ('+a.fechaNac+')</b></div>';
-    a.clases.forEach(c => { ha += '<div class="kv"><span>'+tt('label_clases')+'</span><b>'+c.clase+' · '+c.dia+' '+c.hora+'</b></div>'; });
+    a.clases.forEach(c => { ha += '<div class="kv"><span>'+tt('label_clases')+'</span><b>'+c.clase+'</b></div>'; });
   });
   $('res-alumnos').innerHTML = ha;
 }
 function kv(k, v) { return '<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>'; }
 
 $('p4-prev').addEventListener('click', () => { $('err-p4').style.display='none'; go(3); });
-$('robot').addEventListener('change', () => { noRobot = $('robot').checked; $('err-p4').style.display='none'; });
 
 $('p4-next').addEventListener('click', () => {
-  if (!noRobot) { $('err-p4').textContent = tt('err_robot'); $('err-p4').style.display='block'; return; }
+  const token = (window.grecaptcha && grecaptcha.getResponse()) || '';
+  if (!token) { $('err-p4').textContent = tt('err_robot'); $('err-p4').style.display='block'; return; }
   $('err-p4').style.display='none';
   enviar();
 });
 
 /* ── ENVÍO (Make webhook) ── */
 const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/nqecqc7a8tvwa1gmr5e3vcfqrhsfcks9';
+const RECAPTCHA_SITE_KEY = '6LcjXqEtAAAAAI1lk_D5zQJAvIZhXvaan0wnf5nl';
+
+let recaptchaRendered = false;
+function renderRecaptcha() {
+  if (recaptchaRendered || !window.grecaptcha || !$('robot-box')) return;
+  try {
+    grecaptcha.render('robot-box', { sitekey: RECAPTCHA_SITE_KEY, theme: 'dark' });
+    recaptchaRendered = true;
+  } catch (e) { /* ya renderizado */ }
+}
+window.onRecaptchaLoad = function () { renderRecaptcha(); };
 
 const GFORM = {
   base: 'https://docs.google.com/forms/d/e/1FAIpQLSfRRkrLXf1F7xE4avY4n5dUcsifQot8xVdAAkReC8jg1lP7fw/viewform?usp=pp_url',
   entries: {
     nombre: 'entry.240952209', apellidos: 'entry.1212354002', email: 'entry.1216231430',
     telefono: 'entry.1480325778', fechaNac: 'entry.1804051934', cp: 'entry.107514898',
-    ciudad: 'entry.1979438284', dni: 'entry.1134366163', iban: 'entry.1589440649',
+    ciudad: 'entry.1979438284', dni: 'entry.1134366163',
     aceptaTos: 'entry.287404523', alumnos: 'entry.2097961158'
   }
 };
@@ -692,7 +706,7 @@ function buildFormUrl() {
   const lista = alumnos.map(x => {
     let s = '• ' + x.nombre + ' ' + x.apellidos + ' (Nac.: ' + x.fechaNac + ')';
     if (!x.clases.length) s += ' — ' + tt('sin_clases');
-    x.clases.forEach(c => { s += '\n   · ' + c.clase + ' · ' + c.dia + ' ' + c.hora; });
+    x.clases.forEach(c => { s += '\n   · ' + c.clase; });
     return s;
   }).join('\n');
   const q = new URLSearchParams();
@@ -704,7 +718,6 @@ function buildFormUrl() {
   q.set(a.cp, datos.cp);
   q.set(a.ciudad, datos.ciudad);
   q.set(a.dni, datos.dni);
-  q.set(a.iban, datos.iban);
   q.set(a.aceptaTos, tos.acuerdo ? 'Sí' : 'No');
   q.set(a.alumnos, lista);
   return GFORM.base + '&' + q.toString();
@@ -717,12 +730,13 @@ function enviar() {
     lang: lng,
     nombre: datos.nombre, apellidos: datos.apellidos, email: datos.email,
     telefono: datos.telefono, fechaNac: datos.fechaNac, codigoPostal: datos.cp,
-    ciudad: datos.ciudad, iban: datos.iban, dni: datos.dni,
+    ciudad: datos.ciudad, dni: datos.dni,
     aceptaTos: !!tos.acuerdo,
+    captchaToken: (window.grecaptcha && grecaptcha.getResponse()) || '',
     alumnos: alumnos.map(x => {
       let s = '• ' + x.nombre + ' ' + x.apellidos + ' (Nac.: ' + x.fechaNac + ')';
       if (!x.clases.length) s += ' — ' + tt('sin_clases');
-      x.clases.forEach(c => { s += '\n   · ' + c.clase + ' · ' + c.dia + ' ' + c.hora; });
+      x.clases.forEach(c => { s += '\n   · ' + c.clase; });
       return s;
     }).join('\n')
   };
