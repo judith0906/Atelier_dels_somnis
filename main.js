@@ -541,6 +541,111 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeLightbox();
 });
 
+/* ── GALERÍA COLLAGE INSTALACIONES ── */
+const COLLAGE_EXTENSIONS = ['jpeg', 'jpg', 'png', 'webp'];
+
+function initCollageGallery(path, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const images = [];
+
+  function loadChain(i, extIdx) {
+    if (extIdx >= COLLAGE_EXTENSIONS.length) {
+      if (images.length > 0) buildCollage();
+      return;
+    }
+    const probe = new Image();
+    probe.onload = () => {
+      images.push(`${path}f${i}.${COLLAGE_EXTENSIONS[extIdx]}`);
+      loadChain(i + 1, 0);
+    };
+    probe.onerror = () => loadChain(i, extIdx + 1);
+    probe.src = `${path}f${i}.${COLLAGE_EXTENSIONS[extIdx]}`;
+  }
+
+  function buildCollage() {
+    container.classList.add('collage');
+
+    images.forEach((src, idx) => {
+      const figure = document.createElement('div');
+      figure.className = 'collage-item';
+
+      const el = document.createElement('img');
+      el.src = src;
+      el.alt = 'Instalaciones de la sala';
+      el.loading = 'lazy';
+
+      const zoom = document.createElement('div');
+      zoom.className = 'collage-zoom';
+
+      figure.appendChild(el);
+      figure.appendChild(zoom);
+      figure.addEventListener('click', () => openCollageLightbox(idx));
+      container.appendChild(figure);
+    });
+  }
+
+  loadChain(1, 0);
+}
+
+function initCollageLightbox() {
+  const lb       = document.getElementById('collage-lightbox');
+  const imgEl    = document.getElementById('collage-lb-img');
+  const closeBtn = document.getElementById('collage-lb-close');
+  const prevBtn  = document.getElementById('collage-lb-prev');
+  const nextBtn  = document.getElementById('collage-lb-next');
+  const counter  = document.getElementById('collage-lb-counter');
+  if (!lb || !imgEl) return;
+
+  const srcs = () => Array.from(document.querySelectorAll('.collage-item img')).map(i => i.src);
+  let which = -1;
+
+  function show(dir) {
+    const list = srcs();
+    if (list.length === 0) return;
+    which = (which + dir + list.length) % list.length;
+    imgEl.src = list[which];
+    if (counter) counter.textContent = `${which + 1} / ${list.length}`;
+  }
+
+  window.openCollageLightbox = (idx) => {
+    const list = srcs();
+    if (list.length === 0) return;
+    which = idx;
+    imgEl.src = list[which];
+    if (counter) counter.textContent = `${which + 1} / ${list.length}`;
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function close() {
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    imgEl.src = '';
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  if (prevBtn) prevBtn.addEventListener('click', () => show(-1));
+  if (nextBtn) nextBtn.addEventListener('click', () => show(1));
+  if (lb) {
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb) close();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') show(-1);
+    if (e.key === 'ArrowRight') show(1);
+  });
+}
+
+initCollageGallery('assets/images/alquiler/instalaciones/', 'collage-alquiler');
+initCollageLightbox();
+
 /* ── HAMBURGER MENU ── */
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');

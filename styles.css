@@ -1803,3 +1803,184 @@ footer {
 .lightbox-close:hover {
   transform: scale(1.15);
 }
+
+/* ══════════════════════════════
+   GALERÍA COLLAGE — SALA DE ALQUILER
+══════════════════════════════ */
+
+.collage-gallery {
+  max-width: 1100px;
+  margin: 0 auto 60px;
+  padding: 0 20px;
+}
+
+.collage {
+  columns: 5 200px;
+  column-gap: 14px;
+}
+
+.collage-item {
+  position: relative;
+  break-inside: avoid;
+  margin-bottom: 14px;
+  overflow: hidden;
+  cursor: zoom-in;
+  border-radius: 4px;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: var(--black-card);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.collage-item:hover {
+  transform: scale(1.02);
+  border-color: var(--gold);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.55),
+    0 0 18px rgba(201, 168, 76, 0.15);
+}
+
+.collage-item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.collage-zoom {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.38);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.collage-zoom::after {
+  content: '\1F50D';
+  font-size: 1.8rem;
+  color: var(--gold);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.collage-item:hover .collage-zoom {
+  opacity: 1;
+}
+
+/* ── LIGHTBOX COLLAGE ── */
+.collage-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.94);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 24px;
+}
+
+.collage-lightbox.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.collage-lb-img {
+  max-width: 88vw;
+  max-height: 82vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border: 2px solid rgba(201, 168, 76, 0.5);
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.85);
+  border-radius: 4px;
+}
+
+.collage-lb-close {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 2.8rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s ease;
+}
+
+.collage-lb-close:hover {
+  transform: scale(1.15) rotate(90deg);
+}
+
+.collage-lb-prev,
+.collage-lb-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  color: var(--gold);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+  z-index: 10;
+}
+
+.collage-lb-prev { left: 22px; transform: translateY(-50%); }
+.collage-lb-next { right: 22px; transform: translateY(-50%); }
+
+.collage-lb-prev:hover,
+.collage-lb-next:hover {
+  background: var(--gold);
+  color: #1A1202;
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.45);
+}
+
+.collage-lb-prev:hover { transform: translateY(-50%) translateX(-3px); }
+.collage-lb-next:hover { transform: translateY(-50%) translateX(3px); }
+
+.collage-lb-counter {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold-pale);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .collage {
+    columns: 2 160px;
+    column-gap: 10px;
+  }
+
+  .collage-item { margin-bottom: 10px; }
+
+  .collage-lb-prev,
+  .collage-lb-next {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+
+  .collage-lb-prev { left: 10px; }
+  .collage-lb-next { right: 10px; }
+
+  .collage-lb-close { right: 14px; }
+}
