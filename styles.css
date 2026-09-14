@@ -1620,6 +1620,83 @@ footer {
   .horarios-filter { padding: 0; }
 }
 
+/* ── GRUPO DE CLASES A LA MISMA HORA ── */
+.horario-time-group {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(201,168,76,0.08);
+}
+
+.horario-time-group:last-child { border-bottom: none; }
+
+.horario-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--accent, var(--gold)) 62%, white);
+  padding-top: 2px;
+}
+
+.horario-group-classes {
+  display: flex;
+  flex-direction: column;
+}
+
+.horario-group-classes .horario-class {
+  padding: 0 0 10px;
+  border-bottom: 1px dashed rgba(201,168,76,0.1);
+}
+
+.horario-group-classes .horario-class:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+@media (max-width: 600px) {
+  .horario-time-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .horario-time {
+    font-family: 'Lato', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--accent, var(--gold)) 85%, white);
+  }
+}
+
+/* ── ESTADO DEL HORARIO (error / caché) ── */
+.horarios-status {
+  max-width: 720px;
+  margin: 18px auto 0;
+  padding: 14px 20px;
+  border: 1px solid rgba(201,168,76,0.4);
+  background: rgba(201,168,76,0.08);
+  color: var(--gold-pale);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.horarios-status.cached::before {
+  content: '⚠ ';
+  color: var(--gold);
+}
+
+.horarios-status.error {
+  border-color: rgba(184,80,90,0.5);
+  background: rgba(184,80,90,0.08);
+  color: #eab8bd;
+}
+
 /* ══════════════════════════════
    SECCIÓN PROMOCIONS — TABLOIDE
 ══════════════════════════════ */

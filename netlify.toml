@@ -1,0 +1,62 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/horarios"
+  to = "/.netlify/functions/horarios"
+  status = 200
+
+# ── SEGURIDAD: impedir que se sirvan públicamente archivos de backend/configuración ──
+# Como "publish" es la raíz del proyecto, sin estas reglas cualquiera podría entrar
+# directamente a */server.js o /package.json y ver ese código.
+# "status = 404" hace que el navegador reciba un "no encontrado" real, no el archivo.
+[[redirects]]
+  from = "/server.js"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package.json"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/package-lock.json"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/node_modules/*"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.env"
+  to = "/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.git/*"
+  to = "/"
+  status = 404
+  force = true
+
+# ── SEGURIDAD: cabeceras HTTP básicas para todo el sitio ──
+# No cambian nada visual. Instruyen al navegador para que:
+#  - no permita que tu web se cargue dentro de un <iframe> de otra página (X-Frame-Options)
+#  - no intente "adivinar" el tipo de un archivo si el servidor ya lo declaró (X-Content-Type-Options)
+#  - no envíe la URL completa de origen a otros sitios al hacer clic en enlaces externos (Referrer-Policy)
+#  - no permita a la página pedir geolocalización, micrófono o cámara sin que tú lo actives (Permissions-Policy)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"

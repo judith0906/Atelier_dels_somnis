@@ -53,129 +53,15 @@ function toggleLang() {
 }
 
 /* ── HORARIOS ── */
-const HORARIOS = {
-  es: [
-    { day: 'Lunes', classes: [
-      { time: '09:30 – 10:30', activity: 'Yoga', teacher: 'Elisabet' },
-      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Danza 5-7' },
-      { time: '17:30 – 18:30', activity: 'Danza 3-5' },
-      { time: '18:30 – 19:30', activity: 'Danza 8-11' },
-      { time: '18:30 – 19:30', activity: 'Bachata inicio', teacher: 'Sara', pending: true },
-      { time: '19:30 – 20:30', activity: 'Bachata inicio', teacher: 'Sara', pending: true },
-      { time: '20:00 – 22:00', activity: 'Salsa y bachata', teacher: 'Por confirmar', pending: true },
-      { time: '20:30 – 21:30', activity: 'Bachata básico', teacher: 'Sara' },
-      { time: '21:30 – 22:30', activity: 'Salsa', teacher: 'Sara' }
-    ]},
-    { day: 'Martes', classes: [
-      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Danzas urbanas +11', teacher: 'Marina' },
-      { time: '18:00 – 19:00', activity: 'Yogalates', teacher: 'Elisabet' },
-      { time: '18:00 – 19:00', activity: 'Flamenco peques', teacher: 'Mónica' },
-      { time: '19:00 – 20:00', activity: 'Flamenco nivel medio', teacher: 'Mónica' },
-      { time: '20:00 – 21:00', activity: 'Sevillanas perfeccionamiento', teacher: 'Mónica' },
-      { time: '21:00 – 22:00', activity: 'Sevillanas iniciación', teacher: 'Mónica' }
-    ]},
-    { day: 'Miércoles', classes: [
-      { time: '09:30 – 10:30', activity: 'Yoga', teacher: 'Elisabet' },
-      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Danza 5-7' },
-      { time: '17:30 – 18:30', activity: 'Danza 3-5' },
-      { time: '18:30 – 19:30', activity: 'Danza 8-11' },
-      { time: '18:30 – 19:30', activity: 'Bachata parejas', teacher: 'Sara Luna' },
-      { time: '19:30 – 20:30', activity: 'Estilo chica (bachata/salsa alternando)', teacher: 'Sara Luna' },
-      { time: '19:30 – 20:30', activity: 'Estilo chico bachata', teacher: 'Sara Luna' },
-      { time: '20:30 – 21:30', activity: 'Estilo chica', teacher: 'Sara' },
-      { time: '21:30 – 22:30', activity: 'Bachata pre-avanzado', teacher: 'Sara', pending: true }
-    ]},
-    { day: 'Jueves', classes: [
-      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Danzas urbanas +11', teacher: 'Marina' },
-      { time: '18:00 – 19:00', activity: 'Yogalates', teacher: 'Elisabet' },
-      { time: '18:00 – 19:00', activity: 'Flamenco peques', teacher: 'Mónica' },
-      { time: '19:00 – 20:00', activity: 'Flamenco nivel medio', teacher: 'Mónica' },
-      { time: '20:00 – 21:00', activity: 'Flamenco iniciación', teacher: 'Mónica' },
-      { time: '21:30 – 22:30', activity: 'Bachata inicio', teacher: 'Sara' }
-    ]},
-    { day: 'Viernes', classes: [
-      { time: '09:30 – 10:30', activity: 'Yoga', teacher: 'Elisabet' },
-      { time: '19:30 – 21:00', activity: 'Flamenco profesional', teacher: 'Mónica' },
-      { time: '19:30 – 20:30', activity: 'Bachata inicio', teacher: 'Sara', pending: true }
-    ]}
-  ],
-  ca: [
-    { day: 'Dilluns', classes: [
-      { time: '09:30 – 10:30', activity: 'Ioga', teacher: 'Elisabet' },
-      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Dansa 5-7' },
-      { time: '17:30 – 18:30', activity: 'Dansa 3-5' },
-      { time: '18:30 – 19:30', activity: 'Dansa 8-11' },
-      { time: '18:30 – 19:30', activity: 'Bachata inici', teacher: 'Sara', pending: true },
-      { time: '19:30 – 20:30', activity: 'Bachata inici', teacher: 'Sara', pending: true },
-      { time: '20:00 – 22:00', activity: 'Salsa i bachata', teacher: 'Per confirmar', pending: true },
-      { time: '20:30 – 21:30', activity: 'Bachata bàsic', teacher: 'Sara' },
-      { time: '21:30 – 22:30', activity: 'Salsa', teacher: 'Sara' }
-    ]},
-    { day: 'Dimarts', classes: [
-      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Danses urbanes +11', teacher: 'Marina' },
-      { time: '18:00 – 19:00', activity: 'Iogalates', teacher: 'Elisabet' },
-      { time: '18:00 – 19:00', activity: 'Flamenc petits', teacher: 'Mónica' },
-      { time: '19:00 – 20:00', activity: 'Flamenc nivell mitjà', teacher: 'Mónica' },
-      { time: '20:00 – 21:00', activity: 'Sevillanes perfeccionament', teacher: 'Mónica' },
-      { time: '21:00 – 22:00', activity: 'Sevillanes iniciació', teacher: 'Mónica' }
-    ]},
-    { day: 'Dimecres', classes: [
-      { time: '09:30 – 10:30', activity: 'Ioga', teacher: 'Elisabet' },
-      { time: '10:30 – 11:30', activity: 'Toning + Gap', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Dansa 5-7' },
-      { time: '17:30 – 18:30', activity: 'Dansa 3-5' },
-      { time: '18:30 – 19:30', activity: 'Dansa 8-11' },
-      { time: '18:30 – 19:30', activity: 'Bachata parelles', teacher: 'Sara Luna' },
-      { time: '19:30 – 20:30', activity: 'Estil noia (bachata/salsa alternant)', teacher: 'Sara Luna' },
-      { time: '19:30 – 20:30', activity: 'Estil noi bachata', teacher: 'Sara Luna' },
-      { time: '20:30 – 21:30', activity: 'Estil noia', teacher: 'Sara' },
-      { time: '21:30 – 22:30', activity: 'Bachata pre-avançat', teacher: 'Sara', pending: true }
-    ]},
-    { day: 'Dijous', classes: [
-      { time: '09:30 – 10:30', activity: 'Pilates', teacher: 'Gaby' },
-      { time: '10:30 – 11:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '15:30 – 16:30', activity: 'Zumba', teacher: 'Gaby' },
-      { time: '17:30 – 18:30', activity: 'Danses urbanes +11', teacher: 'Marina' },
-      { time: '18:00 – 19:00', activity: 'Iogalates', teacher: 'Elisabet' },
-      { time: '18:00 – 19:00', activity: 'Flamenc petits', teacher: 'Mónica' },
-      { time: '19:00 – 20:00', activity: 'Flamenc nivell mitjà', teacher: 'Mónica' },
-      { time: '20:00 – 21:00', activity: 'Flamenc iniciació', teacher: 'Mónica' },
-      { time: '21:30 – 22:30', activity: 'Bachata inici', teacher: 'Sara' }
-    ]},
-    { day: 'Divendres', classes: [
-      { time: '09:30 – 10:30', activity: 'Ioga', teacher: 'Elisabet' },
-      { time: '19:30 – 21:00', activity: 'Flamenc professional', teacher: 'Mónica' },
-      { time: '19:30 – 20:30', activity: 'Bachata inici', teacher: 'Sara', pending: true }
-    ]}
-  ]
-};
+const HORARIOS_REMOTE_API = 'https://REEMPLAZA-ESTE-SITIO.netlify.app/api/horarios';
+const HORARIOS_CACHE_KEY = 'atelier_horarios_cache';
 
 let horariosData = null;
 
-function getHorariosForLang(lang) {
-  return (horariosData && horariosData[lang]) ? horariosData[lang] : HORARIOS[lang];
-}
-
 function renderHorarios() {
   const grid = document.getElementById('horarios-grid');
-  const days = getHorariosForLang(currentLang);
-  if (!grid || !days) return;
+  const days = (horariosData && horariosData[currentLang]) || [];
+  if (!grid) return;
 
   grid.innerHTML = '';
 
@@ -203,35 +89,46 @@ function renderHorarios() {
     header.appendChild(d2);
     card.appendChild(header);
 
-    d.classes.forEach(c => {
-      const row = document.createElement('div');
-      row.className = 'horario-class' + (c.pending ? ' pending' : '');
+    d.groups.forEach(g => {
+      const group = document.createElement('div');
+      group.className = 'horario-time-group';
 
       const time = document.createElement('div');
-      time.className = 'horario-class-time';
-      time.textContent = c.time;
-      row.appendChild(time);
+      time.className = 'horario-time';
+      time.textContent = g.time;
 
-      const activity = document.createElement('div');
-      activity.className = 'horario-class-activity';
-      activity.textContent = c.activity;
-      row.appendChild(activity);
+      const rowsWrap = document.createElement('div');
+      rowsWrap.className = 'horario-group-classes';
 
-      if (c.teacher) {
-        const teacher = document.createElement('div');
-        teacher.className = 'horario-class-teacher';
-        teacher.textContent = c.teacher;
-        row.appendChild(teacher);
-      }
+      g.classes.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'horario-class' + (c.pending ? ' pending' : '');
 
-      if (c.pending) {
-        const badge = document.createElement('span');
-        badge.className = 'horario-pending-badge';
-        badge.textContent = i18n[currentLang].horarios_pending;
-        row.appendChild(badge);
-      }
+        const activity = document.createElement('div');
+        activity.className = 'horario-class-activity';
+        activity.textContent = c.activity;
+        row.appendChild(activity);
 
-      card.appendChild(row);
+        if (c.teacher) {
+          const teacher = document.createElement('div');
+          teacher.className = 'horario-class-teacher';
+          teacher.textContent = c.teacher;
+          row.appendChild(teacher);
+        }
+
+        if (c.pending) {
+          const badge = document.createElement('span');
+          badge.className = 'horario-pending-badge';
+          badge.textContent = i18n[currentLang].horarios_pending;
+          row.appendChild(badge);
+        }
+
+        rowsWrap.appendChild(row);
+      });
+
+      group.appendChild(time);
+      group.appendChild(rowsWrap);
+      card.appendChild(group);
     });
 
     grid.appendChild(card);
@@ -253,11 +150,17 @@ function filterHorarios() {
 
   grid.querySelectorAll('.horario-day').forEach(card => {
     let dayVisible = false;
-    card.querySelectorAll('.horario-class').forEach(row => {
-      const text = (row.textContent || '').toLowerCase();
-      const match = !horariosQuery || text.includes(horariosQuery);
-      row.classList.toggle('hidden', !match);
-      if (match) dayVisible = true;
+    card.querySelectorAll('.horario-time-group').forEach(group => {
+      const groupTime = (group.querySelector('.horario-time').textContent || '').toLowerCase();
+      let groupVisible = false;
+      group.querySelectorAll('.horario-class').forEach(row => {
+        const text = (row.textContent || '').toLowerCase();
+        const match = !horariosQuery || text.includes(horariosQuery) || groupTime.includes(horariosQuery);
+        row.classList.toggle('hidden', !match);
+        if (match) groupVisible = true;
+      });
+      group.classList.toggle('hidden', !groupVisible);
+      if (groupVisible) dayVisible = true;
     });
     card.classList.toggle('hidden', !dayVisible);
     if (dayVisible) anyVisible = true;
@@ -275,37 +178,106 @@ if (horariosSearch) {
   });
 }
 
-/* ── CARGA DEL HORARIO DESDE NEON ── */
+/* ── CARGA DEL HORARIO DESDE LA BBDD (NEON) ── */
+function startMinutes(time) {
+  const m = (time || '').match(/(\d{1,2}):(\d{2})/);
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 0;
+}
+
 function groupHorarios(rows) {
   const map = {};
   rows.forEach(r => {
     if (!map[r.lang]) map[r.lang] = {};
     if (!map[r.lang][r.dia]) map[r.lang][r.dia] = [];
     map[r.lang][r.dia].push({
-      time: r.horas,
+      time: (r.horas || '').replace(/\s*-\s*/g, ' – '),
       activity: r.clase,
       teacher: r.profe || null,
       pending: !!r.pendiente
     });
   });
+
   const result = {};
   Object.keys(map).forEach(lang => {
-    result[lang] = Object.keys(map[lang]).map(dia => ({
-      day: dia,
-      classes: map[lang][dia]
-    }));
+    result[lang] = Object.keys(map[lang]).map(dia => {
+      const classes = map[lang][dia].slice().sort((a, b) => startMinutes(a.time) - startMinutes(b.time));
+      const groups = [];
+      classes.forEach(c => {
+        const last = groups[groups.length - 1];
+        if (last && last.time === c.time) last.classes.push(c);
+        else groups.push({ time: c.time, classes: [c] });
+      });
+      return { day: dia, groups };
+    });
   });
   return result;
 }
 
-async function loadHorarios() {
+function cacheHorariosGet() {
   try {
-    const res = await fetch('/api/horarios');
+    return JSON.parse(localStorage.getItem(HORARIOS_CACHE_KEY) || 'null');
+  } catch (e) {
+    return null;
+  }
+}
+
+function cacheHorariosSet(rows) {
+  try {
+    localStorage.setItem(HORARIOS_CACHE_KEY, JSON.stringify({
+      savedAt: new Date().toISOString(),
+      rows: rows
+    }));
+  } catch (e) {}
+}
+
+function formatHorariosDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString(currentLang === 'ca' ? 'ca-ES' : 'es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  } catch (e) {
+    return '';
+  }
+}
+
+function showHorariosStatus(type, fecha) {
+  const el = document.getElementById('horarios-status');
+  if (!el) return;
+  el.style.display = 'block';
+  if (type === 'error') {
+    el.className = 'horarios-status error';
+    el.textContent = i18n[currentLang].horarios_error || '';
+  } else {
+    el.className = 'horarios-status cached';
+    el.textContent = (i18n[currentLang].horarios_cached || '').replace('{fecha}', fecha || '');
+  }
+}
+
+function hideHorariosStatus() {
+  const el = document.getElementById('horarios-status');
+  if (el) el.style.display = 'none';
+}
+
+async function loadHorarios() {
+  const url = (window.location.protocol === 'file:') ? HORARIOS_REMOTE_API : '/api/horarios';
+  try {
+    const res = await fetch(url, { cache: 'no-cache' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const rows = await res.json();
     horariosData = groupHorarios(rows);
+    cacheHorariosSet(rows);
+    hideHorariosStatus();
   } catch (e) {
-    horariosData = null;
+    console.error('No se pudo cargar el horario desde la BBDD:', e);
+    const cached = cacheHorariosGet();
+    if (cached && cached.rows && cached.rows.length) {
+      horariosData = groupHorarios(cached.rows);
+      showHorariosStatus('cached', formatHorariosDate(cached.savedAt));
+    } else {
+      horariosData = null;
+      showHorariosStatus('error');
+    }
   }
   renderHorarios();
 }

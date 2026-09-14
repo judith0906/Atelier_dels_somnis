@@ -21,11 +21,24 @@ app.get('/api/horarios', async (req, res) => {
   }
 });
 
+// ── SEGURIDAD: bloquear el acceso a archivos que nunca deben verse desde el navegador ──
+//  - Cualquier "dotfile" o carpeta oculta (empieza por "."), como .env o .git.
+//  - Los mismos archivos de backend (server.js, package.json, etc).
 app.use((req, res, next) => {
-  const blocked = ['/server.js', '/package.json', '/package-lock.json', '/node_modules'];
-  if (blocked.some(p => req.path === p || req.path.startsWith(p))) {
+  const path = req.path;
+
+  // Bloquea cualquier segmento de la ruta que empiece por "." (ej: /.env, /.git/config, /assets/.hidden)
+  const hasDotfileSegment = path.split('/').some(segment => segment.startsWith('.') && segment !== '');
+  if (hasDotfileSegment) {
     return res.status(404).end();
   }
+
+  // Bloquea archivos y carpetas de backend que no forman parte del sitio público
+  const blocked = ['/server.js', '/package.json', '/package-lock.json', '/node_modules'];
+  if (blocked.some(p => path === p || path.startsWith(p + '/') || path.startsWith(p))) {
+    return res.status(404).end();
+  }
+
   next();
 });
 
