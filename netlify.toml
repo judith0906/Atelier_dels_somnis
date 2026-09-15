@@ -47,16 +47,30 @@
   status = 404
   force = true
 
-# ── SEGURIDAD: cabeceras HTTP básicas para todo el sitio ──
-# No cambian nada visual. Instruyen al navegador para que:
-#  - no permita que tu web se cargue dentro de un <iframe> de otra página (X-Frame-Options)
-#  - no intente "adivinar" el tipo de un archivo si el servidor ya lo declaró (X-Content-Type-Options)
-#  - no envíe la URL completa de origen a otros sitios al hacer clic en enlaces externos (Referrer-Policy)
-#  - no permita a la página pedir geolocalización, micrófono o cámara sin que tú lo actives (Permissions-Policy)
+# ── SEGURIDAD: cabeceras HTTP para todo el sitio ──
 [[headers]]
   for = "/*"
   [headers.values]
+    # No permite que tu web se cargue dentro de un <iframe> de otra página (protege contra clickjacking)
     X-Frame-Options = "DENY"
+    # No deja que el navegador "adivine" el tipo de un archivo si el servidor ya lo declaró
     X-Content-Type-Options = "nosniff"
+    # No envía la URL completa de origen a otros sitios al hacer clic en enlaces externos
     Referrer-Policy = "strict-origin-when-cross-origin"
+    # No permite a la página pedir geolocalización, micrófono o cámara sin que tú lo actives
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    # ── Content-Security-Policy ──
+    # Dice al navegador de qué dominios tiene permitido cargar cada tipo de recurso.
+    # Cualquier intento de cargar algo desde un dominio no listado aquí (por ejemplo,
+    # si alguien lograra inyectar un script malicioso) sería bloqueado por el navegador.
+    #
+    # 'unsafe-inline' está permitido en script-src y style-src porque index.html,
+    # inscripciones.html y alquiler-sala.html todavía usan atributos onclick="" y
+    # style="" directamente en el HTML. Es una versión "realista" de la CSP: no bloquea
+    # ese código inline existente, pero sí bloquea la carga de recursos desde dominios
+    # ajenos no autorizados y evita que la web se incruste en iframes ajenos.
+    #
+    # TODO: quitar "https://hook.eu1.make.com" de connect-src en cuanto migremos
+    # alquiler-sala.js para que pase por la Netlify Function (como ya hace inscripciones),
+    # igual que hicimos con el punto 4 de la auditoría.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.google.com https://www.gstatic.com; frame-src https://www.google.com; connect-src 'self' https://hook.eu1.make.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
