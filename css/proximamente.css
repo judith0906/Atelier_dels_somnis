@@ -1,0 +1,78 @@
+/* ────────────────────────────────────────────────────────────
+   Estilos de la página "Inscripciones próximamente"
+   Atelier dels Somnis - Reus
+
+   Esta página tiene su propia paleta de colores y tipografías,
+   independiente de styles.css (el CSS del resto del sitio),
+   por eso vive en su propio archivo en vez de mezclarse con él.
+   ──────────────────────────────────────────────────────────── */
+
+/* Paleta de colores reutilizada en toda la página mediante variables CSS */
+:root {
+  --gold: #C9A84C; --gold-light: #E8C96A; --gold-pale: #F5E6B8;
+  --black: #0A0A0A; --black-mid: #111111; --black-card: #161616;
+  --white: #FAF7F0; --white-dim: #D4C9B0; --text-muted: #8A7A5A;
+  --terracotta: #C2703D; --teal: #3E8E7E; --plum: #7C5C8E;
+  --crimson: #B8505A; --amber: #D98A3C; --rose: #C97B84;
+}
+
+/* Reset básico para que padding/border no alteren el ancho de los elementos */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: radial-gradient(1200px 600px at 50% -10%, #161616 0%, var(--black) 55%);
+  color: var(--white);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  padding: 24px 20px 60px;
+}
+
+/* Cabecera superior: logo/marca a la izquierda, selector de idioma a la derecha */
+.top {
+  max-width: 820px; margin: 0 auto 26px;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.brand { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.15rem; letter-spacing: 2px; color: var(--gold-light); }
+.brand small { display: block; font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0; color: var(--text-muted); font-size: .9rem; }
+
+/* Selector de idioma ES / CA */
+.lang { display: flex; border: 1px solid var(--gold); border-radius: 999px; overflow: hidden; }
+.lang button { background: none; border: 0; color: var(--white-dim); font-family: 'Lato', sans-serif; font-size: .75rem; padding: 6px 16px; cursor: pointer; }
+.lang button.active { background: var(--gold); color: #1A1202; font-weight: 700; }
+
+/* Tarjeta central con el mensaje de "próximamente" */
+.card {
+  max-width: 820px; margin: 0 auto;
+  background: var(--black-card);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 12px;
+  padding: 48px 44px;
+  text-align: center;
+}
+
+.ico { font-size: 2.6rem; color: var(--gold); margin-bottom: 18px; }
+h2.title { font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold-light); margin-bottom: 16px; }
+p.txt { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 10px; }
+p.soon { font-size: .9rem; color: var(--amber); border: 1px dashed rgba(217,138,60,0.5); border-radius: 8px; padding: 12px 14px; margin: 18px 0 26px; line-height: 1.6; }
+
+/* Botón de acción principal (dorado) */
+.btn-wrap { margin-top: 26px; }
+.btn {
+  display: inline-block;
+  font-family: 'Lato', sans-serif; font-size: .85rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; padding: 14px 28px;
+  border-radius: 999px; cursor: pointer; border: 1px solid var(--gold);
+  transition: background .25s, box-shadow .25s;
+}
+.btn-gold { background: var(--gold); color: #1A1202; border-color: var(--gold); text-decoration: none; }
+.btn-gold:hover { background: var(--gold-light); box-shadow: 0 8px 26px rgba(201,168,76,0.35); }
+
+/* Enlace discreto para volver a la página principal */
+.back { display: inline-block; margin-top: 22px; color: var(--text-muted); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; transition: color .25s; }
+.back:hover { color: var(--gold-light); }
+
+/* Ajustes en pantallas pequeñas: menos relleno en la tarjeta */
+@media (max-width: 640px) {
+  .card { padding: 34px 22px; }
+}
