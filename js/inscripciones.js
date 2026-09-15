@@ -459,6 +459,28 @@ function enviar() {
     });
 }
 
+/* ── PANTALLA FINAL ──
+   Esta era la función que faltaba. Oculta el paso 4 y muestra el bloque "ok-box":
+   si esError es true, pinta un aviso (⚠) con el mensaje de fallo; si es false,
+   pinta la confirmación (✦) de que la inscripción se ha enviado correctamente. */
+function terminar(msg, esError, title) {
+  $('paso4').classList.remove('active');
+  $('chip4').classList.remove('active');
+  $('ok-box').style.display = 'block';
+  const ico = document.querySelector('.ok .ico');
+  const h3 = document.querySelector('.ok h3');
+  const p = document.querySelector('.ok p');
+  if (esError) {
+    ico.textContent = '⚠';
+    h3.textContent = title || msg;
+    p.textContent = '';
+  } else {
+    ico.textContent = '✦';
+    h3.textContent = title || tt('done_title');
+    p.textContent = msg;
+  }
+}
+
 $('ok-reopen').addEventListener('click', () => { if (lastFormUrl) window.open(lastFormUrl, '_blank'); });
 
 /* ── LANG ── */
