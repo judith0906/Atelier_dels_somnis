@@ -1,21 +1,16 @@
-:root {
-  --gold: #C9A84C;
-  --gold-light: #E8C96A;
-  --gold-pale: #F5E6B8;
-  --black: #0A0A0A;
-  --black-mid: #111111;
-  --black-soft: #1A1A1A;
-  --black-card: #161616;
-  --white: #FAF7F0;
-  --white-dim: #D4C9B0;
-  --text-muted: #8A7A5A;
-  --terracotta: #C2703D;
-  --teal: #3E8E7E;
-  --plum: #7C5C8E;
-  --crimson: #B8505A;
-  --amber: #D98A3C;
-  --rose: #C97B84;
-}
+/* ============================================================
+   index.css — ESTILOS EXCLUSIVOS DE LA PÁGINA PRINCIPAL
+   Atelier dels Somnis · Reus
+
+   Depende de css/styles.css (paleta, reset y tipografía base),
+   que se carga ANTES que este archivo en index.html.
+
+   Secciones, por orden de aparición:
+     NAV · HERO · SECTION BASE · CLASSES · DANCE · BIG DIVIDER
+     RENTAL · BENEFITS · CONTACT FORM · CONTACT · FOOTER
+     REVEAL · HOVER FOTOS · FLYERS · CASALS · HORARIOS
+     PROMOCIONS · LIGHTBOX · COLLAGE
+   ============================================================ */
 
 /* ── ACCENT COLORS (por disciplina) ── */
 .accent-arts     { --accent: var(--terracotta); }
@@ -23,15 +18,9 @@
 .accent-dance    { --accent: var(--crimson); }
 .accent-wellness { --accent: var(--teal); }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
+/* Fondo y comportamiento propios de la home (lo común está en styles.css) */
 body {
   background: var(--black);
-  color: var(--white);
-  font-family: 'Lato', sans-serif;
-  font-weight: 300;
   overflow-x: hidden;
   cursor: default;
 }

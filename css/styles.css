@@ -1,0 +1,82 @@
+/* ============================================================
+   styles.css — ESTILOS COMUNES A TODAS LAS PÁGINAS
+   Atelier dels Somnis · Reus
+
+   Aquí SOLO va lo que comparten todas (o casi todas) las páginas:
+   la paleta de colores, el reset y la cabecera/tarjeta de las
+   páginas internas.
+
+   Lo específico de cada página vive en su propio archivo:
+     index.html          → css/index.css
+     inscripciones.html  → css/formulario.css + css/inscripciones.css
+     alquiler-sala.html  → css/formulario.css + css/alquiler-sala.css
+     proximamente.html   → css/proximamente.css
+
+   ⚠️ NO metas aquí la clase .btn: está definida de forma distinta
+   en la home y en los formularios, y unificarla cambiaría el diseño.
+   ============================================================ */
+
+/* ── PALETA DE COLORES ──
+   Se usan como var(--gold), var(--black)... en todos los CSS del sitio.
+   Cambiar un color aquí lo cambia en toda la web. */
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C96A;
+  --gold-pale: #F5E6B8;
+  --black: #0A0A0A;
+  --black-mid: #111111;
+  --black-soft: #1A1A1A;
+  --black-card: #161616;
+  --white: #FAF7F0;
+  --white-dim: #D4C9B0;
+  --text-muted: #8A7A5A;
+  --terracotta: #C2703D;
+  --teal: #3E8E7E;
+  --plum: #7C5C8E;
+  --crimson: #B8505A;
+  --amber: #D98A3C;
+  --rose: #C97B84;
+}
+
+/* ── RESET ──
+   box-sizing: border-box hace que padding y border NO sumen ancho. */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+/* ── TIPOGRAFÍA BASE ──
+   El `background` NO se define aquí a propósito: la home usa negro plano
+   y las páginas internas un degradado radial. Cada CSS pone el suyo. */
+body {
+  color: var(--white);
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+}
+
+/* ══════════════════════════════════════════
+   CABECERA DE LAS PÁGINAS INTERNAS
+   (inscripciones, alquiler-sala, proximamente)
+   Marca a la izquierda + selector de idioma a la derecha.
+   La home NO usa estas clases: tiene su propio <nav>.
+   ══════════════════════════════════════════ */
+.top {
+  max-width: 820px; margin: 0 auto 26px;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+}
+.brand { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.15rem; letter-spacing: 2px; color: var(--gold-light); }
+.brand small { display: block; font-family: 'Cormorant Garamond', serif; font-style: italic; letter-spacing: 0; color: var(--text-muted); font-size: .9rem; }
+
+/* Selector de idioma ES / CA (botones #lb-es / #lb-ca) */
+.lang { display: flex; border: 1px solid var(--gold); border-radius: 999px; overflow: hidden; }
+.lang button { background: none; border: 0; color: var(--white-dim); font-family: 'Lato', sans-serif; font-size: .75rem; padding: 6px 16px; cursor: pointer; }
+.lang button.active { background: var(--gold); color: #1A1202; font-weight: 700; }
+
+/* ── TARJETA CONTENEDORA ──
+   El `padding` lo define cada página, porque no es el mismo en los
+   formularios (40px 44px) que en la página de "próximamente" (48px 44px). */
+.card {
+  max-width: 820px; margin: 0 auto;
+  background: var(--black-card);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 12px;
+}

@@ -1,0 +1,120 @@
+/* ============================================================
+   formulario.css — ESTILOS COMUNES A LOS FORMULARIOS POR PASOS
+   Atelier dels Somnis · Reus
+
+   Lo usan inscripciones.html y alquiler-sala.html, que comparten
+   la misma estructura: barra de pasos + tarjeta + navegación.
+   Se carga DESPUÉS de css/styles.css y ANTES del CSS de la página.
+   ============================================================ */
+
+/* Fondo propio de las páginas de formulario (degradado desde arriba) */
+body {
+  background: radial-gradient(1200px 600px at 50% -10%, #161616 0%, var(--black) 55%);
+  min-height: 100vh;
+  padding: 24px 20px 60px;
+}
+
+/* Relleno de la tarjeta principal (la base está en styles.css) */
+.card { padding: 40px 44px; }
+
+/* ── BARRA DE PASOS (1·2·3·4) ──
+   El JS añade/quita .active en #chip1…#chip4 según el paso actual. */
+.steps { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 34px; }
+.step-chip { flex: 1; text-align: center; padding: 10px 6px; border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+.step-chip .n { display: block; font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); margin-bottom: 4px; }
+.step-chip.active { border-color: var(--gold); background: rgba(201,168,76,0.08); color: var(--white-dim); }
+
+/* ── PASOS ──
+   Todos los pasos están en el HTML a la vez; solo se ve el que
+   tiene .active (lo gestiona la función go(n) del JS). */
+.step { display: none; }
+.step.active { display: block; animation: fade .35s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ── TEXTOS ── */
+h2.step-title { font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 700; color: var(--gold-light); margin-bottom: 14px; }
+h3.sub { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); letter-spacing: .06em; margin: 26px 0 12px; }
+p.desc { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 18px; }
+p.aviso { font-size: .85rem; color: var(--amber); border: 1px dashed rgba(217,138,60,0.5); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; line-height: 1.6; }
+
+/* ── PASO 1: TÉRMINOS Y CONDICIONES ──
+   El texto legal lo inyecta el JS (d.term_text) dentro de #terms-box.
+   Hay que hacer scroll hasta el final para poder marcar las casillas. */
+.terms { max-height: 320px; overflow-y: auto; background: var(--black); border: 1px solid rgba(201,168,76,0.22); border-radius: 8px; padding: 20px 22px; margin-bottom: 12px; scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.5) transparent; }
+.terms h4 { font-family: 'Cinzel', serif; font-size: .95rem; color: var(--gold-light); letter-spacing: .06em; margin: 18px 0 8px; }
+.terms h4:first-child { margin-top: 0; }
+.terms p { font-size: .88rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 8px; }
+.terms ul { margin: 0 0 10px 18px; }
+.terms li { font-size: .88rem; color: var(--white-dim); line-height: 1.7; margin-bottom: 4px; }
+.terms a { color: var(--gold-light); text-decoration: underline; }
+.terms-hint { font-size: .8rem; color: var(--text-muted); font-style: italic; margin-bottom: 14px; }
+
+.check-line { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: border-color .25s, background .25s; }
+.check-line:hover { border-color: var(--gold); }
+.check-line input { width: 18px; height: 18px; accent-color: var(--gold); margin-top: 2px; flex: none; }
+.check-line span { font-size: .95rem; color: var(--white-dim); }
+
+/* Contenedor donde Google reCAPTCHA pinta el "No soy un robot" */
+#robot-box { margin-bottom: 16px; }
+
+/* ── CAMPOS DE FORMULARIO ── */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+.field label { display: block; font-size: .65rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.field.full { grid-column: 1 / -1; }
+.field input, .field select {
+  width: 100%; background: var(--black); border: 1px solid rgba(201,168,76,0.22);
+  color: var(--white); font-family: 'Lato', sans-serif; font-size: .95rem;
+  padding: 12px 14px; border-radius: 6px; transition: border-color .25s, box-shadow .25s;
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
+.field input::placeholder { color: rgba(138,122,90,0.6); font-style: italic; }
+
+/* ── BOTONERA (Anterior / Siguiente) ──
+   OJO: esta .btn es la de los formularios, NO la de la home. */
+.nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; }
+.btn {
+  font-family: 'Lato', sans-serif; font-size: .85rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; padding: 13px 26px;
+  border-radius: 999px; cursor: pointer; border: 1px solid var(--gold);
+  transition: background .25s, box-shadow .25s, opacity .25s;
+}
+.btn-prev { background: transparent; color: var(--gold-light); }
+.btn-prev:hover { background: rgba(201,168,76,0.12); }
+.btn-next { background: var(--gold); color: #1A1202; border-color: var(--gold); }
+.btn-next:hover { background: var(--gold-light); box-shadow: 0 8px 26px rgba(201,168,76,0.35); }
+.btn:disabled { opacity: .45; cursor: default; box-shadow: none; }
+
+/* ── TARJETAS DE OPCIÓN (elegir alumno / elegir paquete) ──
+   El padding lo pone cada página porque no coincide. */
+.opts { display: grid; gap: 14px; }
+.opt {
+  border: 1px solid rgba(201,168,76,0.25); border-radius: 10px;
+  cursor: pointer; transition: all .25s; background: linear-gradient(120deg, #141210, #191713);
+}
+.opt:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 12px 34px rgba(0,0,0,0.45); }
+.opt .t { font-family: 'Cinzel', serif; font-size: 1.05rem; color: var(--gold-light); letter-spacing: .06em; margin-bottom: 6px; }
+.opt .d { font-size: .88rem; color: var(--white-dim); line-height: 1.6; }
+
+/* ── RESUMEN DEL ÚLTIMO PASO ──
+   Los pares clave/valor los genera la función kv() del JS. */
+.res { border: 1px solid rgba(201,168,76,0.18); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+.res .k { font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.res .kv { display: flex; justify-content: space-between; gap: 12px; font-size: .88rem; color: var(--white-dim); padding: 4px 0; border-bottom: 1px dashed rgba(201,168,76,0.12); }
+.res .kv:last-child { border-bottom: 0; }
+.res .kv b { color: var(--white); font-weight: 400; text-align: right; }
+
+/* ── PANTALLA FINAL (#ok-box) ── */
+.ok { text-align: center; padding: 40px 20px; }
+.ok .ico { font-size: 2.4rem; color: var(--gold); margin-bottom: 14px; }
+.ok h3 { font-family: 'Cinzel', serif; color: var(--gold-light); font-size: 1.4rem; margin-bottom: 10px; }
+.ok p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--white-dim); }
+
+/* Mensajes de error de validación: ocultos hasta que el JS los muestra */
+.err { display: none; color: var(--rose); font-size: .85rem; font-style: italic; margin-top: 12px; text-align: center; }
+
+/* ── MÓVIL ── */
+@media (max-width: 640px) {
+  .card { padding: 26px 20px; }
+  .grid { grid-template-columns: 1fr; }
+  .field.full { grid-column: auto; }
+}

@@ -1,0 +1,62 @@
+/* ============================================================
+   inscripciones.css — ESTILOS EXCLUSIVOS DE inscripciones.html
+   Atelier dels Somnis · Reus
+
+   Depende de css/styles.css + css/formulario.css (se cargan antes).
+   Aquí solo van las piezas que NO existen en alquiler-sala.html:
+   la lista de alumnos y los dos modales (datos del familiar y
+   selección de clases).
+   ============================================================ */
+
+p.pend { font-style: italic; color: var(--text-muted); font-size: .9rem; }
+
+/* Relleno propio de las tarjetas de opción de esta página */
+.opt { padding: 22px 24px; }
+.opt.cta { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+
+/* ── FICHA DE ALUMNO INSCRITO ──
+   Las pinta renderAlumnos() en #alumnos-list. Los botones llevan
+   data-edc / data-edd / data-del con el índice del alumno. */
+.alumno-card { border: 1px solid rgba(201,168,76,0.25); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; background: linear-gradient(120deg, #151310, #1B1812); }
+.alumno-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.alumno-name { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--white); }
+.alumno-type { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); border: 1px solid rgba(201,168,76,0.4); padding: 3px 10px; border-radius: 999px; }
+.alumno-fn { font-size: .8rem; color: var(--text-muted); margin-top: 4px; }
+
+/* Etiquetas con las clases elegidas por cada alumno */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { font-size: .72rem; color: var(--white-dim); background: var(--black); border: 1px solid rgba(201,168,76,0.3); padding: 4px 10px; border-radius: 999px; }
+.chip.none { font-style: italic; color: var(--text-muted); border-style: dashed; }
+
+.alumno-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.mini { font-family: 'Lato', sans-serif; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(201,168,76,0.45); background: transparent; color: var(--gold-light); cursor: pointer; transition: all .2s; }
+.mini:hover { background: rgba(201,168,76,0.14); }
+.mini.danger { border-color: rgba(184,80,90,0.6); color: var(--rose); }
+.mini.danger:hover { background: rgba(184,80,90,0.14); }
+
+.empty { text-align: center; padding: 26px; color: var(--text-muted); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; }
+
+/* ── MODALES (#malumno y #mclases) ──
+   Se abren/cierran añadiendo o quitando la clase .open desde el JS. */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(5,5,5,0.82); backdrop-filter: blur(3px); z-index: 60; align-items: center; justify-content: center; padding: 20px; }
+.overlay.open { display: flex; }
+.modal { width: 100%; max-width: 640px; max-height: 88vh; overflow: auto; background: var(--black-card); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 30px 32px; }
+.modal h3 { font-family: 'Cinzel', serif; font-size: 1.25rem; color: var(--gold-light); margin-bottom: 16px; }
+.modal .hint { font-size: .85rem; color: var(--white-dim); margin-bottom: 16px; }
+.modal .nav { margin-top: 20px; }
+
+/* Filtros por categoría dentro del modal de clases */
+.cats, .days { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pill { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(201,168,76,0.4); background: transparent; color: var(--white-dim); cursor: pointer; transition: all .2s; }
+.pill.on { background: var(--gold); color: #1A1202; border-color: var(--gold); font-weight: 700; }
+
+/* Listado de clases con checkbox */
+.list { max-height: 40vh; overflow: auto; border: 1px solid rgba(201,168,76,0.18); border-radius: 8px; }
+.lrow { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid rgba(201,168,76,0.1); cursor: pointer; }
+.lrow:last-child { border-bottom: 0; }
+.lrow:hover { background: rgba(201,168,76,0.05); }
+.lrow input { width: 17px; height: 17px; accent-color: var(--gold); flex: none; }
+.lrow .tt { font-size: .92rem; color: var(--white); }
+.lrow .dd { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+
+.toggle-lbl { display: flex; align-items: center; gap: 10px; }

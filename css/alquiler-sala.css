@@ -1,0 +1,31 @@
+/* ============================================================
+   alquiler-sala.css — ESTILOS EXCLUSIVOS DE alquiler-sala.html
+   Atelier dels Somnis · Reus
+
+   Depende de css/styles.css + css/formulario.css (se cargan antes).
+   Aquí solo va lo propio de la reserva de sala: el desplegable de
+   tipo de evento, la tabla de precios y el total con fianza.
+   ============================================================ */
+
+/* Relleno propio de las tarjetas de paquete (5h / 8h) */
+.opt { padding: 20px 22px; }
+.opt .p { font-family: 'Cinzel', serif; font-size: 1.35rem; color: var(--gold); margin-top: 10px; }
+.opt.sel { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+
+/* El <select> de tipo de evento: forzamos el fondo oscuro también en
+   las opciones desplegadas (si no, algunos navegadores las ponen blancas) */
+.field select option { background: var(--black); color: var(--white); }
+
+/* ── TABLA DE PRECIOS (paso 3) ──
+   Los importes (#precio-5h / #precio-8h) los rellena actualizarTotales(). */
+.precio-tabla { border: 1px solid rgba(201,168,76,0.18); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; }
+.precio-tabla .row { display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; color: var(--white-dim); padding: 5px 0; border-bottom: 1px dashed rgba(201,168,76,0.12); }
+.precio-tabla .row:last-child { border-bottom: 0; }
+.precio-tabla .row b { color: var(--gold-light); font-family: 'Cinzel', serif; font-size: 1rem; }
+
+/* Fila del total (alquiler + horas extra + fianza) */
+.res .kv.total { font-weight: 700; color: var(--gold-light); }
+.res .kv.total b { color: var(--gold-light); font-family: 'Cinzel', serif; font-size: 1.2rem; }
+
+/* Nota sobre el pago en la pantalla final */
+.ok .ok-note { display: block; font-size: .85rem; color: var(--text-muted); margin-top: 10px; }
