@@ -1,14 +1,18 @@
-/**
- * Función intermedia (proxy) para el envío seguro de formularios.
- * Atelier dels Somnis - Reus
- *
- * ¿Por qué existe este archivo?
- * El navegador no puede guardar secretos: todo lo que hay en el JS del cliente es
- * visible para cualquiera con el botón derecho > "Ver código fuente". Por eso:
- *   1. Validamos aquí (en el servidor) el token del captcha contra Google.
- *   2. Guardamos aquí la URL del webhook de Make, leída de variables de entorno.
- * Resultado: nadie puede saltarse el captcha ni descubrir la URL de Make.
- */
+/* ============================================================
+   submit-formulario.js — NETLIFY FUNCTION: recepción de formularios
+   Atelier dels Somnis · Reus
+
+   Punto único de entrada de los formularios del sitio. Su motivo de
+   existir es de seguridad: valida el token de reCAPTCHA contra Google
+   y solo entonces reenvía los datos al webhook de Make, de forma que
+   la URL de Make nunca aparece en el código del navegador.
+
+   El campo `tipoFormulario` del payload decide a qué webhook va
+   ('inscripciones' o 'alquiler').
+
+   Variables de entorno necesarias en Netlify:
+     RECAPTCHA_SECRET_KEY · MAKE_WEBHOOK_* (ver el propio código)
+   ============================================================ */
 
 // Módulo 'https' nativo de Node.js. No hace falta instalar nada en package.json.
 const https = require('https');

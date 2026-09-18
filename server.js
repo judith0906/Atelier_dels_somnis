@@ -1,3 +1,17 @@
+/* ============================================================
+   server.js — SERVIDOR LOCAL DE DESARROLLO (Express)
+   Atelier dels Somnis · Reus
+
+   Sirve la web en http://localhost:3000 y expone /api/horarios
+   leyendo de la base de datos Neon (PostgreSQL).
+
+   ⚠️ En producción (Netlify) este archivo NO se ejecuta: allí el
+   endpoint lo da netlify/functions/horarios/horarios.js. Si cambias
+   la consulta SQL aquí, cámbiala también allí o el horario se verá
+   distinto en local y en producción.
+
+   Arrancar con: npm start   (requiere DATABASE_URL en el archivo .env)
+   ============================================================ */
 require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg');

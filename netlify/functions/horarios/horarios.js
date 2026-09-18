@@ -1,3 +1,18 @@
+/* ============================================================
+   horarios.js — NETLIFY FUNCTION: endpoint público del horario
+   Atelier dels Somnis · Reus
+
+   Responde a /api/horarios (redirección definida en netlify.toml)
+   devolviendo las filas de la tabla `horario` de Neon en JSON.
+   Lo consume la función loadHorarios() de js/main.js.
+
+   El pool de conexiones se guarda en `pool` fuera del handler para
+   reaprovecharlo entre invocaciones y no abrir una conexión nueva
+   en cada visita.
+
+   Debe existir la variable DATABASE_URL en las variables de entorno
+   de Netlify; si falta, la función devuelve un 500 explicándolo.
+   ============================================================ */
 const { Pool } = require('pg');
 
 let pool = null;

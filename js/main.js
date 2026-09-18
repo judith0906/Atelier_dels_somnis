@@ -1,3 +1,25 @@
+/* ============================================================
+   main.js — LÓGICA DE LA PÁGINA PRINCIPAL (index.html)
+   Atelier dels Somnis · Reus
+
+   Requiere que js/i18n.js se haya cargado antes (usa la variable `i18n`).
+
+   BLOQUES DEL ARCHIVO, en este orden:
+     STARS ............. genera las estrellas animadas del hero
+     REVEAL ON SCROLL .. anima las secciones al entrar en pantalla
+     I18N LOGIC ........ cambio ES/CA: recorre [data-i18n] y [data-i18n-ph]
+     HORARIOS .......... pinta el horario semanal y su buscador
+     CARGA DEL HORARIO . lo pide a /api/horarios (Netlify Function + Neon)
+                         y guarda copia en localStorage por si falla
+     HOVER FOTOS ....... fotos y emoticono alternativo al pasar el ratón
+     FLYERS ............ carrusel que carga f1, f2, f3... hasta fallar
+     PROMOCIONS ........ cartelera de novedades (misma técnica)
+     LIGHTBOX .......... ampliar una foto al pulsarla
+     COLLAGE ........... galería de instalaciones + su lightbox
+     HAMBURGER ......... menú de móvil
+     FORMULARIO ........ envío del formulario de contacto vía EmailJS
+   ============================================================ */
+
 /* ── STARS ── */
 const starsEl = document.getElementById('stars');
 for (let i = 0; i < 80; i++) {
@@ -52,8 +74,14 @@ function toggleLang() {
   applyLang(currentLang === 'es' ? 'ca' : 'es');
 }
 
+/* Endpoint del horario. En local (file://) se usa la URL remota;
+   en producción vale la ruta relativa /api/horarios, que netlify.toml
+   redirige a la función netlify/functions/horarios. */
 /* ── HORARIOS ── */
-const HORARIOS_REMOTE_API = 'https://REEMPLAZA-ESTE-SITIO.netlify.app/api/horarios';
+const HORARIOS_REMOTE_API = 'https://atelierdelssomnis.com/api/horarios';
+
+/* Copia del horario en el navegador: si la BBDD no responde, se muestra
+   la última versión guardada con un aviso de "puede no estar actualizado". */
 const HORARIOS_CACHE_KEY = 'atelier_horarios_cache';
 
 let horariosData = null;
@@ -636,7 +664,9 @@ navLinks.querySelectorAll('a').forEach(link => {
 });
 
 /* ── FORMULARIO DE CONTACTO (EMAILJS) ── */
-/* Sustituir los [..] por los valores reales de tu cuenta EmailJS */
+/* Credenciales públicas de EmailJS (no son secretas: son de uso en cliente).
+   Si el formulario de contacto deja de enviar, revisar estos tres valores
+   en el panel de EmailJS. */
 const EMAILJS_PUBLIC_KEY  = '6G_XcLBlJOl_sngk5';
 const EMAILJS_SERVICE_ID  = 'service_me3rq8d';
 const EMAILJS_TEMPLATE_ID = 'template_17jq4zx';
