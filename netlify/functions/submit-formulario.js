@@ -10,12 +10,88 @@
    El campo `tipoFormulario` del payload decide a qué webhook va
    ('inscripciones' o 'alquiler').
 
+   Para 'alquiler' además bloqueamos el hueco en la tabla `reserva_sala`
+   de Neon antes de reenviar a Make (ver bloquearReservaSala más abajo),
+   así dos personas no pueden reservar el mismo horario a la vez.
+
    Variables de entorno necesarias en Netlify:
-     RECAPTCHA_SECRET_KEY · MAKE_WEBHOOK_* (ver el propio código)
+     RECAPTCHA_SECRET_KEY · DATABASE_URL · MAKE_WEBHOOK_* (ver el propio código)
    ============================================================ */
 
 // Módulo 'https' nativo de Node.js. No hace falta instalar nada en package.json.
 const https = require('https');
+const { Pool } = require('pg');
+
+let pool = null;
+function getPool() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+  }
+  return pool;
+}
+
+/** 'HH:MM' -> minutos desde medianoche */
+function minutosDesde(horaStr) {
+  const [h, m] = String(horaStr).slice(0, 5).split(':').map(Number);
+  return h * 60 + m;
+}
+
+/** ¿Se solapan la reserva pedida y una fila ya guardada? Misma lógica
+    de intervalos que usa disponibilidad-sala.js. */
+function solapan(fechaBase, horaInicio, horasTotales, fila) {
+  const MIN_DIA = 24 * 60;
+  const diffDias = Math.round((new Date(fila.fecha) - new Date(fechaBase)) / 86400000);
+  const inicioFila = diffDias * MIN_DIA + minutosDesde(fila.hora_inicio);
+  const finFila = inicioFila + Math.round(Number(fila.horas_totales) * 60);
+  const inicioReq = minutosDesde(horaInicio);
+  const finReq = inicioReq + Math.round(horasTotales * 60);
+  return inicioFila < finReq && finFila > inicioReq;
+}
+
+/**
+ * Bloquea el hueco de la sala en Neon antes de reenviar a Make.
+ * Usa un bloqueo consultivo (advisory lock) por fecha para que dos
+ * peticiones simultáneas del mismo día se sirvan en orden, no a la vez.
+ * La reserva se guarda como "pendiente_pago" con 30 minutos de margen:
+ * si en ese tiempo no llega el pago de Stripe (todavía por conectar),
+ * el hueco vuelve a quedar libre solo por caducar, sin borrar nada a mano.
+ */
+async function bloquearReservaSala(reserva) {
+  const horasTotales = Number(reserva.paqueteHoras || 0) + Number(reserva.horasExtra || 0);
+  const client = await getPool().connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [reserva.fecha]);
+
+    const { rows } = await client.query(
+      `SELECT fecha, hora_inicio, horas_totales FROM reserva_sala
+       WHERE (estado = 'confirmada' OR (estado = 'pendiente_pago' AND expira_en > now()))
+         AND fecha BETWEEN $1::date - INTERVAL '1 day' AND $1::date + INTERVAL '1 day'`,
+      [reserva.fecha]
+    );
+
+    if (rows.some(r => solapan(reserva.fecha, reserva.inicio, horasTotales, r))) {
+      await client.query('ROLLBACK');
+      return { ok: false };
+    }
+
+    await client.query(
+      `INSERT INTO reserva_sala (fecha, hora_inicio, horas_totales, evento, estado, expira_en)
+       VALUES ($1, $2, $3, $4, 'pendiente_pago', now() + INTERVAL '30 minutes')`,
+      [reserva.fecha, reserva.inicio, horasTotales, reserva.evento || null]
+    );
+    await client.query('COMMIT');
+    return { ok: true };
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+}
 
 /**
  * Función auxiliar para hacer peticiones POST a servicios externos (Google y Make).
@@ -113,6 +189,17 @@ exports.handler = async (event) => {
       makeWebhookUrl = process.env.MAKE_INSCRIPCIONES_WEBHOOK_URL;
     } else if (tipoFormulario === 'alquiler') {
       makeWebhookUrl = process.env.MAKE_ALQUILER_WEBHOOK_URL;
+
+      // Bloqueamos el hueco en Neon antes de seguir. Si ya no está libre
+      // (alguien se ha adelantado), avisamos con un 409 para que el
+      // navegador mande a la persona de vuelta al paso 3.
+      const bloqueo = await bloquearReservaSala(formData.reserva || {});
+      if (!bloqueo.ok) {
+        return {
+          statusCode: 409,
+          body: JSON.stringify({ success: false, conflicto: true, message: 'Ese horario ya no está disponible.' })
+        };
+      }
     } else {
       return {
         statusCode: 400,

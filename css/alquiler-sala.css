@@ -29,3 +29,9 @@
 
 /* Nota sobre el pago en la pantalla final */
 .ok .ok-note { display: block; font-size: .85rem; color: var(--text-muted); margin-top: 10px; }
+
+/* Sugerencias de horario libre cuando el horario pedido no está disponible (paso 3) */
+.disp-box { border: 1px solid rgba(201,168,76,0.18); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+.disp-box .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.disp-box .chip { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--gold); background: transparent; color: var(--gold-light); cursor: pointer; font-family: 'Lato', sans-serif; }
+.disp-box .chip:hover { background: rgba(201,168,76,0.1); }

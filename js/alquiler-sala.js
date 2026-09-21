@@ -3,6 +3,19 @@
    Atelier dels Somnis · Reus
 
    Textos ES/CA en js/i18n.js (debe cargarse antes que este archivo).
+
+   Reglas de negocio añadidas en esta versión:
+   - El pack de 5h admite como máximo 2 horas extra (7h en total). A
+     partir de ahí, se pasa automáticamente al pack de 8h restando 3
+     horas extra (ver normalizarPaqueteExtra). El pack de 8h no tiene tope.
+   - Antes de pasar al paso 4 se comprueba la disponibilidad real de la
+     sala contra /api/disponibilidad-sala; si el hueco choca, se ofrecen
+     los huecos libres más cercanos ese mismo día.
+   - La fianza se puede pagar ahora o dejarla pendiente hasta el día
+     del evento (ver reserva.fianzaMomento).
+   - El envío ya no va directo al webhook de Make: pasa por nuestra
+     función de Netlify /.netlify/functions/submit-formulario, que es
+     quien de verdad "bloquea" el horario en la base de datos.
    ──────────────────────────────────────────────────────────── */
 
 const T = I18N.alquiler;
@@ -33,13 +46,14 @@ const PRECIO_8H = 350;
 const FIANZA = 100;
 const EXTRA_NOCHE = 30;      // por hora antes de la medianoche (00:00)
 const EXTRA_MADRUGADA = 35;  // por hora de madrugada (desde las 00:00)
+const MAX_EXTRA_5H = 2;      // tope de horas extra en el pack de 5h; a partir de aquí, salto a 8h
 
 /* ── ESTADO ── */
 const $ = id => document.getElementById(id);
 let paso = 1;
 let datos = {};
 let tos = { leido: false, acuerdo: false };
-let reserva = { paquete: '5h', fecha: '', inicio: '', numextra: 0, evento: '' };
+let reserva = { paquete: '5h', fecha: '', inicio: '', numextra: 0, evento: '', fianzaMomento: 'ahora' };
 
 /* ── NAVEGACIÓN ── */
 function go(n) {
@@ -110,31 +124,36 @@ function seleccionarPaquete(tipo) {
   reserva.paquete = tipo;
   document.querySelectorAll('#opciones .opt').forEach(o => o.classList.remove('sel'));
   $('opt-'+tipo).classList.add('sel');
+  normalizarPaqueteExtra();
 }
 
 $('opt-5h').addEventListener('click', () => seleccionarPaquete('5h'));
 $('opt-8h').addEventListener('click', () => seleccionarPaquete('8h'));
 
-$('r-numextra').addEventListener('input', () => {
+/* Si con el pack de 5h se piden 3 horas extra o más, es más barato el
+   pack de 8h (5+3=8+0), así que saltamos automáticamente a 8h restando
+   3 horas extra (5+5 → 8+2, etc.). El pack de 8h no tiene tope.
+   Se llama en cada cambio del campo y del pack, así que si alguien
+   fuerza otra vez 5h con 3+ horas extra, se vuelve a recalcular. */
+function normalizarPaqueteExtra() {
   let v = parseInt($('r-numextra').value, 10);
   if (isNaN(v) || v < 0) v = 0;
+  let auto = false;
+  if (reserva.paquete === '5h' && v > MAX_EXTRA_5H) {
+    reserva.paquete = '8h';
+    v = v - (MAX_EXTRA_5H + 1);
+    document.querySelectorAll('#opciones .opt').forEach(o => o.classList.remove('sel'));
+    $('opt-8h').classList.add('sel');
+    auto = true;
+  }
   $('r-numextra').value = v;
-});
+  reserva.numextra = v;
+  $('aviso-8h-auto').style.display = auto ? 'block' : 'none';
+}
+
+$('r-numextra').addEventListener('input', normalizarPaqueteExtra);
 
 $('p3-prev').addEventListener('click', () => { $('err-p3').style.display='none'; go(2); });
-$('p3-next').addEventListener('click', () => {
-  reserva.fecha = $('r-fecha').value;
-  reserva.inicio = $('r-inicio').value;
-  reserva.evento = $('r-evento').value;
-  reserva.numextra = parseInt($('r-numextra').value, 10) || 0;
-  if (!reserva.fecha || !reserva.inicio || !reserva.paquete) {
-    $('err-p3').textContent = tt('conexion_vacia');
-    $('err-p3').style.display='block';
-    return;
-  }
-  $('err-p3').style.display='none';
-  go(4);
-});
 
 /* Cálculo del desglose según la hora de inicio y las horas extra.
    Regla de precios: las horas extra que arrancan antes de la medianoche
@@ -143,8 +162,8 @@ $('p3-next').addEventListener('click', () => {
 function calculoImporte() {
   const base = reserva.paquete === '8h' ? PRECIO_8H : PRECIO_5H;
   const horasBase = reserva.paquete === '8h' ? 8 : 5;
-  const instart = reserva.inicio; // 'HH:MM'
-  const [hh, mm] = (instart || '00:00').split(':').map(Number);
+  const instart = reserva.inicio || '00:00'; // 'HH:MM'
+  const [hh, mm] = instart.split(':').map(Number);
   const minutosInicio = hh * 60 + mm;
   const MIN_MADRUGADA = 0 * 60;              // 00:00
   const MAX_MADRUGADA = 6 * 60;              // 06:00
@@ -161,8 +180,83 @@ function calculoImporte() {
   }
   const totalAlquiler = base + extras;
   const totalConFianza = totalAlquiler + FIANZA;
-  return { base, horasBase, extras, totalAlquiler, totalConFianza, extrasRows };
+
+  /* Horario total declarado por el cliente (base + horas extra contratadas):
+     si acaba a partir de las 00:00, queda constancia de ello en el resumen
+     y en el envío — ver cláusula 14 de los términos sobre el incumplimiento
+     de este horario declarado. */
+  const finMinutos = minutosInicio + (horasBase + reserva.numextra) * 60;
+  const cruzaMedianoche = finMinutos >= 24 * 60;
+
+  // Importe a pagar AHORA en el formulario: si la fianza se deja para
+  // más adelante, no entra en este total (ver reserva.fianzaMomento).
+  const totalAPagarAhora = reserva.fianzaMomento === 'despues' ? totalAlquiler : totalConFianza;
+
+  return { base, horasBase, extras, totalAlquiler, totalConFianza, totalAPagarAhora, extrasRows, cruzaMedianoche };
 }
+
+/* ── Disponibilidad de la sala (comprobación antes de pasar al paso 4) ── */
+async function comprobarDisponibilidad() {
+  const horasTotales = (reserva.paquete === '8h' ? 8 : 5) + reserva.numextra;
+  const params = new URLSearchParams({ fecha: reserva.fecha, inicio: reserva.inicio, horas: horasTotales });
+  const res = await fetch('/api/disponibilidad-sala?' + params.toString());
+  if (!res.ok) throw new Error('disponibilidad no ok');
+  return res.json();
+}
+
+function mostrarSugerencias(horas) {
+  const box = $('disp-sugerencias');
+  let html = '<p class="aviso">' + tt('sugerencias_intro') + '</p><div class="chips">';
+  horas.forEach(h => { html += '<button type="button" class="chip" data-hora="' + h + '">' + h + '</button>'; });
+  html += '</div>';
+  box.innerHTML = html;
+  box.style.display = 'block';
+  box.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('r-inicio').value = btn.getAttribute('data-hora');
+      box.style.display = 'none';
+      $('p3-next').click();
+    });
+  });
+}
+
+$('p3-next').addEventListener('click', async () => {
+  normalizarPaqueteExtra();
+  reserva.fecha = $('r-fecha').value;
+  reserva.inicio = $('r-inicio').value;
+  reserva.evento = $('r-evento').value;
+  reserva.fianzaMomento = $('r-fianza-despues').checked ? 'despues' : 'ahora';
+
+  if (!reserva.fecha || !reserva.inicio || !reserva.paquete) {
+    $('err-p3').textContent = tt('conexion_vacia');
+    $('err-p3').style.display = 'block';
+    return;
+  }
+  $('err-p3').style.display = 'none';
+  $('disp-sugerencias').style.display = 'none';
+
+  $('p3-next').disabled = true;
+  const textoOriginal = $('p3-next').textContent;
+  $('p3-next').textContent = tt('comprobando_disp');
+
+  try {
+    const data = await comprobarDisponibilidad();
+    if (data.disponible) {
+      go(4);
+    } else if (data.sugerencias && data.sugerencias.length) {
+      mostrarSugerencias(data.sugerencias);
+    } else {
+      $('err-p3').textContent = tt('sin_disponibilidad');
+      $('err-p3').style.display = 'block';
+    }
+  } catch (e) {
+    $('err-p3').textContent = tt('err_disponibilidad');
+    $('err-p3').style.display = 'block';
+  } finally {
+    $('p3-next').disabled = false;
+    $('p3-next').textContent = textoOriginal;
+  }
+});
 
 /* ── PASO 4 ── */
 function fmtHora(t) {
@@ -180,6 +274,8 @@ function renderResumen() {
   hd += kv(tt('ciudad'), datos.ciudad);
   $('res-datos').innerHTML = hd;
 
+  const c = calculoImporte();
+
   const baseHoras = reserva.paquete === '8h' ? 8 : 5;
   let hh = '';
   hh += kv(tt('k_duracion'), tt('paquete') + ' ' + baseHoras + tt('horas'));
@@ -187,14 +283,18 @@ function renderResumen() {
   hh += kv(tt('k_fecha'), reserva.fecha);
   hh += kv(tt('k_inicio'), fmtHora(reserva.inicio));
   hh += kv(tt('k_numextra'), reserva.numextra);
+  hh += kv(tt('k_horario_decl'), c.cruzaMedianoche ? tt('horario_despues_medianoche') : tt('horario_antes_medianoche'));
   $('res-reserva').innerHTML = hh;
 
-  const c = calculoImporte();
   let hi = '';
   hi += kv(tt('k_alquiler'), c.base + ' €');
   if (c.extras > 0) hi += kv(tt('k_extras') + ' (' + reserva.numextra + ')', c.extras + ' €');
-  hi += kv(tt('k_fianza'), FIANZA + ' €');
-  hi += '<div class="kv total"><span>'+tt('k_total')+'</span><b>'+c.totalConFianza+' €</b></div>';
+  if (reserva.fianzaMomento === 'despues') {
+    hi += kv(tt('k_fianza_pendiente'), tt('fianza_pendiente_valor'));
+  } else {
+    hi += kv(tt('k_fianza'), FIANZA + ' €');
+  }
+  hi += '<div class="kv total"><span>'+tt('k_total')+'</span><b>'+c.totalAPagarAhora+' €</b></div>';
   $('res-importe').innerHTML = hi;
 }
 function kv(k, v) { return '<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>'; }
@@ -208,11 +308,9 @@ $('p4-next').addEventListener('click', () => {
   enviar();
 });
 
-/* ── ENVÍO (Make webhook) ── */
-/* TODO: sustituir por tu webhook real de Make.com cuando lo crees */
-const MAKE_WEBHOOK_URL = 'https://hook.eu1.make.com/TU_WEBHOOK_DE_ALQUILER';
+/* ── PAGO ── */
 /* TODO: conectar Stripe cuando se decida la pasarela.
-   De momento la reserva se envía al webhook y el pago queda pendiente de conexión. */
+   De momento la reserva se envía y el pago queda pendiente de conexión. */
 const STRIPE_PUBLISHABLE_KEY = ''; // P.ej. pk_test_...
 const RECAPTCHA_SITE_KEY = '6LcjXqEtAAAAAI1lk_D5zQJAvIZhXvaan0wnf5nl';
 
@@ -226,11 +324,16 @@ function renderRecaptcha() {
 }
 window.onRecaptchaLoad = function () { renderRecaptcha(); };
 
+/* ── ENVÍO ──
+   Enviamos a nuestra propia función de Netlify. Esa función valida el token del
+   captcha contra Google, bloquea el horario en Neon (tabla reserva_sala) y solo
+   entonces reenvía los datos a Make. La URL de Make ya no aparece en el navegador. */
 function enviar() {
   $('p4-next').disabled = true;
   leerDatos();
   const c = calculoImporte();
   const payload = {
+    tipoFormulario: 'alquiler',
     lang: lng,
     arrendatario: {
       nombre: datos.nombre, apellidos: datos.apellidos, email: datos.email,
@@ -245,7 +348,7 @@ function enviar() {
     },
     importe: {
       base: c.base, extras: c.extras, totalAlquiler: c.totalAlquiler,
-      fianza: FIANZA, total: c.totalConFianza
+      fianza: FIANZA, fianzaMomento: reserva.fianzaMomento, total: c.totalAPagarAhora
     },
     aceptaTos: !!tos.acuerdo,
     pago: {
@@ -254,13 +357,33 @@ function enviar() {
     },
     captchaToken: (window.grecaptcha && grecaptcha.getResponse()) || ''
   };
-  fetch(MAKE_WEBHOOK_URL, {
+
+  fetch('/.netlify/functions/submit-formulario', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-    .then(res => { if (res.ok) terminar(false); else terminar(true); })
-    .catch(() => terminar(true));
+    .then(res => res.json().catch(() => ({})).then(data => ({ status: res.status, data })))
+    .then(({ status, data }) => {
+      if (data && data.success) {
+        terminar(false);
+      } else if (status === 409) {
+        // Alguien se ha adelantado y ha ocupado el horario mientras se rellenaba el formulario.
+        $('p4-next').disabled = false;
+        if (window.grecaptcha) grecaptcha.reset();
+        $('err-p4').textContent = tt('err_conflicto_horario');
+        $('err-p4').style.display = 'block';
+      } else {
+        $('p4-next').disabled = false;
+        if (window.grecaptcha) grecaptcha.reset();
+        terminar(true);
+      }
+    })
+    .catch(() => {
+      $('p4-next').disabled = false;
+      if (window.grecaptcha) grecaptcha.reset();
+      terminar(true);
+    });
 }
 
 function terminar(esError) {
@@ -280,7 +403,9 @@ function terminar(esError) {
     ico.textContent = '✦';
     h3.textContent = tt('done_title');
     p.textContent = tt('done_ok');
-    note.textContent = STRIPE_PUBLISHABLE_KEY ? '' : tt('done_note');
+    note.textContent = reserva.fianzaMomento === 'despues'
+      ? tt('done_note_fianza_pend')
+      : (STRIPE_PUBLISHABLE_KEY ? '' : tt('done_note'));
   }
 }
 

@@ -7,6 +7,11 @@
   to = "/.netlify/functions/horarios"
   status = 200
 
+[[redirects]]
+  from = "/api/disponibilidad-sala"
+  to = "/.netlify/functions/disponibilidad-sala"
+  status = 200
+
 # ── SEGURIDAD: impedir que se sirvan públicamente archivos de backend/configuración ──
 # Como "publish" es la raíz del proyecto, sin estas reglas cualquiera podría entrar
 # directamente a */server.js o /package.json y ver ese código.

@@ -124,6 +124,23 @@
       <div class="field"><label data-t="p3_numextra">Nº de horas extra</label><input type="number" id="r-numextra" min="0" value="0" step="1"></div>
     </div>
 
+    <h3 class="sub" data-t="p3_extra">Horas adicionales (opcional)</h3>
+    <p class="aviso" data-t="p3_extra_aviso">Si necesitas más horas de las incluidas en el paquete, cada hora extra se cobra: 30 € por hora comenzada antes de la medianoche (00:00) y 35 € por hora comenzada de madrugada (a partir de las 00:00).</p>
+    <div class="grid">
+      <div class="field"><label data-t="p3_numextra">Nº de horas extra</label><input type="number" id="r-numextra" min="0" value="0" step="1"></div>
+    </div>
+    <p class="aviso" id="aviso-8h-auto" style="display:none" data-t="p3_auto8h">Como pides más de 2 horas extra, hemos cambiado automáticamente al pack de 8 horas y ajustado las horas extra restantes.</p>
+
+    <h3 class="sub" data-t="p3_fianza">¿Cuándo quieres pagar la fianza (100 €)?</h3>
+    <div class="grid" style="grid-template-columns:1fr 1fr;">
+      <label class="check-line"><input type="radio" name="r-fianza" id="r-fianza-ahora" checked><span data-t="fianza_ahora">Ahora, junto con el alquiler</span></label>
+      <label class="check-line"><input type="radio" name="r-fianza" id="r-fianza-despues"><span data-t="fianza_despues">Más adelante, antes del día del evento</span></label>
+    </div>
+
+    <div class="disp-box" id="disp-sugerencias" style="display:none"></div>
+    
+    <p class="err" id="err-p3"></p>
+
     <p class="err" id="err-p3"></p>
     <div class="nav">
       <button class="btn btn-prev" id="p3-prev" data-t="anterior">← Anterior</button>
