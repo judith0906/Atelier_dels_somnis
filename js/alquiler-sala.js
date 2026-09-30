@@ -337,7 +337,7 @@ function enviar() {
     lang: lng,
     arrendatario: {
       nombre: datos.nombre, apellidos: datos.apellidos, email: datos.email,
-      telefono: datos.telefono, dni: datos.dni, ciudad: datos.ciudad
+      telefono: datos.telefono, dni: datos.dni, direccion: datos.direccion, cp: datos.cp, ciudad: datos.ciudad
     },
     reserva: {
       evento: reserva.evento,
