@@ -68,7 +68,8 @@ function leerDatos() {
   datos = {
     nombre: $('d-nombre').value.trim(), apellidos: $('d-apellidos').value.trim(),
     email: $('d-email').value.trim(), telefono: $('d-telefono').value.trim(),
-    dni: $('d-dni').value.trim(), ciudad: $('d-ciudad').value.trim()
+    dni: $('d-dni').value.trim(), ciudad: $('d-ciudad').value.trim(),
+    direccion: $('d-direccion').value.trim(), cp: $('d-cp').value.trim()
   };
 }
 function validarDatos() {
