@@ -456,7 +456,9 @@ function enviar() {
       fecha: reserva.fecha,
       inicio: reserva.inicio,
       horasExtra: reserva.numextra,
-      horasExtraMadrugada: reserva.numextraMad
+      horasExtraMadrugada: reserva.numextraMad,
+      hinchable: c.servicios.some(s => s.id === 'hinchable'),
+      limpieza: c.servicios.some(s => s.id === 'limpieza')
     },
     importe: {
       base: c.base,

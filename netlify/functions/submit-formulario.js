@@ -60,7 +60,10 @@ function solapan(fechaBase, horaInicio, horasTotales, fila) {
  * el hueco vuelve a quedar libre solo por caducar, sin borrar nada a mano.
  */
 async function bloquearReservaSala(reserva) {
-  const horasTotales = Number(reserva.paqueteHoras || 0) + Number(reserva.horasExtra || 0);
+  const horasTotales =
+  Number(reserva.paqueteHoras || 0) +
+  Number(reserva.horasExtra || 0) +
+  Number(reserva.horasExtraMadrugada || 0);
   const client = await getPool().connect();
   try {
     await client.query('BEGIN');
