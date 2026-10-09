@@ -26,23 +26,36 @@ const $ = id => document.getElementById(id);
 
 let lng = 'es';
 
-/* ── PRECIOS ── */
+/* ── PRECIOS ──
+   Hay dos juegos de precios:
+   - REGISTRADOS (PRECIO_*, EXTRA_* y SERVICIOS.precio): son los que se
+     envían a Make y quedan en el registro.
+   - PVP (PVP_* y SERVICIOS.pvp): lo que ve y paga el cliente, con los
+     gastos de la pasarela de pago incluidos. */
 const PRECIO_5H = 180;
 const PRECIO_8H = 350;
 const EXTRA_NOCHE = 30;      // por hora antes de la medianoche (00:00)
 const EXTRA_MADRUGADA = 35;  // por hora de madrugada (desde las 00:00)
 const MAX_EXTRA_5H = 2;      // tope de horas extra en el pack de 5h; a partir de aquí, salto a 8h
 
+const PVP_5H = 183.20;
+const PVP_8H = 355.75;
+const PVP_EXTRA_NOCHE = 30.95;
+const PVP_EXTRA_MADRUGADA = 36.02;
+
 /* ── SERVICIOS EXTRA ── */
 const SERVICIOS = {
-  limpieza:  { precio: 45 },
-  hinchable: { precio: 160 }
+  limpieza:  { precio: 45,  pvp: 46.17 },
+  hinchable: { precio: 160, pvp: 162.90 }
 };
+
+const redondear = n => Math.round(n * 100) / 100;
+const eur = n => n.toFixed(2).replace('.', ',').replace(/,00$/, '') + ' €';
 
 function serviciosSeleccionados() {
   return Object.keys(SERVICIOS)
     .filter(id => $('x-' + id) && $('x-' + id).checked)
-    .map(id => ({ id, precio: SERVICIOS[id].precio }));
+    .map(id => ({ id, precio: SERVICIOS[id].precio, pvp: SERVICIOS[id].pvp }));
 }
 
 /* ── ESTADO ── */
@@ -260,8 +273,8 @@ function aplicarLimitesFecha() {
 /* ── PASO 3 ── */
 function actualizarTotales() {
   const p5 = $('precio-5h'), p8 = $('precio-8h');
-  if (p5) p5.textContent = PRECIO_5H + ' €';
-  if (p8) p8.textContent = PRECIO_8H + ' €';
+  if (p5) p5.textContent = eur(PVP_5H);
+  if (p8) p8.textContent = eur(PVP_8H);
 }
 
 function seleccionarPaquete(tipo) {
@@ -314,23 +327,30 @@ $('p3-prev').addEventListener('click', () => { ocultarError('err-p3'); go(2); })
    elegido y los servicios extra marcados. */
 function calculoImporte() {
   const base = reserva.paquete === '8h' ? PRECIO_8H : PRECIO_5H;
+  const pvpBase = reserva.paquete === '8h' ? PVP_8H : PVP_5H;
   const horasBase = reserva.paquete === '8h' ? 8 : 5;
   const instart = reserva.inicio || '00:00'; // 'HH:MM'
   const [hh, mm] = instart.split(':').map(Number);
   const minutosInicio = hh * 60 + mm;
+
   const extras = reserva.numextra * EXTRA_NOCHE + reserva.numextraMad * EXTRA_MADRUGADA;
+  const pvpExtras = redondear(reserva.numextra * PVP_EXTRA_NOCHE + reserva.numextraMad * PVP_EXTRA_MADRUGADA);
 
   const servicios = serviciosSeleccionados();
   const totalServicios = servicios.reduce((s, x) => s + x.precio, 0);
-  const totalAlquiler = base + extras + totalServicios;
+  const pvpServicios = redondear(servicios.reduce((s, x) => s + x.pvp, 0));
 
-  /* Horario total declarado por el cliente (pack + horas extra): si acaba
-     a partir de las 00:00 queda constancia en el resumen y en el envío
-     (ver cláusula 14 de los términos). */
+  const totalAlquiler = base + extras + totalServicios;               // lo que se registra
+  const totalCliente = redondear(pvpBase + pvpExtras + pvpServicios); // lo que paga el cliente
+
   const finMinutos = minutosInicio + (horasBase + reserva.numextra + reserva.numextraMad) * 60;
   const cruzaMedianoche = finMinutos >= 24 * 60 || reserva.numextraMad > 0;
 
-  return { base, horasBase, extras, servicios, totalServicios, totalAlquiler, cruzaMedianoche };
+  return {
+    base, pvpBase, horasBase, extras, pvpExtras,
+    servicios, totalServicios, pvpServicios,
+    totalAlquiler, totalCliente, cruzaMedianoche
+  };
 }
 
 /* ── Disponibilidad de la sala (comprobación antes de pasar al paso 4) ── */
@@ -435,12 +455,12 @@ function renderResumen() {
   hh += kv(tt('k_horario_decl'), c.cruzaMedianoche ? tt('horario_despues_medianoche') : tt('horario_antes_medianoche'));
   $('res-reserva').innerHTML = hh;
 
-  let hi = '';
-  hi += kv(tt('k_alquiler'), c.base + ' €');
-  if (c.extras > 0) hi += kv(tt('k_extras') + ' (' + (reserva.numextra + reserva.numextraMad) + ')', c.extras + ' €');
-  c.servicios.forEach(s => { hi += kv(tt('svc_' + s.id), s.precio + ' €'); });
-  hi += '<div class="kv total"><span>' + tt('k_total') + '</span><b>' + c.totalAlquiler + ' €</b></div>';
-  $('res-importe').innerHTML = hi;
+    let hi = '';
+    hi += kv(tt('k_alquiler'), eur(c.pvpBase));
+    if (c.extras > 0) hi += kv(tt('k_extras') + ' (' + (reserva.numextra + reserva.numextraMad) + ')', eur(c.pvpExtras));
+    c.servicios.forEach(s => { hi += kv(tt('svc_' + s.id), eur(s.pvp)); });
+    hi += '<div class="kv total"><span>' + tt('k_total') + '</span><b>' + eur(c.totalCliente) + '</b></div>';
+    $('res-importe').innerHTML = hi;
 }
 
 $('p4-prev').addEventListener('click', () => { ocultarError('err-p4'); go(3); });
@@ -493,13 +513,15 @@ function enviar() {
       hinchable: c.servicios.some(s => s.id === 'hinchable'),
       limpieza: c.servicios.some(s => s.id === 'limpieza')
     },
-    importe: {
+        importe: {
       base: c.base,
       extras: c.extras,
       extrasAntesMedianoche: reserva.numextra * EXTRA_NOCHE,
       extrasMadrugada: reserva.numextraMad * EXTRA_MADRUGADA,
-      servicios: c.servicios, totalServicios: c.totalServicios,
-      totalAlquiler: c.totalAlquiler, total: c.totalAlquiler
+      servicios: c.servicios.map(s => ({ id: s.id, precio: s.precio })),
+      totalServicios: c.totalServicios,
+      totalAlquiler: c.totalAlquiler,
+      total: c.totalAlquiler
     },
     aceptaTos: !!tos.acuerdo,
     pago: {
