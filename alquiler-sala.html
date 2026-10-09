@@ -92,7 +92,7 @@
         <select id="r-evento">
           <option value="cumpleaños" data-tph="ev_cumple">Cumpleaños</option>
           <option value="aniversario" data-tph="ev_aniv">Aniversario</option>
-          <option value="fiesta infórmal" data-tph="ev_informal">Fiesta informal</option>
+          <option value="fiesta informal" data-tph="ev_informal">Fiesta informal</option>
           <option value="despedida" data-tph="ev_despedida">Despedida</option>
           <option value="taller" data-tph="ev_taller">Taller / Actividad</option>
           <option value="reunión empresa" data-tph="ev_empresa">Reunión / evento de empresa</option>
@@ -121,28 +121,40 @@
       <div class="field"><label data-t="p3_hinicio">Hora de inicio</label><input type="time" id="r-inicio"></div>
     </div>
 
-    <h3 class="sub" data-t="p3_extra">Horas adicionales (opcional)</h3>
+    <br>
     <p class="aviso" data-t="p3_extra_aviso">Si necesitas más horas de las incluidas en el paquete, cada hora extra se cobra: 30 € por hora comenzada antes de la medianoche (00:00) y 35 € por hora comenzada de madrugada (a partir de las 00:00).</p>
+    <br>
+
+    <h3 class="sub" data-t="p3_extra">Horas adicionales antes de las 00:00(opcional)</h3>
     <div class="grid">
       <div class="field"><label data-t="p3_numextra">Nº de horas extra</label><input type="number" id="r-numextra" min="0" value="0" step="1"></div>
     </div>
 
-    <h3 class="sub" data-t="p3_extra">Horas adicionales (opcional)</h3>
-    <p class="aviso" data-t="p3_extra_aviso">Si necesitas más horas de las incluidas en el paquete, cada hora extra se cobra: 30 € por hora comenzada antes de la medianoche (00:00) y 35 € por hora comenzada de madrugada (a partir de las 00:00).</p>
+    <h3 class="sub" data-t="p3_extra_madrugada">Horas adicionales después de las 00:00(opcional)</h3>
     <div class="grid">
-      <div class="field"><label data-t="p3_numextra">Nº de horas extra</label><input type="number" id="r-numextra" min="0" value="0" step="1"></div>
+      <div class="field"><label data-t="p3_numextra">Nº de horas extra</label><input type="number" id="r-numextra-mad" min="0" value="0" step="1"></div>
     </div>
+    <br>
     <p class="aviso" id="aviso-8h-auto" style="display:none" data-t="p3_auto8h">Como pides más de 2 horas extra, hemos cambiado automáticamente al pack de 8 horas y ajustado las horas extra restantes.</p>
 
-    <h3 class="sub" data-t="p3_fianza">¿Cuándo quieres pagar la fianza (100 €)?</h3>
-    <div class="grid" style="grid-template-columns:1fr 1fr;">
-      <label class="check-line"><input type="radio" name="r-fianza" id="r-fianza-ahora" checked><span data-t="fianza_ahora">Ahora, junto con el alquiler</span></label>
-      <label class="check-line"><input type="radio" name="r-fianza" id="r-fianza-despues"><span data-t="fianza_despues">Más adelante, antes del día del evento</span></label>
+    <h3 class="sub" data-t="servicios_extra">Servicios extra</h3>
+    <div class="grid">
+      <label class="extra" for="x-limpieza">
+        <input type="checkbox" id="x-limpieza" data-servicio="limpieza">
+        <span class="extra-nombre" data-t="svc_limpieza">Limpieza de la sala</span>
+        <b class="extra-precio">45 €</b>
+      </label>
+
+      <label class="extra" for="x-hinchable">
+        <input type="checkbox" id="x-hinchable" data-servicio="hinchable">
+        <span class="extra-nombre" data-t="svc_hinchable">Hinchable</span>
+        <b class="extra-precio">160 €</b>
+      </label>
     </div>
 
     <div class="disp-box" id="disp-sugerencias" style="display:none"></div>
     
-    <p class="err" id="err-p3"></p>
+    
 
     <p class="err" id="err-p3"></p>
     <div class="nav">

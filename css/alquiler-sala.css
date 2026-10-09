@@ -35,3 +35,13 @@
 .disp-box .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .disp-box .chip { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--gold); background: transparent; color: var(--gold-light); cursor: pointer; font-family: 'Lato', sans-serif; }
 .disp-box .chip:hover { background: rgba(201,168,76,0.1); }
+
+/* Checkbox de servicios extra*/
+.extra {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border: 1px solid #444; border-radius: 10px;
+  cursor: pointer;
+}
+.extra:has(input:checked) { border-color: #c9a45c; }
+.extra input { width: 18px; height: 18px; accent-color: #c9a45c; }
+.extra-nombre { flex: 1; }

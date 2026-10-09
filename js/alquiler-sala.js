@@ -4,18 +4,17 @@
 
    Textos ES/CA en js/i18n.js (debe cargarse antes que este archivo).
 
-   Reglas de negocio añadidas en esta versión:
+   Reglas de negocio:
    - El pack de 5h admite como máximo 2 horas extra (7h en total). A
      partir de ahí, se pasa automáticamente al pack de 8h restando 3
      horas extra (ver normalizarPaqueteExtra). El pack de 8h no tiene tope.
    - Antes de pasar al paso 4 se comprueba la disponibilidad real de la
      sala contra /api/disponibilidad-sala; si el hueco choca, se ofrecen
      los huecos libres más cercanos ese mismo día.
-   - La fianza se puede pagar ahora o dejarla pendiente hasta el día
-     del evento (ver reserva.fianzaMomento).
-   - El envío ya no va directo al webhook de Make: pasa por nuestra
-     función de Netlify /.netlify/functions/submit-formulario, que es
-     quien de verdad "bloquea" el horario en la base de datos.
+   - Servicios extra opcionales (limpieza, hinchable) que se suman al total.
+   - El envío pasa por nuestra función de Netlify
+     /.netlify/functions/submit-formulario, que es quien de verdad
+     "bloquea" el horario en la base de datos.
    ──────────────────────────────────────────────────────────── */
 
 const T = I18N.alquiler;
@@ -43,17 +42,28 @@ function tt(k){ return T[lng][k] || k; }
 /* ── PRECIOS ── */
 const PRECIO_5H = 180;
 const PRECIO_8H = 350;
-const FIANZA = 100;
 const EXTRA_NOCHE = 30;      // por hora antes de la medianoche (00:00)
 const EXTRA_MADRUGADA = 35;  // por hora de madrugada (desde las 00:00)
 const MAX_EXTRA_5H = 2;      // tope de horas extra en el pack de 5h; a partir de aquí, salto a 8h
+
+/* ── SERVICIOS EXTRA ── */
+const SERVICIOS = {
+  limpieza:  { precio: 45 },
+  hinchable: { precio: 160 }
+};
+
+function serviciosSeleccionados() {
+  return Object.keys(SERVICIOS)
+    .filter(id => $('x-' + id) && $('x-' + id).checked)
+    .map(id => ({ id, precio: SERVICIOS[id].precio }));
+}
 
 /* ── ESTADO ── */
 const $ = id => document.getElementById(id);
 let paso = 1;
 let datos = {};
 let tos = { leido: false, acuerdo: false };
-let reserva = { paquete: '5h', fecha: '', inicio: '', numextra: 0, evento: '', fianzaMomento: 'ahora' };
+let reserva = { paquete: '5h', fecha: '', inicio: '', numextra: 0, numextraMad: 0, evento: '' };
 
 /* ── NAVEGACIÓN ── */
 function go(n) {
@@ -202,26 +212,34 @@ $('opt-8h').addEventListener('click', () => seleccionarPaquete('8h'));
    Se llama en cada cambio del campo y del pack, así que si alguien
    fuerza otra vez 5h con 3+ horas extra, se vuelve a recalcular. */
 function normalizarPaqueteExtra() {
-  let v = parseInt($('r-numextra').value, 10);
-  if (isNaN(v) || v < 0) v = 0;
+  let a = parseInt($('r-numextra').value, 10);      // antes de las 00:00
+  let b = parseInt($('r-numextra-mad').value, 10);  // después de las 00:00
+  if (isNaN(a) || a < 0) a = 0;
+  if (isNaN(b) || b < 0) b = 0;
   let auto = false;
-  if (reserva.paquete === '5h' && v > MAX_EXTRA_5H) {
+  if (reserva.paquete === '5h' && a + b > MAX_EXTRA_5H) {
     reserva.paquete = '8h';
-    v = v - (MAX_EXTRA_5H + 1);
+    let quitar = MAX_EXTRA_5H + 1;                  // 3 horas
+    const qa = Math.min(a, quitar); a -= qa; quitar -= qa;  // primero las de antes de las 00:00
+    b = Math.max(0, b - quitar);                    // el resto, de madrugada
     document.querySelectorAll('#opciones .opt').forEach(o => o.classList.remove('sel'));
     $('opt-8h').classList.add('sel');
     auto = true;
   }
-  $('r-numextra').value = v;
-  reserva.numextra = v;
+  $('r-numextra').value = a;
+  $('r-numextra-mad').value = b;
+  reserva.numextra = a;
+  reserva.numextraMad = b;
   $('aviso-8h-auto').style.display = auto ? 'block' : 'none';
 }
 
 $('r-numextra').addEventListener('input', normalizarPaqueteExtra);
+$('r-numextra-mad').addEventListener('input', normalizarPaqueteExtra);
 
 $('p3-prev').addEventListener('click', () => { $('err-p3').style.display='none'; go(2); });
 
-/* Cálculo del desglose según la hora de inicio y las horas extra.
+/* Cálculo del desglose según la hora de inicio, las horas extra y los
+   servicios extra.
    Regla de precios: las horas extra que arrancan antes de la medianoche
    (00:00) cuestan 30 €/h; las que arrancan de madrugada (desde las 00:00)
    cuestan 35 €/h. Se considera "madrugada" la franja 00:00–06:00 del reloj. */
@@ -231,39 +249,25 @@ function calculoImporte() {
   const instart = reserva.inicio || '00:00'; // 'HH:MM'
   const [hh, mm] = instart.split(':').map(Number);
   const minutosInicio = hh * 60 + mm;
-  const MIN_MADRUGADA = 0 * 60;              // 00:00
-  const MAX_MADRUGADA = 6 * 60;              // 06:00
-  let extras = 0;
-  let extrasRows = [];
-  if (reserva.numextra > 0) {
-    for (let i = 0; i < reserva.numextra; i++) {
-      const reloj = (minutosInicio + (horasBase + i) * 60) % (24 * 60);
-      const esMadrugada = reloj >= MIN_MADRUGADA && reloj < MAX_MADRUGADA;
-      const precio = esMadrugada ? EXTRA_MADRUGADA : EXTRA_NOCHE;
-      extras += precio;
-      extrasRows.push({ precio });
-    }
-  }
-  const totalAlquiler = base + extras;
-  const totalConFianza = totalAlquiler + FIANZA;
+  const extras = reserva.numextra * EXTRA_NOCHE + reserva.numextraMad * EXTRA_MADRUGADA;
+
+  const servicios = serviciosSeleccionados();
+  const totalServicios = servicios.reduce((s, x) => s + x.precio, 0);
+  const totalAlquiler = base + extras + totalServicios;
 
   /* Horario total declarado por el cliente (base + horas extra contratadas):
      si acaba a partir de las 00:00, queda constancia de ello en el resumen
      y en el envío — ver cláusula 14 de los términos sobre el incumplimiento
      de este horario declarado. */
-  const finMinutos = minutosInicio + (horasBase + reserva.numextra) * 60;
-  const cruzaMedianoche = finMinutos >= 24 * 60;
+  const finMinutos = minutosInicio + (horasBase + reserva.numextra + reserva.numextraMad) * 60;
+  const cruzaMedianoche = finMinutos >= 24 * 60 || reserva.numextraMad > 0;
 
-  // Importe a pagar AHORA en el formulario: si la fianza se deja para
-  // más adelante, no entra en este total (ver reserva.fianzaMomento).
-  const totalAPagarAhora = reserva.fianzaMomento === 'despues' ? totalAlquiler : totalConFianza;
-
-  return { base, horasBase, extras, totalAlquiler, totalConFianza, totalAPagarAhora, extrasRows, cruzaMedianoche };
+  return { base, horasBase, extras, servicios, totalServicios, totalAlquiler, cruzaMedianoche };
 }
 
 /* ── Disponibilidad de la sala (comprobación antes de pasar al paso 4) ── */
 async function comprobarDisponibilidad() {
-  const horasTotales = (reserva.paquete === '8h' ? 8 : 5) + reserva.numextra;
+  const horasTotales = (reserva.paquete === '8h' ? 8 : 5) + reserva.numextra + reserva.numextraMad;
   const params = new URLSearchParams({ fecha: reserva.fecha, inicio: reserva.inicio, horas: horasTotales });
   const res = await fetch('/api/disponibilidad-sala?' + params.toString());
   if (!res.ok) throw new Error('disponibilidad no ok');
@@ -291,7 +295,6 @@ $('p3-next').addEventListener('click', async () => {
   reserva.fecha = $('r-fecha').value;
   reserva.inicio = $('r-inicio').value;
   reserva.evento = $('r-evento').value;
-  reserva.fianzaMomento = $('r-fianza-despues').checked ? 'despues' : 'ahora';
 
   if (!reserva.fecha || !reserva.inicio || !reserva.paquete) {
     $('err-p3').textContent = tt('conexion_vacia');
@@ -348,19 +351,15 @@ function renderResumen() {
   hh += kv(tt('k_evento'), reserva.evento);
   hh += kv(tt('k_fecha'), reserva.fecha);
   hh += kv(tt('k_inicio'), fmtHora(reserva.inicio));
-  hh += kv(tt('k_numextra'), reserva.numextra);
+  hh += kv(tt('k_numextra'), reserva.numextra + reserva.numextraMad);
   hh += kv(tt('k_horario_decl'), c.cruzaMedianoche ? tt('horario_despues_medianoche') : tt('horario_antes_medianoche'));
   $('res-reserva').innerHTML = hh;
 
   let hi = '';
   hi += kv(tt('k_alquiler'), c.base + ' €');
-  if (c.extras > 0) hi += kv(tt('k_extras') + ' (' + reserva.numextra + ')', c.extras + ' €');
-  if (reserva.fianzaMomento === 'despues') {
-    hi += kv(tt('k_fianza_pendiente'), tt('fianza_pendiente_valor'));
-  } else {
-    hi += kv(tt('k_fianza'), FIANZA + ' €');
-  }
-  hi += '<div class="kv total"><span>'+tt('k_total')+'</span><b>'+c.totalAPagarAhora+' €</b></div>';
+  if (c.extras > 0) hi += kv(tt('k_extras') + ' (' + (reserva.numextra + reserva.numextraMad) + ')', c.extras + ' €');
+  c.servicios.forEach(s => { hi += kv(tt('svc_' + s.id), s.precio + ' €'); });
+  hi += '<div class="kv total"><span>'+tt('k_total')+'</span><b>'+c.totalAlquiler+' €</b></div>';
   $('res-importe').innerHTML = hi;
 }
 function kv(k, v) { return '<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>'; }
@@ -410,11 +409,16 @@ function enviar() {
       paqueteHoras: reserva.paquete === '8h' ? 8 : 5,
       fecha: reserva.fecha,
       inicio: reserva.inicio,
-      horasExtra: reserva.numextra
+      horasExtra: reserva.numextra,
+      horasExtraMadrugada: reserva.numextraMad
     },
     importe: {
-      base: c.base, extras: c.extras, totalAlquiler: c.totalAlquiler,
-      fianza: FIANZA, fianzaMomento: reserva.fianzaMomento, total: c.totalAPagarAhora
+      base: c.base,
+      extras: c.extras,
+      extrasAntesMedianoche: reserva.numextra * EXTRA_NOCHE,
+      extrasMadrugada: reserva.numextraMad * EXTRA_MADRUGADA,
+      servicios: c.servicios, totalServicios: c.totalServicios,
+      totalAlquiler: c.totalAlquiler, total: c.totalAlquiler
     },
     aceptaTos: !!tos.acuerdo,
     pago: {
@@ -469,9 +473,7 @@ function terminar(esError) {
     ico.textContent = '✦';
     h3.textContent = tt('done_title');
     p.textContent = tt('done_ok');
-    note.textContent = reserva.fianzaMomento === 'despues'
-      ? tt('done_note_fianza_pend')
-      : (STRIPE_PUBLISHABLE_KEY ? '' : tt('done_note'));
+    note.textContent = STRIPE_PUBLISHABLE_KEY ? '' : tt('done_note');
   }
 }
 
