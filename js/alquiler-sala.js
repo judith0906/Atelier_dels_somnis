@@ -72,12 +72,77 @@ function leerDatos() {
     direccion: $('d-direccion').value.trim(), cp: $('d-cp').value.trim()
   };
 }
+
+/* ── VALIDACIÓN DE CAMPOS (paso 2) ── */
+const LETRAS = "A-Za-zÀ-ÖØ-öø-ÿ";
+const SOLO_LETRAS = new RegExp(`^[${LETRAS}·' \\-]+$`);
+const contarLetras = s => (s.match(new RegExp(`[${LETRAS}]`, "g")) || []).length;
+
+const MSG = {
+  es: {
+    nombre: "El nombre debe tener al menos 2 letras y no puede contener números.",
+    apellidos: "Los apellidos deben tener al menos 5 letras y no pueden contener números.",
+    email: "Introduce un correo válido (por ejemplo, tu@correo.com).",
+    telefono: "El teléfono debe tener 9 números.",
+    dni: "Introduce un DNI (8 números y una letra) o un NIE (letra, 7 números y letra).",
+    direccion: "La dirección debe tener al menos 20 caracteres.",
+    cp: "El código postal debe tener 5 números.",
+    ciudad: "La ciudad solo puede contener letras."
+  },
+  ca: {
+    nombre: "El nom ha de tenir almenys 2 lletres i no pot contenir números.",
+    apellidos: "Els cognoms han de tenir almenys 5 lletres i no poden contenir números.",
+    email: "Introdueix un correu vàlid (per exemple, tu@correu.com).",
+    telefono: "El telèfon ha de tenir 9 números.",
+    dni: "Introdueix un DNI (8 números i una lletra) o un NIE (lletra, 7 números i lletra).",
+    direccion: "L'adreça ha de tenir almenys 20 caràcters.",
+    cp: "El codi postal ha de tenir 5 números.",
+    ciudad: "La ciutat només pot contenir lletres."
+  }
+};
+
+const REGLAS = {
+  "d-nombre":    v => SOLO_LETRAS.test(v) && contarLetras(v) >= 2,
+  "d-apellidos": v => SOLO_LETRAS.test(v) && contarLetras(v) >= 5,
+  "d-email":     v => /^[^\s@]*[A-Za-z][^\s@]*@[^\s@.]*[A-Za-z][^\s@.]*(\.[^\s@.]+)*\.[A-Za-z]{2,}$/.test(v),
+  "d-telefono":  v => /^\d{9}$/.test(v.replace(/\s/g, "")),
+  "d-dni":       v => /^\d{8}[A-Z]$/.test(v.toUpperCase()) || /^[A-Z]\d{7}[A-Z]$/.test(v.toUpperCase()),
+  "d-direccion": v => v.trim().length >= 20,
+  "d-cp":        v => /^\d{5}$/.test(v),
+  "d-ciudad":    v => SOLO_LETRAS.test(v.trim())
+};
+
+function validarCampo(id) {
+  const el = $(id);
+  const ok = REGLAS[id](el.value.trim());
+  el.classList.toggle('invalid', !ok);
+  return ok;
+}
+
+Object.keys(REGLAS).forEach(id => {
+  const el = $(id);
+  el.addEventListener('blur', () => validarCampo(id));
+  el.addEventListener('input', () => { if (el.classList.contains('invalid')) validarCampo(id); });
+});
+
+// Bloquear caracteres no válidos al teclear
+$('d-cp').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); });
+$('d-telefono').addEventListener('input', e => { e.target.value = e.target.value.replace(/[^\d\s]/g, ''); });
+$('d-dni').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+
 function validarDatos() {
   leerDatos();
-  const v = Object.values(datos);
-  if (v.some(x => !x)) { $('err-p2').textContent = tt('err_required'); $('err-p2').style.display='block'; return false; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) { $('err-p2').textContent = tt('err_email'); $('err-p2').style.display='block'; return false; }
-  $('err-p2').style.display='none';
+  let primerError = null;
+  for (const id of Object.keys(REGLAS)) {
+    if (!validarCampo(id) && !primerError) primerError = $(id);
+  }
+  if (primerError) {
+    $('err-p2').textContent = MSG[lng][primerError.id.replace('d-', '')];
+    $('err-p2').style.display = 'block';
+    primerError.focus();
+    return false;
+  }
+  $('err-p2').style.display = 'none';
   return true;
 }
 
