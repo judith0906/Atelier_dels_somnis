@@ -5,9 +5,11 @@
    Textos ES/CA en js/i18n.js (debe cargarse antes que este archivo).
 
    Reglas de negocio:
-   - El pack de 5h admite como máximo 2 horas extra (7h en total). A
-     partir de ahí, se pasa automáticamente al pack de 8h restando 3
-     horas extra (ver normalizarPaqueteExtra). El pack de 8h no tiene tope.
+   - El pack de 5h admite como máximo 2 horas extra en total (7h). Si se
+     piden más, se pasa automáticamente al pack de 8h restando 3 horas
+     extra (ver normalizarPaqueteExtra). El pack de 8h no tiene tope.
+   - Las horas extra se indican en dos campos: antes de las 00:00
+     (30 €/h) y después de las 00:00 (35 €/h).
    - Antes de pasar al paso 4 se comprueba la disponibilidad real de la
      sala contra /api/disponibilidad-sala; si el hueco choca, se ofrecen
      los huecos libres más cercanos ese mismo día.
@@ -15,34 +17,14 @@
    - El envío pasa por nuestra función de Netlify
      /.netlify/functions/submit-formulario, que es quien de verdad
      "bloquea" el horario en la base de datos.
+   - Al cambiar de idioma se vuelve a pintar todo el contenido dinámico
+     (resumen, errores, sugerencias y pantalla final).
    ──────────────────────────────────────────────────────────── */
 
 const T = I18N.alquiler;
+const $ = id => document.getElementById(id);
 
 let lng = 'es';
-function applyT() {
-  const d = T[lng];
-  document.querySelectorAll('[data-t]').forEach(el => { const k = el.getAttribute('data-t'); if (d[k]) el.textContent = d[k]; });
-  document.querySelectorAll('[data-tph]').forEach(el => {
-  const k = el.getAttribute('data-tph');
-  if (!d[k]) return;
-  if (el.tagName === 'INPUT') el.placeholder = d[k];
-  else el.textContent = d[k];
-});
-  const tb = $('terms-box');
-  if (tb) {
-    tb.innerHTML = d.term_text;
-    $('tos-leido').disabled = true;
-    $('tos-acuerdo').disabled = true;
-    $('tos-leido').checked = false;
-    $('tos-acuerdo').checked = false;
-    $('p1-next').disabled = true;
-    p1InitLeido();
-  }
-  renderOpciones();
-  actualizarTotales();
-}
-function tt(k){ return T[lng][k] || k; }
 
 /* ── PRECIOS ── */
 const PRECIO_5H = 180;
@@ -64,19 +46,78 @@ function serviciosSeleccionados() {
 }
 
 /* ── ESTADO ── */
-const $ = id => document.getElementById(id);
 let paso = 1;
 let datos = {};
 let tos = { leido: false, acuerdo: false };
 let reserva = { paquete: '5h', fecha: '', inicio: '', numextra: 0, numextraMad: 0, evento: '' };
+let sugerenciasActuales = null;   // horas libres que se están mostrando (o null)
+let estadoFinal = null;           // null | 'ok' | 'error' (pantalla final)
+const errores = {};               // id de caja de error -> función que devuelve su texto
+
+/* ── TRADUCCIÓN ── */
+function tt(k) { return T[lng][k] || k; }
+
+function applyT() {
+  const d = T[lng];
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const k = el.getAttribute('data-t');
+    if (d[k]) el.textContent = d[k];
+  });
+  document.querySelectorAll('[data-tph]').forEach(el => {
+    const k = el.getAttribute('data-tph');
+    if (!d[k]) return;
+    if (el.tagName === 'INPUT') el.placeholder = d[k];
+    else el.textContent = d[k];
+  });
+  const tb = $('terms-box');
+  if (tb) {
+    tb.innerHTML = d.term_text;
+    $('tos-leido').disabled = true;
+    $('tos-acuerdo').disabled = true;
+    $('tos-leido').checked = false;
+    $('tos-acuerdo').checked = false;
+    $('p1-next').disabled = true;
+    p1InitLeido();
+  }
+  actualizarTotales();
+
+  // Contenido dinámico que hay que volver a pintar en el idioma nuevo
+  repintarErrores();
+  if (sugerenciasActuales) mostrarSugerencias(sugerenciasActuales);
+  if (paso === 4) renderResumen();
+  pintarFinal();
+}
+
+function cambiarIdioma(nuevo) {
+  lng = nuevo;
+  document.documentElement.lang = nuevo;
+  $('lb-es').classList.toggle('active', nuevo === 'es');
+  $('lb-ca').classList.toggle('active', nuevo === 'ca');
+  applyT();
+}
+
+/* ── ERRORES (se guardan como función para poder traducirlos al cambiar de idioma) ── */
+function mostrarError(id, fn) {
+  errores[id] = fn;
+  const el = $(id);
+  el.textContent = fn();
+  el.style.display = 'block';
+}
+function ocultarError(id) {
+  delete errores[id];
+  $(id).style.display = 'none';
+}
+function repintarErrores() {
+  Object.keys(errores).forEach(id => { $(id).textContent = errores[id](); });
+}
 
 /* ── NAVEGACIÓN ── */
 function go(n) {
   paso = n;
-  document.querySelectorAll('.step').forEach((s,i) => s.id === ('paso'+n) ? s.classList.add('active') : s.classList.remove('active'));
-  for (let i=1;i<=4;i++) $('chip'+i).classList.toggle('active', i===n);
+  document.querySelectorAll('.step').forEach(s => s.id === ('paso' + n) ? s.classList.add('active') : s.classList.remove('active'));
+  for (let i = 1; i <= 4; i++) $('chip' + i).classList.toggle('active', i === n);
   if (n === 4) { renderRecaptcha(); renderResumen(); }
-  $('paso'+n).scrollIntoView({ block:'start', behavior:'smooth' });
+  $('paso' + n).scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function leerDatos() {
@@ -152,12 +193,12 @@ function validarDatos() {
     if (!validarCampo(id) && !primerError) primerError = $(id);
   }
   if (primerError) {
-    $('err-p2').textContent = MSG[lng][primerError.id.replace('d-', '')];
-    $('err-p2').style.display = 'block';
+    const clave = primerError.id.replace('d-', '');
+    mostrarError('err-p2', () => MSG[lng][clave]);
     primerError.focus();
     return false;
   }
-  $('err-p2').style.display = 'none';
+  ocultarError('err-p2');
   return true;
 }
 
@@ -182,16 +223,16 @@ $('tos-acuerdo').addEventListener('change', p1Actualizar);
 function p1Check() {
   tos.leido = $('tos-leido').checked;
   tos.acuerdo = $('tos-acuerdo').checked;
-  if (tos.leido && tos.acuerdo) { $('err-p1').style.display='none'; return true; }
+  if (tos.leido && tos.acuerdo) { $('err-p1').style.display = 'none'; return true; }
   return false;
 }
 $('p1-next').addEventListener('click', () => {
-  if (!p1Check()) { $('err-p1').style.display='block'; return; }
+  if (!p1Check()) { $('err-p1').style.display = 'block'; return; }
   go(2);
 });
 
 /* ── PASO 2 ── */
-$('p2-prev').addEventListener('click', () => { $('err-p2').style.display='none'; go(1); });
+$('p2-prev').addEventListener('click', () => { ocultarError('err-p2'); go(1); });
 $('p2-next').addEventListener('click', () => { if (validarDatos()) go(3); });
 
 /* ── PASO 3 ── */
@@ -204,18 +245,20 @@ function actualizarTotales() {
 function seleccionarPaquete(tipo) {
   reserva.paquete = tipo;
   document.querySelectorAll('#opciones .opt').forEach(o => o.classList.remove('sel'));
-  $('opt-'+tipo).classList.add('sel');
+  $('opt-' + tipo).classList.add('sel');
   normalizarPaqueteExtra();
 }
 
 $('opt-5h').addEventListener('click', () => seleccionarPaquete('5h'));
 $('opt-8h').addEventListener('click', () => seleccionarPaquete('8h'));
 
-/* Si con el pack de 5h se piden 3 horas extra o más, es más barato el
-   pack de 8h (5+3=8+0), así que saltamos automáticamente a 8h restando
-   3 horas extra (5+5 → 8+2, etc.). El pack de 8h no tiene tope.
-   Se llama en cada cambio del campo y del pack, así que si alguien
-   fuerza otra vez 5h con 3+ horas extra, se vuelve a recalcular. */
+/* Con el pack de 5h solo se admiten MAX_EXTRA_5H horas extra en total
+   (las de antes de las 00:00 más las de después). Si se piden más, se
+   pasa automáticamente al pack de 8h y se restan 3 horas extra: primero
+   de las de antes de las 00:00 y, si faltan, de las de madrugada.
+   El pack de 8h no tiene tope. Se llama en cada cambio de los campos y
+   del pack, así que si alguien vuelve a elegir 5h con demasiadas horas
+   extra, se recalcula. */
 function normalizarPaqueteExtra() {
   let a = parseInt($('r-numextra').value, 10);      // antes de las 00:00
   let b = parseInt($('r-numextra-mad').value, 10);  // después de las 00:00
@@ -224,9 +267,9 @@ function normalizarPaqueteExtra() {
   let auto = false;
   if (reserva.paquete === '5h' && a + b > MAX_EXTRA_5H) {
     reserva.paquete = '8h';
-    let quitar = MAX_EXTRA_5H + 1;                  // 3 horas
-    const qa = Math.min(a, quitar); a -= qa; quitar -= qa;  // primero las de antes de las 00:00
-    b = Math.max(0, b - quitar);                    // el resto, de madrugada
+    let quitar = MAX_EXTRA_5H + 1;
+    const qa = Math.min(a, quitar); a -= qa; quitar -= qa;
+    b = Math.max(0, b - quitar);
     document.querySelectorAll('#opciones .opt').forEach(o => o.classList.remove('sel'));
     $('opt-8h').classList.add('sel');
     auto = true;
@@ -241,13 +284,12 @@ function normalizarPaqueteExtra() {
 $('r-numextra').addEventListener('input', normalizarPaqueteExtra);
 $('r-numextra-mad').addEventListener('input', normalizarPaqueteExtra);
 
-$('p3-prev').addEventListener('click', () => { $('err-p3').style.display='none'; go(2); });
+$('p3-prev').addEventListener('click', () => { ocultarError('err-p3'); go(2); });
 
-/* Cálculo del desglose según la hora de inicio, las horas extra y los
-   servicios extra.
-   Regla de precios: las horas extra que arrancan antes de la medianoche
-   (00:00) cuestan 30 €/h; las que arrancan de madrugada (desde las 00:00)
-   cuestan 35 €/h. Se considera "madrugada" la franja 00:00–06:00 del reloj. */
+/* Cálculo del importe. Las horas extra se cobran según el campo en el
+   que se hayan indicado: las de antes de las 00:00 a 30 €/h y las de
+   después de las 00:00 (madrugada) a 35 €/h. A esto se suman el pack
+   elegido y los servicios extra marcados. */
 function calculoImporte() {
   const base = reserva.paquete === '8h' ? PRECIO_8H : PRECIO_5H;
   const horasBase = reserva.paquete === '8h' ? 8 : 5;
@@ -260,10 +302,9 @@ function calculoImporte() {
   const totalServicios = servicios.reduce((s, x) => s + x.precio, 0);
   const totalAlquiler = base + extras + totalServicios;
 
-  /* Horario total declarado por el cliente (base + horas extra contratadas):
-     si acaba a partir de las 00:00, queda constancia de ello en el resumen
-     y en el envío — ver cláusula 14 de los términos sobre el incumplimiento
-     de este horario declarado. */
+  /* Horario total declarado por el cliente (pack + horas extra): si acaba
+     a partir de las 00:00 queda constancia en el resumen y en el envío
+     (ver cláusula 14 de los términos). */
   const finMinutos = minutosInicio + (horasBase + reserva.numextra + reserva.numextraMad) * 60;
   const cruzaMedianoche = finMinutos >= 24 * 60 || reserva.numextraMad > 0;
 
@@ -280,6 +321,7 @@ async function comprobarDisponibilidad() {
 }
 
 function mostrarSugerencias(horas) {
+  sugerenciasActuales = horas;
   const box = $('disp-sugerencias');
   let html = '<p class="aviso">' + tt('sugerencias_intro') + '</p><div class="chips">';
   horas.forEach(h => { html += '<button type="button" class="chip" data-hora="' + h + '">' + h + '</button>'; });
@@ -290,6 +332,7 @@ function mostrarSugerencias(horas) {
     btn.addEventListener('click', () => {
       $('r-inicio').value = btn.getAttribute('data-hora');
       box.style.display = 'none';
+      sugerenciasActuales = null;
       $('p3-next').click();
     });
   });
@@ -302,15 +345,14 @@ $('p3-next').addEventListener('click', async () => {
   reserva.evento = $('r-evento').value;
 
   if (!reserva.fecha || !reserva.inicio || !reserva.paquete) {
-    $('err-p3').textContent = tt('conexion_vacia');
-    $('err-p3').style.display = 'block';
+    mostrarError('err-p3', () => tt('conexion_vacia'));
     return;
   }
-  $('err-p3').style.display = 'none';
+  ocultarError('err-p3');
   $('disp-sugerencias').style.display = 'none';
+  sugerenciasActuales = null;
 
   $('p3-next').disabled = true;
-  const textoOriginal = $('p3-next').textContent;
   $('p3-next').textContent = tt('comprobando_disp');
 
   try {
@@ -320,15 +362,13 @@ $('p3-next').addEventListener('click', async () => {
     } else if (data.sugerencias && data.sugerencias.length) {
       mostrarSugerencias(data.sugerencias);
     } else {
-      $('err-p3').textContent = tt('sin_disponibilidad');
-      $('err-p3').style.display = 'block';
+      mostrarError('err-p3', () => tt('sin_disponibilidad'));
     }
   } catch (e) {
-    $('err-p3').textContent = tt('err_disponibilidad');
-    $('err-p3').style.display = 'block';
+    mostrarError('err-p3', () => tt('err_disponibilidad'));
   } finally {
     $('p3-next').disabled = false;
-    $('p3-next').textContent = textoOriginal;
+    $('p3-next').textContent = tt('continuar');
   }
 });
 
@@ -338,6 +378,8 @@ function fmtHora(t) {
   const [h, m] = t.split(':');
   return h + ':' + m;
 }
+function kv(k, v) { return '<div class="kv"><span>' + k + '</span><b>' + v + '</b></div>'; }
+
 function renderResumen() {
   leerDatos();
   let hd = '';
@@ -349,11 +391,10 @@ function renderResumen() {
   $('res-datos').innerHTML = hd;
 
   const c = calculoImporte();
-
   const baseHoras = reserva.paquete === '8h' ? 8 : 5;
+  const optEvento = $('r-evento').selectedOptions[0];
   let hh = '';
   hh += kv(tt('k_duracion'), tt('paquete') + ' ' + baseHoras + tt('horas'));
-  const optEvento = $('r-evento').selectedOptions[0];
   hh += kv(tt('k_evento'), optEvento ? optEvento.textContent : reserva.evento);
   hh += kv(tt('k_fecha'), reserva.fecha ? reserva.fecha.split('-').reverse().join('/') : '—');
   hh += kv(tt('k_inicio'), fmtHora(reserva.inicio));
@@ -365,17 +406,16 @@ function renderResumen() {
   hi += kv(tt('k_alquiler'), c.base + ' €');
   if (c.extras > 0) hi += kv(tt('k_extras') + ' (' + (reserva.numextra + reserva.numextraMad) + ')', c.extras + ' €');
   c.servicios.forEach(s => { hi += kv(tt('svc_' + s.id), s.precio + ' €'); });
-  hi += '<div class="kv total"><span>'+tt('k_total')+'</span><b>'+c.totalAlquiler+' €</b></div>';
+  hi += '<div class="kv total"><span>' + tt('k_total') + '</span><b>' + c.totalAlquiler + ' €</b></div>';
   $('res-importe').innerHTML = hi;
 }
-function kv(k, v) { return '<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>'; }
 
-$('p4-prev').addEventListener('click', () => { $('err-p4').style.display='none'; go(3); });
+$('p4-prev').addEventListener('click', () => { ocultarError('err-p4'); go(3); });
 
 $('p4-next').addEventListener('click', () => {
   const token = (window.grecaptcha && grecaptcha.getResponse()) || '';
-  if (!token) { $('err-p4').textContent = tt('err_robot'); $('err-p4').style.display='block'; return; }
-  $('err-p4').style.display='none';
+  if (!token) { mostrarError('err-p4', () => tt('err_robot')); return; }
+  ocultarError('err-p4');
   enviar();
 });
 
@@ -398,7 +438,7 @@ window.onRecaptchaLoad = function () { renderRecaptcha(); };
 /* ── ENVÍO ──
    Enviamos a nuestra propia función de Netlify. Esa función valida el token del
    captcha contra Google, bloquea el horario en Neon (tabla reserva_sala) y solo
-   entonces reenvía los datos a Make. La URL de Make ya no aparece en el navegador. */
+   entonces reenvía los datos a Make. La URL de Make no aparece en el navegador. */
 function enviar() {
   $('p4-next').disabled = true;
   leerDatos();
@@ -447,8 +487,7 @@ function enviar() {
         // Alguien se ha adelantado y ha ocupado el horario mientras se rellenaba el formulario.
         $('p4-next').disabled = false;
         if (window.grecaptcha) grecaptcha.reset();
-        $('err-p4').textContent = tt('err_conflicto_horario');
-        $('err-p4').style.display = 'block';
+        mostrarError('err-p4', () => tt('err_conflicto_horario'));
       } else {
         $('p4-next').disabled = false;
         if (window.grecaptcha) grecaptcha.reset();
@@ -462,15 +501,14 @@ function enviar() {
     });
 }
 
-function terminar(esError) {
-  $('paso4').classList.remove('active');
-  $('chip4').classList.remove('active');
-  $('ok-box').style.display = 'block';
+/* ── PANTALLA FINAL ── */
+function pintarFinal() {
+  if (!estadoFinal) return;
   const ico = document.querySelector('.ok .ico');
   const h3 = $('ok-title');
   const p = $('ok-msg');
   const note = $('ok-note');
-  if (esError) {
+  if (estadoFinal === 'error') {
     ico.textContent = '⚠';
     h3.textContent = tt('submit_fail');
     p.textContent = '';
@@ -483,9 +521,17 @@ function terminar(esError) {
   }
 }
 
-/* ── LANG ── */
-$('lb-es').addEventListener('click', () => { lng = 'es'; applyT(); $('lb-es').classList.add('active'); $('lb-ca').classList.remove('active'); document.documentElement.lang='es'; });
-$('lb-ca').addEventListener('click', () => { lng = 'ca'; applyT(); $('lb-ca').classList.add('active'); $('lb-es').classList.remove('active'); document.documentElement.lang='ca'; });
+function terminar(esError) {
+  $('paso4').classList.remove('active');
+  $('chip4').classList.remove('active');
+  $('ok-box').style.display = 'block';
+  estadoFinal = esError ? 'error' : 'ok';
+  pintarFinal();
+}
+
+/* ── IDIOMA ── */
+$('lb-es').addEventListener('click', () => cambiarIdioma('es'));
+$('lb-ca').addEventListener('click', () => cambiarIdioma('ca'));
 
 /* init */
 seleccionarPaquete('5h');
