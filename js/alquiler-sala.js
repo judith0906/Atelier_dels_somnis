@@ -114,6 +114,7 @@ function repintarErrores() {
 /* ── NAVEGACIÓN ── */
 function go(n) {
   paso = n;
+  if (n === 3) aplicarLimitesFecha();
   document.querySelectorAll('.step').forEach(s => s.id === ('paso' + n) ? s.classList.add('active') : s.classList.remove('active'));
   for (let i = 1; i <= 4; i++) $('chip' + i).classList.toggle('active', i === n);
   if (n === 4) { renderRecaptcha(); renderResumen(); }
@@ -235,6 +236,27 @@ $('p1-next').addEventListener('click', () => {
 $('p2-prev').addEventListener('click', () => { ocultarError('err-p2'); go(1); });
 $('p2-next').addEventListener('click', () => { if (validarDatos()) go(3); });
 
+/* ── LÍMITES DE FECHA (hoy → hoy + 1 año) ── */
+function fechaISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + dia;
+}
+
+function limitesFecha() {
+  const hoy = new Date();
+  const max = new Date(hoy);
+  max.setFullYear(max.getFullYear() + 1);
+  return { min: fechaISO(hoy), max: fechaISO(max) };
+}
+
+function aplicarLimitesFecha() {
+  const lim = limitesFecha();
+  $('r-fecha').min = lim.min;
+  $('r-fecha').max = lim.max;
+}
+
 /* ── PASO 3 ── */
 function actualizarTotales() {
   const p5 = $('precio-5h'), p8 = $('precio-8h');
@@ -348,6 +370,17 @@ $('p3-next').addEventListener('click', async () => {
     mostrarError('err-p3', () => tt('conexion_vacia'));
     return;
   }
+
+  const lim = limitesFecha();
+  if (reserva.fecha < lim.min) {
+    mostrarError('err-p3', () => tt('err_fecha_pasada'));
+    return;
+  }
+  if (reserva.fecha > lim.max) {
+    mostrarError('err-p3', () => tt('err_fecha_lejana'));
+    return;
+  }
+
   ocultarError('err-p3');
   $('disp-sugerencias').style.display = 'none';
   sugerenciasActuales = null;
@@ -534,6 +567,8 @@ function terminar(esError) {
 /* ── IDIOMA ── */
 $('lb-es').addEventListener('click', () => cambiarIdioma('es'));
 $('lb-ca').addEventListener('click', () => cambiarIdioma('ca'));
+
+aplicarLimitesFecha();
 
 /* init */
 seleccionarPaquete('5h');

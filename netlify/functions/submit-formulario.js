@@ -51,6 +51,24 @@ function solapan(fechaBase, horaInicio, horasTotales, fila) {
   return inicioFila < finReq && finFila > inicioReq;
 }
 
+/** Fecha de hoy en Madrid, formato 'YYYY-MM-DD' */
+function fechaHoyMadrid() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
+}
+
+/** Suma un año a una fecha 'YYYY-MM-DD' */
+function sumarUnAnio(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(Date.UTC(y + 1, m - 1, d)).toISOString().slice(0, 10);
+}
+
+/** La fecha debe ser de hoy en adelante y como máximo dentro de 1 año */
+function fechaReservaValida(fecha) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha || '')) return false;
+  const hoy = fechaHoyMadrid();
+  return fecha >= hoy && fecha <= sumarUnAnio(hoy);
+}
+
 /**
  * Bloquea el hueco de la sala en Neon antes de reenviar a Make.
  * Usa un bloqueo consultivo (advisory lock) por fecha para que dos
@@ -192,6 +210,12 @@ exports.handler = async (event) => {
       makeWebhookUrl = process.env.MAKE_INSCRIPCIONES_WEBHOOK_URL;
     } else if (tipoFormulario === 'alquiler') {
       makeWebhookUrl = process.env.MAKE_ALQUILER_WEBHOOK_URL;
+            if (!fechaReservaValida((formData.reserva || {}).fecha)) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ success: false, message: 'Fecha de reserva no válida.' })
+        };
+      }
 
       // Bloqueamos el hueco en Neon antes de seguir. Si ya no está libre
       // (alguien se ha adelantado), avisamos con un 409 para que el

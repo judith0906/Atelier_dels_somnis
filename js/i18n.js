@@ -448,14 +448,15 @@ const I18N = {
       svc_limpieza: 'Extra limpieza',
       svc_hinchable: 'Extra hinchable',
       servicios_extra: 'Servicios extra',
-
       ev_cumple: 'Cumpleaños',
       ev_aniv: 'Aniversario',
       ev_informal: 'Fiesta informal',
       ev_despedida: 'Despedida',
       ev_taller: 'Taller / Actividad',
       ev_empresa: 'Reunión / evento de empresa',
-      ev_otro: 'Otro'
+      ev_otro: 'Otro',
+      err_fecha_pasada: 'La fecha no puede ser anterior a hoy.',
+      err_fecha_lejana: 'Solo se puede reservar con un máximo de 1 año de antelación.'
     },
     ca: {
       app_sub:'Reserva de sala', st1:'Termes', st2:'Dades personals', st3:'Reserva', st4:'Confirmació i pagament',
@@ -501,14 +502,15 @@ const I18N = {
       svc_limpieza: 'Extra neteja',
       svc_hinchable: 'Extra inflable',
       servicios_extra: 'Serveis extra',
-
       ev_cumple: 'Festa d\'aniversari',
       ev_aniv: 'Aniversari de noces',
       ev_informal: 'Festa informal',
       ev_despedida: 'Comiat',
       ev_taller: 'Taller / Activitat',
       ev_empresa: 'Reunió / esdeveniment d\'empresa',
-      ev_otro: 'Altres'
+      ev_otro: 'Altres',
+      err_fecha_pasada: 'La data no pot ser anterior a avui.',
+      err_fecha_lejana: 'Només es pot reservar amb un màxim d\'1 any d\'antelació.'
     }
   },
   /* ══════════════════════════════════════════
