@@ -23,7 +23,12 @@ let lng = 'es';
 function applyT() {
   const d = T[lng];
   document.querySelectorAll('[data-t]').forEach(el => { const k = el.getAttribute('data-t'); if (d[k]) el.textContent = d[k]; });
-  document.querySelectorAll('[data-tph]').forEach(el => { const k = el.getAttribute('data-tph'); if (d[k]) el.textContent = d[k]; });
+  document.querySelectorAll('[data-tph]').forEach(el => {
+  const k = el.getAttribute('data-tph');
+  if (!d[k]) return;
+  if (el.tagName === 'INPUT') el.placeholder = d[k];
+  else el.textContent = d[k];
+});
   const tb = $('terms-box');
   if (tb) {
     tb.innerHTML = d.term_text;
@@ -336,7 +341,7 @@ function fmtHora(t) {
 function renderResumen() {
   leerDatos();
   let hd = '';
-  hd += kv('Nombre', datos.nombre + ' ' + datos.apellidos);
+  hd += kv(tt('nombre'), datos.nombre + ' ' + datos.apellidos);
   hd += kv(tt('email'), datos.email);
   hd += kv(tt('telefono'), datos.telefono);
   hd += kv(tt('dni'), datos.dni);
@@ -348,8 +353,9 @@ function renderResumen() {
   const baseHoras = reserva.paquete === '8h' ? 8 : 5;
   let hh = '';
   hh += kv(tt('k_duracion'), tt('paquete') + ' ' + baseHoras + tt('horas'));
-  hh += kv(tt('k_evento'), reserva.evento);
-  hh += kv(tt('k_fecha'), reserva.fecha);
+  const optEvento = $('r-evento').selectedOptions[0];
+  hh += kv(tt('k_evento'), optEvento ? optEvento.textContent : reserva.evento);
+  hh += kv(tt('k_fecha'), reserva.fecha ? reserva.fecha.split('-').reverse().join('/') : '—');
   hh += kv(tt('k_inicio'), fmtHora(reserva.inicio));
   hh += kv(tt('k_numextra'), reserva.numextra + reserva.numextraMad);
   hh += kv(tt('k_horario_decl'), c.cruzaMedianoche ? tt('horario_despues_medianoche') : tt('horario_antes_medianoche'));

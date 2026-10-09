@@ -444,7 +444,18 @@ const I18N = {
       k_horario_decl:'Horario declarado',
       horario_antes_medianoche:'Finaliza antes de las 00:00',
       horario_despues_medianoche:'Finaliza después de las 00:00 (madrugada)',
-      err_conflicto_horario:'Vaya, ese horario se acaba de ocupar mientras completabas el formulario. Vuelve al paso 3 para elegir otro horario.'
+      err_conflicto_horario:'Vaya, ese horario se acaba de ocupar mientras completabas el formulario. Vuelve al paso 3 para elegir otro horario.',
+      svc_limpieza: 'Extra limpieza',
+      svc_hinchable: 'Extra hinchable',
+      servicios_extra: 'Servicios extra',
+
+      ev_cumple: 'Cumpleaños',
+      ev_aniv: 'Aniversario',
+      ev_informal: 'Fiesta informal',
+      ev_despedida: 'Despedida',
+      ev_taller: 'Taller / Actividad',
+      ev_empresa: 'Reunión / evento de empresa',
+      ev_otro: 'Otro'
     },
     ca: {
       app_sub:'Reserva de sala', st1:'Termes', st2:'Dades personals', st3:'Reserva', st4:'Confirmació i pagament',
@@ -458,7 +469,7 @@ const I18N = {
       err_required:'Completa tots els camps.', err_email:'Introdueix un correu electrònic vàlid.',
       p3_title:'Detalls de la reserva', p3_desc:'Tria la durada del lloguer. L\'import es calcula automàticament.',
       p3_tipo:'Quin tipus d\'esdeveniment celebraràs?', p3_evento:'Tipus d\'esdeveniment',
-      ev_cumple:'Aniversari (edat)', ev_aniv:'Aniversari', ev_informal:'Festa informal', ev_despedida:'Comiat', ev_taller:'Taller / Activitat', ev_empresa:'Reunió / esdeveniment d\'empresa', ev_otro:'Altres',
+      ev_cumple: 'Festa d\'aniversari', ev_aniv:'Aniversari de noces', ev_informal:'Festa informal', ev_despedida:'Comiat', ev_taller:'Taller / Activitat', ev_empresa:'Reunió / esdeveniment d\'empresa', ev_otro:'Altres',
       p3_duracion:'Durada del lloguer', opt_5h:'Paquet 5 hores', opt_5h_desc:'Lloguer de la sala durant 5 hores.',
       opt_8h:'Paquet 8 hores', opt_8h_desc:'Lloguer de la sala durant 8 hores.',
       p3_horario:'Horari de la reserva', p3_fecha:'Data', p3_hinicio:'Hora d\'inici',
@@ -486,7 +497,18 @@ const I18N = {
       k_horario_decl:'Horari declarat',
       horario_antes_medianoche:'Acaba abans de les 00:00',
       horario_despues_medianoche:'Acaba després de les 00:00 (matinada)',
-      err_conflicto_horario:'Aquest horari s\'acaba d\'ocupar mentre completaves el formulari. Torna al pas 3 per triar un altre horari.'
+      err_conflicto_horario:'Aquest horari s\'acaba d\'ocupar mentre completaves el formulari. Torna al pas 3 per triar un altre horari.',
+      svc_limpieza: 'Extra neteja',
+      svc_hinchable: 'Extra inflable',
+      servicios_extra: 'Serveis extra',
+
+      ev_cumple: 'Festa d\'aniversari',
+      ev_aniv: 'Aniversari de noces',
+      ev_informal: 'Festa informal',
+      ev_despedida: 'Comiat',
+      ev_taller: 'Taller / Activitat',
+      ev_empresa: 'Reunió / esdeveniment d\'empresa',
+      ev_otro: 'Altres'
     }
   },
   /* ══════════════════════════════════════════
