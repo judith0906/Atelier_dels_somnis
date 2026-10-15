@@ -121,6 +121,13 @@
       <div class="field"><label data-t="p3_hinicio">Hora de inicio</label><input type="time" id="r-inicio"></div>
     </div>
 
+    <div style="margin:14px 0 8px;">
+      <button type="button" class="btn btn-prev" id="r-comprobar" data-t="btn_comprobar">Comprobar fecha</button>
+    </div>
+    <p class="aviso" id="disp-ok" style="display:none" data-t="disp_ok">✔ Fecha y horario disponibles. Ya puedes continuar.</p>
+    <p class="err" id="err-disp"></p>
+    <div class="disp-box" id="disp-sugerencias" style="display:none"></div>
+
     <br>
     <p class="aviso" data-t="p3_extra_aviso">Si necesitas más horas de las incluidas en el paquete, cada hora extra se cobra: 30,95 € por hora comenzada antes de la medianoche (00:00) y 36,02 € por hora comenzada de madrugada (a partir de las 00:00).</p>
     <br>
@@ -151,15 +158,14 @@
         <b class="extra-precio">162,9 €</b>
       </label>
     </div>
-
-    <div class="disp-box" id="disp-sugerencias" style="display:none"></div>
     
     
 
     <p class="err" id="err-p3"></p>
+    <p class="terms-hint" id="p3-hint" data-t="p3_hint">Comprueba la fecha y el horario con el botón «Comprobar fecha» (hazlo de nuevo si cambias algo) para poder continuar.</p>
     <div class="nav">
       <button class="btn btn-prev" id="p3-prev" data-t="anterior">← Anterior</button>
-      <button class="btn btn-next" id="p3-next" data-t="continuar">Continuar →</button>
+      <button class="btn btn-next" id="p3-next" data-t="continuar" disabled>Continuar →</button>
     </div>
   </section>
 

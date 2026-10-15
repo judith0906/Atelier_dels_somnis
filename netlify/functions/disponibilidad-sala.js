@@ -5,15 +5,16 @@
    Responde a /api/disponibilidad-sala?fecha=YYYY-MM-DD&inicio=HH:MM&horas=N
    (redirección definida en netlify.toml, igual que /api/horarios).
 
-   Comprueba si el horario pedido choca con alguna reserva ya guardada
-   en la tabla `reserva_sala` (confirmadas, o pendientes de pago que
-   todavía no han caducado) y, si choca, devuelve los 5 huecos libres
-   más cercanos a la hora pedida dentro del mismo día.
+   Reglas de la sala:
+   - Un evento de MAÑANA acaba como tarde a las 17:00.
+   - Un evento de TARDE empieza a las 18:00 o después.
+   - Cualquier otro (toca la franja 17:00-18:00) es de TODO EL DÍA.
+   - Cada día admite 1 evento de mañana y 1 de tarde, o 1 de todo el
+     día en solitario. Además, nunca pueden solaparse en horas (eso
+     incluye reservas que cruzan la medianoche).
 
-   Trabajamos en minutos desde las 00:00 del día consultado para poder
-   comparar sin líos reservas que empiezan el día anterior y acaban
-   entrada la fecha pedida, o que la propia reserva pedida se alargue
-   de madrugada.
+   Si el hueco pedido no está libre, devuelve las 5 fechas libres más
+   cercanas con el mismo horario y la misma duración (de hoy a 1 año).
 
    Debe existir la variable DATABASE_URL en las variables de entorno
    de Netlify (la misma que usa horarios.js).
@@ -32,7 +33,9 @@ function getPool() {
 }
 
 const MIN_DIA = 24 * 60;
-const VENTANA_DIAS = 2; // día pedido + margen, por si el hueco cae de madrugada
+const MANANA_FIN = 17 * 60;     // un evento de mañana acaba como tarde a las 17:00
+const TARDE_INICIO = 18 * 60;   // un evento de tarde empieza a las 18:00 o después
+const MAX_SUGERENCIAS = 5;
 
 /** 'HH:MM' -> minutos desde medianoche */
 function minutosDesde(horaStr) {
@@ -40,22 +43,57 @@ function minutosDesde(horaStr) {
   return h * 60 + m;
 }
 
-/** Convierte una reserva (su propia fecha + hora + duración) a un intervalo
-    de minutos en el eje de la fecha consultada (fechaBase), para poder
-    comparar reservas de días distintos sin líos. */
-function aIntervalo(fechaBase, fechaFila, horaInicio, horasTotales) {
-  const diffDias = Math.round((new Date(fechaFila) - new Date(fechaBase)) / 86400000);
-  const inicio = diffDias * MIN_DIA + minutosDesde(horaInicio);
-  const fin = inicio + Math.round(horasTotales * 60);
-  return { inicio, fin };
+/** Días entre dos fechas 'YYYY-MM-DD' (hasta - desde) */
+function diasEntre(desde, hasta) {
+  return Math.round((Date.parse(hasta + 'T00:00:00Z') - Date.parse(desde + 'T00:00:00Z')) / 86400000);
 }
 
-/** minutos -> 'HH:MM' (admite pasarse de 24h = día siguiente) */
-function aHora(minutos) {
-  const m = ((minutos % MIN_DIA) + MIN_DIA) % MIN_DIA;
-  const h = Math.floor(m / 60);
-  const mm = m % 60;
-  return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+/** Suma n días (puede ser negativo) a una fecha 'YYYY-MM-DD' */
+function sumarDias(iso, n) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+
+/** Fecha de hoy en Madrid, formato 'YYYY-MM-DD' */
+function fechaHoyMadrid() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
+}
+
+/** Suma un año a una fecha 'YYYY-MM-DD' */
+function sumarUnAnio(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(Date.UTC(y + 1, m - 1, d)).toISOString().slice(0, 10);
+}
+
+/** Tipo de evento según su horario (minutos desde las 00:00 de su día) */
+function clasificar(inicio, fin) {
+  if (fin <= MANANA_FIN) return 'manana';
+  if (inicio >= TARDE_INICIO) return 'tarde';
+  return 'dia';
+}
+
+/** ¿Se puede colocar la reserva pedida en esa fecha, dadas las reservas vivas?
+    `vivas` son filas con fecha 'YYYY-MM-DD', hora_inicio y horas_totales. */
+function hayHueco(vivas, fecha, inicioMin, duracionMin) {
+  const reqIni = inicioMin;
+  const reqFin = inicioMin + duracionMin;
+  const tipoReq = clasificar(reqIni, reqFin);
+
+  for (const r of vivas) {
+    const iniFila = minutosDesde(r.hora_inicio);
+    const durFila = Math.round(Number(r.horas_totales) * 60);
+
+    // 1) Choque de horas (incluye reservas de días contiguos que cruzan la medianoche)
+    const offset = diasEntre(fecha, r.fecha) * MIN_DIA;
+    if (offset + iniFila < reqFin && offset + iniFila + durFila > reqIni) return false;
+
+    // 2) Cupo del día: solo cuentan las reservas de esa misma fecha
+    if (r.fecha === fecha) {
+      const tipoFila = clasificar(iniFila, iniFila + durFila);
+      if (tipoFila === 'dia' || tipoReq === 'dia' || tipoFila === tipoReq) return false;
+    }
+  }
+  return true;
 }
 
 exports.handler = async (event) => {
@@ -74,59 +112,48 @@ exports.handler = async (event) => {
 
   const { fecha, inicio, horas } = event.queryStringParameters || {};
   const horasTotales = parseFloat(horas);
-  if (!fecha || !inicio || !horasTotales || horasTotales <= 0) {
+  const fechaOk = /^\d{4}-\d{2}-\d{2}$/.test(fecha || '') && !Number.isNaN(Date.parse(fecha + 'T00:00:00Z'));
+  const inicioOk = /^\d{2}:\d{2}$/.test(inicio || '');
+  if (!fechaOk || !inicioOk || !horasTotales || horasTotales <= 0) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Faltan parámetros: fecha, inicio, horas' }) };
   }
 
+  const hoy = fechaHoyMadrid();
+  const max = sumarUnAnio(hoy);
+  if (fecha < hoy || fecha > max) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Fecha fuera del rango permitido' }) };
+  }
+
   try {
-    // Reservas "vivas" (confirmadas, o pendientes de pago sin caducar)
-    // del día pedido, el anterior y el siguiente, por si alguna se solapa.
+    // Reservas "vivas" (confirmadas, o pendientes de pago sin caducar) de todo
+    // el rango reservable, para poder buscar también fechas alternativas.
     const { rows } = await getPool().query(
-      `SELECT fecha, hora_inicio, horas_totales
+      `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, hora_inicio, horas_totales
        FROM reserva_sala
        WHERE (estado = 'confirmada' OR (estado = 'pendiente_pago' AND expira_en > now()))
-         AND fecha BETWEEN $1::date - INTERVAL '1 day' AND $1::date + INTERVAL '1 day'`,
-      [fecha]
+         AND fecha BETWEEN $1::date AND $2::date`,
+      [sumarDias(hoy, -1), sumarDias(max, 1)]
     );
 
-    const ocupados = rows
-      .map(r => aIntervalo(fecha, r.fecha, r.hora_inicio, Number(r.horas_totales)))
-      .sort((a, b) => a.inicio - b.inicio);
+    const inicioMin = minutosDesde(inicio);
+    const duracionMin = Math.round(horasTotales * 60);
 
-    const reqInicio = minutosDesde(inicio);
-    const reqFin = reqInicio + Math.round(horasTotales * 60);
-
-    const hayChoque = ocupados.some(o => o.inicio < reqFin && o.fin > reqInicio);
-    if (!hayChoque) {
+    if (hayHueco(rows, fecha, inicioMin, duracionMin)) {
       return { statusCode: 200, headers, body: JSON.stringify({ disponible: true }) };
     }
 
-    // Huecos libres en la ventana (0h–48h) que quepan la duración pedida.
-    const LIMITE = VENTANA_DIAS * MIN_DIA;
-    const puntos = [0, ...ocupados.flatMap(o => [o.inicio, o.fin]), LIMITE].sort((a, b) => a - b);
-    const duracionMin = Math.round(horasTotales * 60);
-    const huecos = [];
-    for (let i = 0; i < puntos.length - 1; i++) {
-      const desde = puntos[i], hasta = puntos[i + 1];
-      const ocupado = ocupados.some(o => o.inicio < hasta && o.fin > desde);
-      if (!ocupado && hasta - desde >= duracionMin) huecos.push({ desde, hasta });
+    // Fechas libres más cercanas (hacia atrás y hacia delante), mismo horario y duración.
+    const sugerencias = [];
+    const maxDias = diasEntre(hoy, max);
+    for (let k = 1; k <= maxDias && sugerencias.length < MAX_SUGERENCIAS; k++) {
+      for (const f of [sumarDias(fecha, -k), sumarDias(fecha, k)]) {
+        if (f < hoy || f > max) continue;
+        if (sugerencias.length < MAX_SUGERENCIAS && hayHueco(rows, f, inicioMin, duracionMin)) sugerencias.push(f);
+      }
     }
+    sugerencias.sort();
 
-    // De cada hueco, el punto de inicio más cercano a lo que pidió el cliente.
-    const candidatos = huecos
-      .map(h => {
-        const ini = Math.min(Math.max(reqInicio, h.desde), h.hasta - duracionMin);
-        return { inicio: ini, distancia: Math.abs(ini - reqInicio) };
-      })
-      .sort((a, b) => a.distancia - b.distancia)
-      .slice(0, 5)
-      .sort((a, b) => a.inicio - b.inicio);
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ disponible: false, sugerencias: candidatos.map(c => aHora(c.inicio)) })
-    };
+    return { statusCode: 200, headers, body: JSON.stringify({ disponible: false, sugerencias }) };
   } catch (err) {
     console.error('Error consultando disponibilidad de sala:', err.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'No se pudo comprobar la disponibilidad' }) };

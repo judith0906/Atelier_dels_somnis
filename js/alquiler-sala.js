@@ -65,6 +65,7 @@ let tos = { leido: false, acuerdo: false };
 let reserva = { paquete: '5h', fecha: '', inicio: '', numextra: 0, numextraMad: 0, evento: '' };
 let sugerenciasActuales = null;   // horas libres que se están mostrando (o null)
 let estadoFinal = null;           // null | 'ok' | 'error' (pantalla final)
+let claveVerificada = null;       // combinación fecha/hora/duración ya comprobada y libre
 const errores = {};               // id de caja de error -> función que devuelve su texto
 
 /* ── TRADUCCIÓN ── */
@@ -314,6 +315,8 @@ function normalizarPaqueteExtra() {
   reserva.numextra = a;
   reserva.numextraMad = b;
   $('aviso-8h-auto').style.display = auto ? 'block' : 'none';
+  ocultarSugerencias();
+  actualizarEstadoContinuar();
 }
 
 $('r-numextra').addEventListener('input', normalizarPaqueteExtra);
@@ -362,67 +365,108 @@ async function comprobarDisponibilidad() {
   return res.json();
 }
 
-function mostrarSugerencias(horas) {
-  sugerenciasActuales = horas;
+/* ── Comprobación de fecha (botón "Comprobar fecha") ── */
+function claveReserva() {
+  return [$('r-fecha').value, $('r-inicio').value, reserva.paquete, reserva.numextra, reserva.numextraMad].join('|');
+}
+
+/* "Continuar" solo se activa si la combinación actual es la que se comprobó y estaba libre */
+function actualizarEstadoContinuar() {
+  const ok = claveVerificada !== null && claveVerificada === claveReserva();
+  $('p3-next').disabled = !ok;
+  $('disp-ok').style.display = ok ? 'block' : 'none';
+  $('p3-hint').style.display = ok ? 'none' : 'block';
+}
+
+function ocultarSugerencias() {
+  sugerenciasActuales = null;
   const box = $('disp-sugerencias');
+  box.style.display = 'none';
+  box.innerHTML = '';
+}
+
+function mostrarSugerencias(fechas) {
+  sugerenciasActuales = fechas;
+  const box = $('disp-sugerencias');
+  const loc = lng === 'ca' ? 'ca-ES' : 'es-ES';
   let html = '<p class="aviso">' + tt('sugerencias_intro') + '</p><div class="chips">';
-  horas.forEach(h => { html += '<button type="button" class="chip" data-hora="' + h + '">' + h + '</button>'; });
+  fechas.forEach(f => {
+    const texto = new Date(f + 'T12:00:00').toLocaleDateString(loc, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    html += '<button type="button" class="chip" data-fecha="' + f + '">' + texto + '</button>';
+  });
   html += '</div>';
   box.innerHTML = html;
   box.style.display = 'block';
   box.querySelectorAll('.chip').forEach(btn => {
     btn.addEventListener('click', () => {
-      $('r-inicio').value = btn.getAttribute('data-hora');
-      box.style.display = 'none';
-      sugerenciasActuales = null;
-      $('p3-next').click();
+      $('r-fecha').value = btn.getAttribute('data-fecha');
+      comprobarFecha();
     });
   });
 }
 
-$('p3-next').addEventListener('click', async () => {
+async function comprobarFecha() {
+  normalizarPaqueteExtra();
+  reserva.fecha = $('r-fecha').value;
+  reserva.inicio = $('r-inicio').value;
+
+  ocultarError('err-disp');
+  ocultarSugerencias();
+  claveVerificada = null;
+  actualizarEstadoContinuar();
+
+  if (!reserva.fecha || !reserva.inicio) {
+    mostrarError('err-disp', () => tt('conexion_vacia'));
+    return;
+  }
+  const lim = limitesFecha();
+  if (reserva.fecha < lim.min) { mostrarError('err-disp', () => tt('err_fecha_pasada')); return; }
+  if (reserva.fecha > lim.max) { mostrarError('err-disp', () => tt('err_fecha_lejana')); return; }
+
+  const clave = claveReserva();
+  const btn = $('r-comprobar');
+  btn.disabled = true;
+  btn.textContent = tt('comprobando_disp');
+
+  try {
+    const data = await comprobarDisponibilidad();
+    if (clave !== claveReserva()) return;   // el cliente cambió algo mientras se comprobaba
+    if (data.disponible) {
+      claveVerificada = clave;
+    } else if (data.sugerencias && data.sugerencias.length) {
+      mostrarSugerencias(data.sugerencias);
+    } else {
+      mostrarError('err-disp', () => tt('sin_disponibilidad'));
+    }
+  } catch (e) {
+    mostrarError('err-disp', () => tt('err_disponibilidad'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = tt('btn_comprobar');
+    actualizarEstadoContinuar();
+  }
+}
+
+$('r-comprobar').addEventListener('click', comprobarFecha);
+
+// Si cambian la fecha o la hora, hay que volver a comprobar
+['r-fecha', 'r-inicio'].forEach(id => {
+  ['input', 'change'].forEach(ev => {
+    $(id).addEventListener(ev, () => {
+      ocultarError('err-disp');
+      ocultarSugerencias();
+      actualizarEstadoContinuar();
+    });
+  });
+});
+
+$('p3-next').addEventListener('click', () => {
   normalizarPaqueteExtra();
   reserva.fecha = $('r-fecha').value;
   reserva.inicio = $('r-inicio').value;
   reserva.evento = $('r-evento').value;
-
-  if (!reserva.fecha || !reserva.inicio || !reserva.paquete) {
-    mostrarError('err-p3', () => tt('conexion_vacia'));
-    return;
-  }
-
-  const lim = limitesFecha();
-  if (reserva.fecha < lim.min) {
-    mostrarError('err-p3', () => tt('err_fecha_pasada'));
-    return;
-  }
-  if (reserva.fecha > lim.max) {
-    mostrarError('err-p3', () => tt('err_fecha_lejana'));
-    return;
-  }
-
-  ocultarError('err-p3');
-  $('disp-sugerencias').style.display = 'none';
-  sugerenciasActuales = null;
-
-  $('p3-next').disabled = true;
-  $('p3-next').textContent = tt('comprobando_disp');
-
-  try {
-    const data = await comprobarDisponibilidad();
-    if (data.disponible) {
-      go(4);
-    } else if (data.sugerencias && data.sugerencias.length) {
-      mostrarSugerencias(data.sugerencias);
-    } else {
-      mostrarError('err-p3', () => tt('sin_disponibilidad'));
-    }
-  } catch (e) {
-    mostrarError('err-p3', () => tt('err_disponibilidad'));
-  } finally {
-    $('p3-next').disabled = false;
-    $('p3-next').textContent = tt('continuar');
-  }
+  if (claveVerificada === null || claveVerificada !== claveReserva()) return;
+  go(4);
 });
 
 /* ── PASO 4 ── */
@@ -541,6 +585,8 @@ function enviar() {
       if (data && data.success) {
         terminar(false);
       } else if (status === 409) {
+        claveVerificada = null;
+        actualizarEstadoContinuar();
         // Alguien se ha adelantado y ha ocupado el horario mientras se rellenaba el formulario.
         $('p4-next').disabled = false;
         if (window.grecaptcha) grecaptcha.reset();

@@ -39,16 +39,43 @@ function minutosDesde(horaStr) {
   return h * 60 + m;
 }
 
-/** ¿Se solapan la reserva pedida y una fila ya guardada? Misma lógica
-    de intervalos que usa disponibilidad-sala.js. */
-function solapan(fechaBase, horaInicio, horasTotales, fila) {
+const MANANA_FIN = 17 * 60;     // un evento de mañana acaba como tarde a las 17:00
+const TARDE_INICIO = 18 * 60;   // un evento de tarde empieza a las 18:00 o después
+
+/** Días entre dos fechas 'YYYY-MM-DD' (hasta - desde) */
+function diasEntre(desde, hasta) {
+  return Math.round((Date.parse(hasta + 'T00:00:00Z') - Date.parse(desde + 'T00:00:00Z')) / 86400000);
+}
+
+/** Tipo de evento según su horario (minutos desde las 00:00 de su día) */
+function clasificar(inicio, fin) {
+  if (fin <= MANANA_FIN) return 'manana';
+  if (inicio >= TARDE_INICIO) return 'tarde';
+  return 'dia';
+}
+
+/** ¿Se puede colocar la reserva pedida en esa fecha, dadas las reservas vivas?
+    Misma lógica que disponibilidad-sala.js: sin choque de horas y respetando
+    el cupo del día (1 mañana + 1 tarde, o 1 de todo el día). */
+function hayHueco(vivas, fecha, inicioMin, duracionMin) {
   const MIN_DIA = 24 * 60;
-  const diffDias = Math.round((new Date(fila.fecha) - new Date(fechaBase)) / 86400000);
-  const inicioFila = diffDias * MIN_DIA + minutosDesde(fila.hora_inicio);
-  const finFila = inicioFila + Math.round(Number(fila.horas_totales) * 60);
-  const inicioReq = minutosDesde(horaInicio);
-  const finReq = inicioReq + Math.round(horasTotales * 60);
-  return inicioFila < finReq && finFila > inicioReq;
+  const reqIni = inicioMin;
+  const reqFin = inicioMin + duracionMin;
+  const tipoReq = clasificar(reqIni, reqFin);
+
+  for (const r of vivas) {
+    const iniFila = minutosDesde(r.hora_inicio);
+    const durFila = Math.round(Number(r.horas_totales) * 60);
+
+    const offset = diasEntre(fecha, r.fecha) * MIN_DIA;
+    if (offset + iniFila < reqFin && offset + iniFila + durFila > reqIni) return false;
+
+    if (r.fecha === fecha) {
+      const tipoFila = clasificar(iniFila, iniFila + durFila);
+      if (tipoFila === 'dia' || tipoReq === 'dia' || tipoFila === tipoReq) return false;
+    }
+  }
+  return true;
 }
 
 /** Fecha de hoy en Madrid, formato 'YYYY-MM-DD' */
@@ -79,22 +106,24 @@ function fechaReservaValida(fecha) {
  */
 async function bloquearReservaSala(reserva) {
   const horasTotales =
-  Number(reserva.paqueteHoras || 0) +
-  Number(reserva.horasExtra || 0) +
-  Number(reserva.horasExtraMadrugada || 0);
+    Number(reserva.paqueteHoras || 0) +
+    Number(reserva.horasExtra || 0) +
+    Number(reserva.horasExtraMadrugada || 0);
+  const duracionMin = Math.round(horasTotales * 60);
   const client = await getPool().connect();
   try {
     await client.query('BEGIN');
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [reserva.fecha]);
 
     const { rows } = await client.query(
-      `SELECT fecha, hora_inicio, horas_totales FROM reserva_sala
+      `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, hora_inicio, horas_totales
+       FROM reserva_sala
        WHERE (estado = 'confirmada' OR (estado = 'pendiente_pago' AND expira_en > now()))
          AND fecha BETWEEN $1::date - INTERVAL '1 day' AND $1::date + INTERVAL '1 day'`,
       [reserva.fecha]
     );
 
-    if (rows.some(r => solapan(reserva.fecha, reserva.inicio, horasTotales, r))) {
+    if (!hayHueco(rows, reserva.fecha, minutosDesde(reserva.inicio), duracionMin)) {
       await client.query('ROLLBACK');
       return { ok: false };
     }
