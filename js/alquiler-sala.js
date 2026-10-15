@@ -38,15 +38,15 @@ const EXTRA_NOCHE = 30;      // por hora antes de la medianoche (00:00)
 const EXTRA_MADRUGADA = 35;  // por hora de madrugada (desde las 00:00)
 const MAX_EXTRA_5H = 2;      // tope de horas extra en el pack de 5h; a partir de aquí, salto a 8h
 
-const PVP_5H = 183.20;
-const PVP_8H = 355.75;
-const PVP_EXTRA_NOCHE = 30.95;
-const PVP_EXTRA_MADRUGADA = 36.02;
+const PVP_5H = 182.80;
+const PVP_8H = 355.39;
+const PVP_EXTRA_NOCHE = 30.51;
+const PVP_EXTRA_MADRUGADA = 35.59;
 
 /* ── SERVICIOS EXTRA ── */
 const SERVICIOS = {
-  limpieza:  { precio: 45,  pvp: 46.17 },
-  hinchable: { precio: 160, pvp: 162.90 }
+  limpieza:  { precio: 45,  pvp: 45.74 },
+  hinchable: { precio: 160, pvp: 162.49 }
 };
 
 const redondear = n => Math.round(n * 100) / 100;
