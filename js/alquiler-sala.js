@@ -517,9 +517,6 @@ $('p4-next').addEventListener('click', () => {
 });
 
 /* ── PAGO ── */
-/* TODO: conectar Stripe cuando se decida la pasarela.
-   De momento la reserva se envía y el pago queda pendiente de conexión. */
-const STRIPE_PUBLISHABLE_KEY = ''; // P.ej. pk_test_...
 const RECAPTCHA_SITE_KEY = '6LcjXqEtAAAAAI1lk_D5zQJAvIZhXvaan0wnf5nl';
 
 let recaptchaRendered = false;
@@ -568,10 +565,6 @@ function enviar() {
       total: c.totalAlquiler
     },
     aceptaTos: !!tos.acuerdo,
-    pago: {
-      conectado: !!STRIPE_PUBLISHABLE_KEY,
-      observacion: STRIPE_PUBLISHABLE_KEY ? 'cargo automatico pendiente de procesar' : tt('pago_pend')
-    },
     captchaToken: (window.grecaptcha && grecaptcha.getResponse()) || ''
   };
 
@@ -583,7 +576,7 @@ function enviar() {
     .then(res => res.json().catch(() => ({})).then(data => ({ status: res.status, data })))
     .then(({ status, data }) => {
       if (data && data.success) {
-        terminar(false);
+        window.location.href = data.url;
       } else if (status === 409) {
         claveVerificada = null;
         actualizarEstadoContinuar();
@@ -620,7 +613,7 @@ function pintarFinal() {
     ico.textContent = '✦';
     h3.textContent = tt('done_title');
     p.textContent = tt('done_ok');
-    note.textContent = STRIPE_PUBLISHABLE_KEY ? '' : tt('done_note');
+    note.textContent = '';
   }
 }
 
@@ -638,6 +631,25 @@ $('lb-ca').addEventListener('click', () => cambiarIdioma('ca'));
 
 aplicarLimitesFecha();
 
+/* ── VUELTA DESDE STRIPE (?pago=ok / ?pago=cancelado) ── */
+function mostrarRetornoPago() {
+  const pago = new URLSearchParams(location.search).get('pago');
+  if (pago === 'ok') {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    for (let i = 1; i <= 4; i++) $('chip' + i).classList.remove('active');
+    $('ok-box').style.display = 'block';
+    estadoFinal = 'ok';
+    pintarFinal();
+    history.replaceState(null, '', location.pathname);
+  } else if (pago === 'cancelado') {
+    mostrarError('err-p1', () => tt('pago_cancelado'));
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
+aplicarLimitesFecha();
+
 /* init */
 seleccionarPaquete('5h');
 applyT();
+mostrarRetornoPago();

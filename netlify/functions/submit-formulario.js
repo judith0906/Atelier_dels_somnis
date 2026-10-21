@@ -2,25 +2,25 @@
    submit-formulario.js — NETLIFY FUNCTION: recepción de formularios
    Atelier dels Somnis · Reus
 
-   Punto único de entrada de los formularios del sitio. Su motivo de
-   existir es de seguridad: valida el token de reCAPTCHA contra Google
-   y solo entonces reenvía los datos al webhook de Make, de forma que
-   la URL de Make nunca aparece en el código del navegador.
+   Punto único de entrada de los formularios del sitio. Valida el token
+   de reCAPTCHA contra Google y después:
 
-   El campo `tipoFormulario` del payload decide a qué webhook va
-   ('inscripciones' o 'alquiler').
-
-   Para 'alquiler' además bloqueamos el hueco en la tabla `reserva_sala`
-   de Neon antes de reenviar a Make (ver bloquearReservaSala más abajo),
-   así dos personas no pueden reservar el mismo horario a la vez.
+   - 'inscripciones': reenvía los datos al webhook de Make.
+   - 'alquiler': recalcula el precio en el servidor, bloquea el hueco en
+     la tabla `reserva_sala` de Neon (como "pendiente_pago") y crea una
+     sesión de Stripe Checkout. La respuesta lleva la URL de pago. La
+     reserva solo se envía a Make cuando Stripe confirma el pago
+     (ver stripe-webhook.js).
 
    Variables de entorno necesarias en Netlify:
-     RECAPTCHA_SECRET_KEY · DATABASE_URL · MAKE_WEBHOOK_* (ver el propio código)
+     RECAPTCHA_SECRET_KEY · DATABASE_URL · MAKE_INSCRIPCIONES_WEBHOOK_URL
+     STRIPE_SECRET_KEY · SITE_URL
    ============================================================ */
 
-// Módulo 'https' nativo de Node.js. No hace falta instalar nada en package.json.
 const https = require('https');
+const { randomUUID } = require('crypto');
 const { Pool } = require('pg');
+const Stripe = require('stripe');
 
 let pool = null;
 function getPool() {
@@ -32,6 +32,108 @@ function getPool() {
   }
   return pool;
 }
+
+let stripeClient = null;
+function getStripe() {
+  if (!stripeClient) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY no está definida en las variables de entorno de Netlify.');
+    }
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return stripeClient;
+}
+
+/* ── PRECIOS (en céntimos) ──
+   reg = lo que se registra en Make · pvp = lo que paga el cliente.
+   Deben coincidir con los de js/alquiler-sala.js. */
+const PRECIOS = {
+  paquete: { 5: { reg: 18000, pvp: 18280 }, 8: { reg: 35000, pvp: 35539 } },
+  extraAntes: { reg: 3000, pvp: 3051 },
+  extraMadrugada: { reg: 3500, pvp: 3559 },
+  servicios: {
+    limpieza: { reg: 4500, pvp: 4574 },
+    hinchable: { reg: 16000, pvp: 16249 }
+  }
+};
+const MAX_EXTRA_5H = 2;   // con el pack de 5h, máximo 2 horas extra en total
+const MAX_EXTRA = 12;     // tope de cordura por campo de horas extra
+
+const NOMBRES = {
+  es: {
+    paquete: h => 'Alquiler de sala · paquete ' + h + ' horas',
+    extraAntes: 'Hora extra antes de las 00:00',
+    extraMadrugada: 'Hora extra de madrugada (desde las 00:00)',
+    limpieza: 'Extra limpieza',
+    hinchable: 'Extra hinchable'
+  },
+  ca: {
+    paquete: h => 'Lloguer de sala · paquet ' + h + ' hores',
+    extraAntes: 'Hora extra abans de les 00:00',
+    extraMadrugada: 'Hora extra de matinada (a partir de les 00:00)',
+    limpieza: 'Extra neteja',
+    hinchable: 'Extra inflable'
+  }
+};
+
+/** Valida la reserva y calcula líneas de cobro (PVP) e importes registrados.
+    Devuelve null si los datos no son válidos. */
+function calcularReserva(reserva, lang) {
+  const nombres = NOMBRES[lang === 'ca' ? 'ca' : 'es'];
+  const horasPack = Number(reserva.paqueteHoras);
+  const antes = Number(reserva.horasExtra || 0);
+  const mad = Number(reserva.horasExtraMadrugada || 0);
+
+  if (!PRECIOS.paquete[horasPack]) return null;
+  const extraOk = n => Number.isInteger(n) && n >= 0 && n <= MAX_EXTRA;
+  if (!extraOk(antes) || !extraOk(mad)) return null;
+  if (horasPack === 5 && antes + mad > MAX_EXTRA_5H) return null;
+
+  const pack = PRECIOS.paquete[horasPack];
+  const lineas = [{ nombre: nombres.paquete(horasPack), cantidad: 1, pvp: pack.pvp }];
+  if (antes) lineas.push({ nombre: nombres.extraAntes, cantidad: antes, pvp: PRECIOS.extraAntes.pvp });
+  if (mad) lineas.push({ nombre: nombres.extraMadrugada, cantidad: mad, pvp: PRECIOS.extraMadrugada.pvp });
+
+  const servicios = [];
+  const marcados = {};
+  for (const id of Object.keys(PRECIOS.servicios)) {
+    marcados[id] = reserva[id] === true;
+    if (marcados[id]) {
+      servicios.push({ id, precio: PRECIOS.servicios[id].reg / 100 });
+      lineas.push({ nombre: nombres[id], cantidad: 1, pvp: PRECIOS.servicios[id].pvp });
+    }
+  }
+
+  const extras = (antes * PRECIOS.extraAntes.reg + mad * PRECIOS.extraMadrugada.reg) / 100;
+  const totalServicios = servicios.reduce((s, x) => s + x.precio, 0);
+  const totalAlquiler = pack.reg / 100 + extras + totalServicios;
+
+  return {
+    lineas,
+    reserva: {
+      evento: String(reserva.evento || '').slice(0, 60),
+      paqueteHoras: horasPack,
+      fecha: reserva.fecha,
+      inicio: reserva.inicio,
+      horasExtra: antes,
+      horasExtraMadrugada: mad,
+      hinchable: marcados.hinchable,
+      limpieza: marcados.limpieza
+    },
+    importe: {
+      base: pack.reg / 100,
+      extras,
+      extrasAntesMedianoche: (antes * PRECIOS.extraAntes.reg) / 100,
+      extrasMadrugada: (mad * PRECIOS.extraMadrugada.reg) / 100,
+      servicios,
+      totalServicios,
+      totalAlquiler,
+      total: totalAlquiler
+    }
+  };
+}
+
+/* ── REGLAS DE DISPONIBILIDAD (mismas que disponibilidad-sala.js) ── */
 
 /** 'HH:MM' -> minutos desde medianoche */
 function minutosDesde(horaStr) {
@@ -55,8 +157,8 @@ function clasificar(inicio, fin) {
 }
 
 /** ¿Se puede colocar la reserva pedida en esa fecha, dadas las reservas vivas?
-    Misma lógica que disponibilidad-sala.js: sin choque de horas y respetando
-    el cupo del día (1 mañana + 1 tarde, o 1 de todo el día). */
+    Sin choque de horas y respetando el cupo del día (1 mañana + 1 tarde,
+    o 1 de todo el día). */
 function hayHueco(vivas, fecha, inicioMin, duracionMin) {
   const MIN_DIA = 24 * 60;
   const reqIni = inicioMin;
@@ -97,18 +199,16 @@ function fechaReservaValida(fecha) {
 }
 
 /**
- * Bloquea el hueco de la sala en Neon antes de reenviar a Make.
+ * Bloquea el hueco de la sala en Neon.
  * Usa un bloqueo consultivo (advisory lock) por fecha para que dos
  * peticiones simultáneas del mismo día se sirvan en orden, no a la vez.
- * La reserva se guarda como "pendiente_pago" con 30 minutos de margen:
- * si en ese tiempo no llega el pago de Stripe (todavía por conectar),
- * el hueco vuelve a quedar libre solo por caducar, sin borrar nada a mano.
+ * La reserva se guarda como "pendiente_pago" durante 35 minutos. La sesión
+ * de Stripe caduca a los 31, así que nadie puede coger el hueco mientras el
+ * cliente todavía puede pagarlo. Guardamos aquí el payload que se enviará
+ * a Make cuando Stripe confirme el pago.
  */
-async function bloquearReservaSala(reserva) {
-  const horasTotales =
-    Number(reserva.paqueteHoras || 0) +
-    Number(reserva.horasExtra || 0) +
-    Number(reserva.horasExtraMadrugada || 0);
+async function bloquearReservaSala(reserva, token, payload) {
+  const horasTotales = reserva.paqueteHoras + reserva.horasExtra + reserva.horasExtraMadrugada;
   const duracionMin = Math.round(horasTotales * 60);
   const client = await getPool().connect();
   try {
@@ -129,9 +229,9 @@ async function bloquearReservaSala(reserva) {
     }
 
     await client.query(
-      `INSERT INTO reserva_sala (fecha, hora_inicio, horas_totales, evento, estado, expira_en)
-       VALUES ($1, $2, $3, $4, 'pendiente_pago', now() + INTERVAL '30 minutes')`,
-      [reserva.fecha, reserva.inicio, horasTotales, reserva.evento || null]
+      `INSERT INTO reserva_sala (fecha, hora_inicio, horas_totales, evento, estado, expira_en, token, payload)
+       VALUES ($1, $2, $3, $4, 'pendiente_pago', now() + INTERVAL '35 minutes', $5, $6::jsonb)`,
+      [reserva.fecha, reserva.inicio, horasTotales, reserva.evento || null, token, JSON.stringify(payload)]
     );
     await client.query('COMMIT');
     return { ok: true };
@@ -143,12 +243,43 @@ async function bloquearReservaSala(reserva) {
   }
 }
 
-/**
- * Función auxiliar para hacer peticiones POST a servicios externos (Google y Make).
- * @param {string} url - Dirección de destino.
- * @param {object|string} data - Datos a enviar.
- * @param {boolean} isFormUrlEncoded - true para Google (formato formulario), false para Make (JSON).
- */
+/** Intenta cerrar una sesión de Stripe. Devuelve true si ya no se puede pagar. */
+async function cerrarSesionStripe(stripe, sessionId) {
+  try {
+    await stripe.checkout.sessions.expire(sessionId);
+    return true;
+  } catch (e) {
+    try {
+      const s = await stripe.checkout.sessions.retrieve(sessionId);
+      return s.status === 'expired';
+    } catch (e2) {
+      return false;
+    }
+  }
+}
+
+/** Si la misma persona vuelve a intentarlo (por ejemplo, tras cancelar en
+    Stripe), libera su reserva pendiente anterior para que no se bloquee a
+    sí misma. Solo se borra si Stripe confirma que esa sesión ya no se puede
+    pagar; si se pagó, la fila se queda. */
+async function liberarPendientesDelCliente(stripe, email) {
+  const { rows } = await getPool().query(
+    `SELECT token, stripe_session_id FROM reserva_sala
+     WHERE estado = 'pendiente_pago' AND stripe_session_id IS NOT NULL
+       AND lower(payload->'arrendatario'->>'email') = $1`,
+    [email.toLowerCase()]
+  );
+  for (const r of rows) {
+    if (await cerrarSesionStripe(stripe, r.stripe_session_id)) {
+      await getPool().query(
+        `DELETE FROM reserva_sala WHERE token = $1 AND estado = 'pendiente_pago'`,
+        [r.token]
+      );
+    }
+  }
+}
+
+/** Petición POST a servicios externos (Google y Make). */
 function postData(url, data, isFormUrlEncoded = false) {
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
@@ -179,124 +310,149 @@ function postData(url, data, isFormUrlEncoded = false) {
   });
 }
 
+const respuesta = (statusCode, cuerpo) => ({ statusCode, body: JSON.stringify(cuerpo) });
+
+/** Formulario de alquiler: valida, bloquea el hueco y crea el pago en Stripe. */
+async function procesarAlquiler(formData) {
+  const { arrendatario = {}, reserva = {}, lang, aceptaTos } = formData;
+
+  if (aceptaTos !== true) {
+    return respuesta(400, { success: false, message: 'Hay que aceptar los términos y condiciones.' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(arrendatario.email || '')) {
+    return respuesta(400, { success: false, message: 'Correo electrónico no válido.' });
+  }
+  if (!fechaReservaValida(reserva.fecha) || !/^\d{2}:\d{2}$/.test(reserva.inicio || '')) {
+    return respuesta(400, { success: false, message: 'Fecha u hora de reserva no válidas.' });
+  }
+  const calculo = calcularReserva(reserva, lang);
+  if (!calculo) {
+    return respuesta(400, { success: false, message: 'Datos de la reserva no válidos.' });
+  }
+
+  const siteUrl = (process.env.SITE_URL || process.env.URL || '').replace(/\/$/, '');
+  if (!siteUrl) throw new Error('Falta SITE_URL en las variables de entorno de Netlify.');
+
+  const arr = {};
+  ['nombre', 'apellidos', 'email', 'telefono', 'dni', 'direccion', 'cp', 'ciudad']
+    .forEach(k => { arr[k] = String(arrendatario[k] || '').slice(0, 200); });
+
+  // Esto es lo que recibirá Make cuando se confirme el pago (con los precios registrados)
+  const payloadMake = {
+    lang: lang === 'ca' ? 'ca' : 'es',
+    arrendatario: arr,
+    reserva: calculo.reserva,
+    importe: calculo.importe,
+    aceptaTos: true
+  };
+
+  const stripe = getStripe();
+  await liberarPendientesDelCliente(stripe, arr.email);
+
+  const token = randomUUID();
+  const bloqueo = await bloquearReservaSala(calculo.reserva, token, payloadMake);
+  if (!bloqueo.ok) {
+    return respuesta(409, { success: false, conflicto: true, message: 'Ese horario ya no está disponible.' });
+  }
+
+  let session = null;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: calculo.lineas.map(l => ({
+        quantity: l.cantidad,
+        price_data: {
+          currency: 'eur',
+          unit_amount: l.pvp,
+          product_data: { name: l.nombre }
+        }
+      })),
+      customer_email: arr.email,
+      client_reference_id: token,
+      locale: 'es',
+      expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
+      success_url: siteUrl + '/alquiler-sala.html?pago=ok',
+      cancel_url: siteUrl + '/alquiler-sala.html?pago=cancelado',
+      payment_intent_data: {
+        description: 'Reserva sala ' + calculo.reserva.fecha + ' ' + calculo.reserva.inicio,
+        metadata: { token }
+      },
+      metadata: { token }
+    });
+    await getPool().query('UPDATE reserva_sala SET stripe_session_id = $1 WHERE token = $2', [session.id, token]);
+  } catch (e) {
+    console.error('Error creando la sesión de pago:', e);
+    if (session) await stripe.checkout.sessions.expire(session.id).catch(() => {});
+    await getPool().query('DELETE FROM reserva_sala WHERE token = $1', [token]).catch(() => {});
+    return respuesta(502, { success: false, message: 'No se pudo iniciar el pago. Inténtalo de nuevo.' });
+  }
+
+  return respuesta(200, { success: true, url: session.url });
+}
+
 /**
  * Handler principal. Netlify lo ejecuta al recibir una petición
  * en /.netlify/functions/submit-formulario
  */
 exports.handler = async (event) => {
 
-  // 1. Solo aceptamos POST. Cualquier otro método se rechaza.
+  // 1. Solo aceptamos POST.
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ success: false, message: 'Método no permitido. Solo POST.' })
-    };
+    return respuesta(405, { success: false, message: 'Método no permitido. Solo POST.' });
   }
 
   try {
     // 2. Leemos lo que ha enviado el navegador.
     const payload = JSON.parse(event.body || '{}');
-
-    /* El formulario de la web envía la clave "captchaToken".
-       Aceptamos también "recaptchaToken" por si en el futuro cambia el nombre. */
     const { captchaToken, recaptchaToken, tipoFormulario, ...formData } = payload;
     const token = captchaToken || recaptchaToken;
 
     if (!token) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Falta el token de reCAPTCHA.' })
-      };
+      return respuesta(400, { success: false, message: 'Falta el token de reCAPTCHA.' });
     }
 
-    // 3. Validamos el token contra los servidores de Google (servidor a servidor).
+    // 3. Validamos el token contra los servidores de Google.
     const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
     if (!recaptchaSecret) {
       throw new Error('RECAPTCHA_SECRET_KEY no está definida en las variables de entorno de Netlify.');
     }
 
-    const verifyUrl = 'https://www.google.com/recaptcha/api/siteverify';
     const verifyParams =
       `secret=${encodeURIComponent(recaptchaSecret)}&response=${encodeURIComponent(token)}`;
-
-    const captchaRes = await postData(verifyUrl, verifyParams, true);
+    const captchaRes = await postData('https://www.google.com/recaptcha/api/siteverify', verifyParams, true);
     const captchaResult = JSON.parse(captchaRes.body || '{}');
 
-    // Si Google dice que el token es falso, manipulado, reutilizado o ha caducado
     if (!captchaResult.success) {
       console.warn('reCAPTCHA rechazado por Google:', captchaResult['error-codes']);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Verificación de reCAPTCHA no válida o expirada.' })
-      };
+      return respuesta(400, { success: false, message: 'Verificación de reCAPTCHA no válida o expirada.' });
     }
 
-    /* 4. Elegimos el webhook según el formulario de origen.
-       Así esta misma función sirve para inscripciones y para alquiler. */
-    let makeWebhookUrl = '';
-
-    if (tipoFormulario === 'inscripciones') {
-      makeWebhookUrl = process.env.MAKE_INSCRIPCIONES_WEBHOOK_URL;
-    } else if (tipoFormulario === 'alquiler') {
-      makeWebhookUrl = process.env.MAKE_ALQUILER_WEBHOOK_URL;
-            if (!fechaReservaValida((formData.reserva || {}).fecha)) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ success: false, message: 'Fecha de reserva no válida.' })
-        };
-      }
-
-      // Bloqueamos el hueco en Neon antes de seguir. Si ya no está libre
-      // (alguien se ha adelantado), avisamos con un 409 para que el
-      // navegador mande a la persona de vuelta al paso 3.
-      const bloqueo = await bloquearReservaSala(formData.reserva || {});
-      if (!bloqueo.ok) {
-        return {
-          statusCode: 409,
-          body: JSON.stringify({ success: false, conflicto: true, message: 'Ese horario ya no está disponible.' })
-        };
-      }
-    } else {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'Tipo de formulario no válido.' })
-      };
+    // 4. Alquiler: se cobra con Stripe y la reserva va a Make cuando se pague.
+    if (tipoFormulario === 'alquiler') {
+      return await procesarAlquiler(formData);
     }
 
+    // 5. Inscripciones: se reenvían directamente a Make.
+    if (tipoFormulario !== 'inscripciones') {
+      return respuesta(400, { success: false, message: 'Tipo de formulario no válido.' });
+    }
+
+    const makeWebhookUrl = process.env.MAKE_INSCRIPCIONES_WEBHOOK_URL;
     if (!makeWebhookUrl) {
-      throw new Error(`El webhook para "${tipoFormulario}" no está configurado en Netlify.`);
+      throw new Error('El webhook para "inscripciones" no está configurado en Netlify.');
     }
 
-    /* 5. Reenviamos los datos a Make.
-       Fíjate en que "formData" ya NO incluye el token del captcha ni el tipoFormulario:
-       los hemos separado arriba porque a Make no le hacen falta. */
     const makeRes = await postData(makeWebhookUrl, formData);
-
-    /* Comprobamos de verdad que Make aceptó la petición.
-       La versión anterior respondía "éxito" aunque Make devolviese un error,
-       con lo que una inscripción podía perderse sin que nadie se enterase. */
     if (makeRes.statusCode < 200 || makeRes.statusCode >= 300) {
       console.error('Make rechazó la petición. Código:', makeRes.statusCode, 'Respuesta:', makeRes.body);
-      return {
-        statusCode: 502,
-        body: JSON.stringify({ success: false, message: 'No se pudo registrar la solicitud. Inténtalo de nuevo.' })
-      };
+      return respuesta(502, { success: false, message: 'No se pudo registrar la solicitud. Inténtalo de nuevo.' });
     }
 
-    // 6. Todo correcto.
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, message: 'Formulario verificado y enviado con éxito.' })
-    };
+    return respuesta(200, { success: true, message: 'Formulario verificado y enviado con éxito.' });
 
   } catch (error) {
-    /* Registramos el detalle en los logs de Netlify (solo tú los ves)
-       pero al navegador le devolvemos un mensaje genérico, para no revelar
-       información interna del servidor a posibles atacantes. */
     console.error('Error procesando la solicitud:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, message: 'Error interno del servidor al procesar la solicitud.' })
-    };
+    return respuesta(500, { success: false, message: 'Error interno del servidor al procesar la solicitud.' });
   }
 };
