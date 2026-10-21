@@ -359,7 +359,6 @@ async function procesarAlquiler(formData) {
   try {
     session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: ['card'],
       line_items: calculo.lineas.map(l => ({
         quantity: l.cantidad,
         price_data: {
