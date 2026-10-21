@@ -71,4 +71,4 @@ Todos los contenidos, diseños, imágenes y recursos asociados a este proyecto p
 
 ## ⭐ Apoya el proyecto
 
-Si te gusta el proyecto, dale una estrella ⭐ en GitHub.
+Si te gusta el proyecto, dale una estrella ⭐ en GitHub
