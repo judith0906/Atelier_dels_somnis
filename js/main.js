@@ -726,3 +726,17 @@ function initContactForm() {
 }
 
 initContactForm();
+
+/* ── COWORKING: rellena el asunto del formulario según la sala pulsada ── */
+function initCoworking() {
+  document.querySelectorAll('.sala-consultar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const asunto = document.getElementById('cf-asunto');
+      if (!asunto) return;
+      const dict = i18n[currentLang];
+      const sala = dict[btn.dataset.sala];
+      asunto.value = sala ? dict.cw_subject + ' – ' + sala : dict.cw_subject;
+    });
+  });
+}
+initCoworking();

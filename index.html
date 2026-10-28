@@ -36,7 +36,8 @@
     <li><a href="#classes" data-i18n="nav_classes">Clases</a></li>
     <li><a href="#casals" data-i18n="nav_casals">Casals</a></li>
     <li><a href="#rental" data-i18n="nav_rental">Sala de Alquiler</a></li>
-    <li><a href="#contact" data-i18n="nav_contact">Contacto</a></li>
+    <li><a href="#coworking" data-i18n="nav_coworking">Coworking</a></li>
+    <li><a href="#mensaje" data-i18n="nav_contact">Contacto</a></li>
   </ul>
 
   <div style="display:flex;align-items:center;gap:20px;">
@@ -536,6 +537,93 @@
     <div class="flyer-track"></div>
     <button class="flyer-next" aria-label="Siguiente">&#8594;</button>
     <div class="flyer-dots"></div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════
+     COWORKING
+══════════════════════════════ -->
+<section id="coworking">
+
+  <div class="section-intro reveal">
+    <p class="eyebrow" data-i18n="cw_eyebrow">Espacios para emprendedores</p>
+    <h2 class="section-title" data-i18n="cw_title">Coworking</h2>
+    <div class="gold-rule"></div>
+    <p class="section-desc" data-i18n="cw_desc">¿Eres emprendedor/a y no tienes un espacio donde dar tus clases? En Atelier dels Somnis encontrarás salas pensadas para cada disciplina, con todos los materiales necesarios.</p>
+  </div>
+
+  <!-- SALA PRINCIPAL -->
+  <p class="coworking-label reveal" data-i18n="cw_main_label">Sala principal</p>
+  <div class="coworking-main reveal">
+    <div class="sala-card sala-dragon sala-card--main">
+      <img class="sala-logo" src="assets/images/salas/dragon.png" alt="Sala del Dragón">
+      <div class="sala-body">
+        <div class="sala-name" data-i18n="cw_dragon_name">Sala del Dragón</div>
+        <div class="sala-size">100 m²</div>
+        <p class="sala-desc" data-i18n="cw_dragon_desc">Espacio principal destinado a reuniones, congresos, talleres multidisciplinares, eventos culturales, conferencias, presentaciones, alquiler para eventos externos, danza y entrenamiento.</p>
+        <a href="#mensaje" class="sala-consultar" data-sala="cw_dragon_name" data-i18n="cw_cta">Consultar disponibilidad</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- OTRAS SALAS -->
+  <p class="coworking-label reveal" data-i18n="cw_other_label">Otras salas</p>
+  <div class="coworking-grid reveal">
+
+    <div class="sala-card sala-fenix">
+      <img class="sala-logo" src="assets/images/salas/fenix.png" alt="Sala del Fénix">
+      <div class="sala-body">
+        <div class="sala-name" data-i18n="cw_fenix_name">Sala del Fénix</div>
+        <p class="sala-desc" data-i18n="cw_fenix_desc">Destinada a terapias del cuerpo y bienestar.</p>
+        <a href="#mensaje" class="sala-consultar" data-sala="cw_fenix_name" data-i18n="cw_cta">Consultar disponibilidad</a>
+      </div>
+    </div>
+
+    <div class="sala-card sala-tigre">
+      <img class="sala-logo" src="assets/images/salas/tigre.png" alt="Sala del Tigre">
+      <div class="sala-body">
+        <div class="sala-name" data-i18n="cw_tigre_name">Sala del Tigre</div>
+        <p class="sala-desc" data-i18n="cw_tigre_desc">Destinada a música y clases instrumentales.</p>
+        <a href="#mensaje" class="sala-consultar" data-sala="cw_tigre_name" data-i18n="cw_cta">Consultar disponibilidad</a>
+      </div>
+    </div>
+
+    <div class="sala-card sala-aguila">
+      <img class="sala-logo" src="assets/images/salas/aguila.png" alt="Sala del Águila">
+      <div class="sala-body">
+        <div class="sala-name" data-i18n="cw_aguila_name">Sala del Águila</div>
+        <p class="sala-desc" data-i18n="cw_aguila_desc">Despacho para la creatividad y el desarrollo de tu empresa.</p>
+        <a href="#mensaje" class="sala-consultar" data-sala="cw_aguila_name" data-i18n="cw_cta">Consultar disponibilidad</a>
+      </div>
+    </div>
+
+    <div class="sala-card sala-caballo">
+      <img class="sala-logo" src="assets/images/salas/caballo.png" alt="Sala del Caballo">
+      <div class="sala-body">
+        <div class="sala-name" data-i18n="cw_caballo_name">Sala del Caballo</div>
+        <div class="sala-size">40 m²</div>
+        <p class="sala-desc" data-i18n="cw_caballo_desc">Destinada a entrenamiento y actividades de movimiento. También para reuniones.</p>
+        <a href="#mensaje" class="sala-consultar" data-sala="cw_caballo_name" data-i18n="cw_cta">Consultar disponibilidad</a>
+      </div>
+    </div>
+
+    <div class="sala-card sala-mariposa">
+      <img class="sala-logo" src="assets/images/salas/mariposa.png" alt="Sala de la Mariposa">
+      <div class="sala-body">
+        <div class="sala-name" data-i18n="cw_mariposa_name">Sala de la Mariposa</div>
+        <p class="sala-desc" data-i18n="cw_mariposa_desc">Destinada a bellas artes, dibujo, pintura y manualidades.</p>
+        <a href="#mensaje" class="sala-consultar" data-sala="cw_mariposa_name" data-i18n="cw_cta">Consultar disponibilidad</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MATERIALES + DISPONIBILIDAD -->
+  <div class="coworking-note reveal">
+    <p data-i18n="cw_materials">Cada sala cuenta con todos los materiales necesarios para su actividad.</p>
+    <p data-i18n="cw_availability">Consulta la disponibilidad horaria a través del formulario de contacto de la web.</p>
+    <a href="#mensaje" class="btn btn-gold" data-i18n="cw_cta">Consultar disponibilidad</a>
   </div>
 
 </section>
