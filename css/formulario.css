@@ -118,3 +118,16 @@ p.aviso { font-size: .85rem; color: var(--amber); border: 1px dashed rgba(217,13
   .grid { grid-template-columns: 1fr; }
   .field.full { grid-column: auto; }
 }
+
+/* ── MENÚ DE PASOS EN MÓVIL ──
+   En pantallas estrechas el 4.º chip ("CONFIRMACIÓN") se salía de la tarjeta
+   porque esa palabra no puede partirse y los 4 chips no caben con texto.
+   Solución: los chips inactivos muestran solo el número y el activo
+   ocupa el espacio sobrante y enseña su nombre. En escritorio no cambia nada. */
+@media (max-width: 560px) {
+  .card .steps { display: flex; gap: 6px; }
+  .card .steps .step-chip { flex: 0 0 auto; min-width: 0; padding-left: 14px; padding-right: 14px; }
+  .card .steps .step-chip.active { flex: 1 1 auto; }
+  .card .steps .step-chip:not(.active) span[data-t] { display: none; }
+  .card .steps .step-chip.active span[data-t] { font-size: .62rem; letter-spacing: .06em; overflow-wrap: anywhere; }
+}
