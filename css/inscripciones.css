@@ -60,3 +60,23 @@ p.pend { font-style: italic; color: var(--text-muted); font-size: .9rem; }
 .lrow .dd { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
 
 .toggle-lbl { display: flex; align-items: center; gap: 10px; }
+
+/* ── ERRORES POR CAMPO (paso 2) ──
+   El <p class="field-err"> lo crea inscripciones.js debajo de cada input.
+   .invalid se añade al input cuando su valor no es correcto. */
+.field-err { display: none; margin-top: 6px; font-size: .78rem; line-height: 1.4; color: var(--rose); }
+.field input.invalid,
+.field input.invalid:focus { border-color: var(--rose); }
+
+/* ── MENÚ DE PASOS EN MÓVIL ──
+   En pantallas estrechas el 4.º chip ("CONFIRMACIÓN") se salía de la tarjeta
+   porque esa palabra no puede partirse y los 4 chips no caben con texto.
+   Solución: los chips inactivos muestran solo el número y el activo
+   ocupa el espacio sobrante y enseña su nombre. En escritorio no cambia nada. */
+@media (max-width: 560px) {
+  .card .steps { display: flex; gap: 6px; }
+  .card .steps .step-chip { flex: 0 0 auto; min-width: 0; padding-left: 14px; padding-right: 14px; }
+  .card .steps .step-chip.active { flex: 1 1 auto; }
+  .card .steps .step-chip:not(.active) span[data-t] { display: none; }
+  .card .steps .step-chip.active span[data-t] { font-size: .62rem; letter-spacing: .06em; overflow-wrap: anywhere; }
+}

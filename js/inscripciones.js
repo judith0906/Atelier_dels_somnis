@@ -22,6 +22,9 @@ function applyT() {
     $('p1-next').disabled = true;
     p1InitLeido();
   }
+
+  refrescarErroresCampos(); 
+  
 }
 function tt(k){ return T[lng][k] || k; }
 
@@ -89,20 +92,135 @@ function go(n) {
   $('paso'+n).scrollIntoView({ block:'start', behavior:'smooth' });
 }
 
+/* ── VALIDACIÓN DE DATOS PERSONALES (paso 2) ──
+   Los textos de error viven en js/i18n.js (I18N.inscripciones, claves val_*).
+   Cada comprobación devuelve '' si el valor es correcto o la clave del error si no. */
+
+/* Letras (con tildes, ñ, ç…) separadas por espacio, guion, apóstrofo o punto volado (l·l) */
+const REGEX_NOMBRE = /^\p{L}+(?:[ '’·\-]\p{L}+)*$/u;
+/* Correo: sin espacios, sin puntos seguidos y con extensión de 2+ letras */
+const REGEX_EMAIL = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}$/;
+
+/* Quita espacios, puntos, guiones y paréntesis, y el prefijo +34 / 0034 */
+function normalizarTelefono(v) {
+  return v.replace(/[\s.\-()]/g, '').replace(/^(\+34|0034)/, '');
+}
+function normalizarDni(v) {
+  return v.toUpperCase().replace(/[\s.\-]/g, '');
+}
+
+/* DNI (8 cifras + letra) o NIE (X/Y/Z + 7 cifras + letra), comprobando la letra de control */
+function dniValido(v) {
+  const LETRAS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+  v = normalizarDni(v);
+  let m = /^(\d{8})([A-Z])$/.exec(v);
+  if (m) return LETRAS[parseInt(m[1], 10) % 23] === m[2];
+  m = /^([XYZ])(\d{7})([A-Z])$/.exec(v);
+  if (m) {
+    const n = parseInt({ X: '0', Y: '1', Z: '2' }[m[1]] + m[2], 10);
+    return LETRAS[n % 23] === m[3];
+  }
+  return false;
+}
+
+/* Edad cumplida a partir de 'YYYY-MM-DD' */
+function edadDesde(iso) {
+  const p = iso.split('-').map(Number);
+  if (p.length !== 3 || p.some(isNaN)) return NaN;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - p[0];
+  const dm = (hoy.getMonth() + 1) - p[1];
+  if (dm < 0 || (dm === 0 && hoy.getDate() < p[2])) edad--;
+  return edad;
+}
+function isoLocal(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/* Campos del paso 2 y su comprobación. El texto del error es tt('val_' + clave) */
+const CAMPOS_P2 = [
+  { id: 'd-nombre',    check: v => { v = v.normalize('NFC'); return (v.length >= 2 && v.length <= 50 && REGEX_NOMBRE.test(v)) ? '' : 'nombre'; } },
+  { id: 'd-apellidos', check: v => { v = v.normalize('NFC'); return (v.length >= 2 && v.length <= 80 && REGEX_NOMBRE.test(v)) ? '' : 'apellidos'; } },
+  { id: 'd-email',     check: v => (v.length <= 100 && REGEX_EMAIL.test(v)) ? '' : 'email' },
+  { id: 'd-telefono',  check: v => /^[6-9]\d{8}$/.test(normalizarTelefono(v)) ? '' : 'telefono' },
+  { id: 'd-fechaNac',  check: v => {
+      const edad = edadDesde(v);
+      if (isNaN(edad) || edad < 0 || edad > 110) return 'fecha';
+      return edad < 18 ? 'menor' : '';
+    } },
+  { id: 'd-cp',        check: v => '' },   // solo obligatorio
+  { id: 'd-ciudad',    check: v => '' },   // solo obligatorio
+  { id: 'd-dni',       check: v => dniValido(v) ? '' : 'dni', normalizar: normalizarDni }
+];
+
+/* Clave del error que tiene ahora cada campo (para reescribirlo si se cambia de idioma) */
+const ERR_ACTUAL = {};
+
+function mostrarErrorCampo(id, clave) {
+  ERR_ACTUAL[id] = clave;
+  const e = $('e-' + id);
+  e.textContent = clave ? tt('val_' + clave) : '';
+  e.style.display = clave ? 'block' : 'none';
+  $(id).classList.toggle('invalid', !!clave);
+  $(id).setAttribute('aria-invalid', clave ? 'true' : 'false');
+}
+function validarCampo(c) {
+  const v = $(c.id).value.trim();
+  const clave = !v ? 'vacio' : c.check(v);
+  mostrarErrorCampo(c.id, clave);
+  return !clave;
+}
+/* Se llama desde applyT() para que los errores visibles cambien de idioma */
+function refrescarErroresCampos() {
+  CAMPOS_P2.forEach(c => { if (ERR_ACTUAL[c.id]) mostrarErrorCampo(c.id, ERR_ACTUAL[c.id]); });
+  if ($('err-p2').style.display === 'block') $('err-p2').textContent = tt('val_resumen');
+}
+
+/* Crea el <p> de error de cada campo y engancha los eventos */
+CAMPOS_P2.forEach(c => {
+  const el = $(c.id);
+  const p = document.createElement('p');
+  p.className = 'field-err';
+  p.id = 'e-' + c.id;
+  p.setAttribute('aria-live', 'polite');
+  el.parentNode.appendChild(p);
+  /* Al salir del campo: normaliza (p. ej. DNI en mayúsculas) y valida */
+  el.addEventListener('blur', () => {
+    if (c.normalizar) el.value = c.normalizar(el.value);
+    else el.value = el.value.trim();
+    validarCampo(c);
+  });
+  /* Mientras escribe: si ya tenía error, se revalida para que se quite en cuanto esté bien */
+  el.addEventListener('input', () => { if (ERR_ACTUAL[c.id]) validarCampo(c); });
+  el.addEventListener('change', () => validarCampo(c));
+});
+
+/* Fecha de nacimiento: el calendario no deja elegir menores de 18 ni más de 110 años */
+(function limitarFechaNac() {
+  const hoy = new Date();
+  $('d-fechaNac').max = isoLocal(new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate()));
+  $('d-fechaNac').min = isoLocal(new Date(hoy.getFullYear() - 110, hoy.getMonth(), hoy.getDate()));
+})();
+
 function leerDatos() {
   datos = {
     nombre: $('d-nombre').value.trim(), apellidos: $('d-apellidos').value.trim(),
-    email: $('d-email').value.trim(), telefono: $('d-telefono').value.trim(),
+    email: $('d-email').value.trim(), telefono: normalizarTelefono($('d-telefono').value.trim()),
     fechaNac: $('d-fechaNac').value, cp: $('d-cp').value.trim(),
-    ciudad: $('d-ciudad').value.trim(), dni: $('d-dni').value.trim()
+    ciudad: $('d-ciudad').value.trim(), dni: normalizarDni($('d-dni').value.trim())
   };
 }
 function validarDatos() {
   leerDatos();
-  const v = Object.values(datos);
-  if (v.some(x => !x)) { $('err-p2').textContent = tt('err_required'); $('err-p2').style.display='block'; return false; }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) { $('err-p2').textContent = tt('err_email'); $('err-p2').style.display='block'; return false; }
-  $('err-p2').style.display='none';
+  let primero = null;
+  CAMPOS_P2.forEach(c => { if (!validarCampo(c) && !primero) primero = $(c.id); });
+  if (primero) {
+    $('err-p2').textContent = tt('val_resumen');
+    $('err-p2').style.display = 'block';
+    primero.focus();   // lleva al usuario al primer campo con error
+    return false;
+  }
+  $('err-p2').style.display = 'none';
   return true;
 }
 

@@ -67,14 +67,15 @@
     <h2 class="step-title" data-t="p2_title">Datos personales</h2>
     <p class="aviso" data-t="p2_aviso">Importante: introduce TUS datos personales. Si vas a inscribir a otra persona, los datos de esa persona se piden en el siguiente paso.</p>
     <div class="grid">
-      <div class="field"><label data-t="nombre">Nombre</label><input type="text" id="d-nombre" data-tph="ph_nombre" placeholder="Tu nombre"></div>
-      <div class="field"><label data-t="apellidos">Apellidos</label><input type="text" id="d-apellidos" data-tph="ph_apellidos" placeholder="Tus apellidos"></div>
-      <div class="field"><label data-t="email">Correo electrónico</label><input type="email" id="d-email" data-tph="ph_email" placeholder="tu@correo.com"></div>
-      <div class="field"><label data-t="telefono">Teléfono</label><input type="tel" id="d-telefono" data-tph="ph_telefono" placeholder="600 000 000"></div>
-      <div class="field"><label data-t="fechaNac">Fecha de nacimiento</label><input type="date" id="d-fechaNac"></div>
-      <div class="field"><label data-t="cp">Código postal</label><input type="text" id="d-cp" data-tph="ph_cp" placeholder="43003"></div>
-      <div class="field"><label data-t="ciudad">Ciudad</label><input type="text" id="d-ciudad" data-tph="ph_ciudad" placeholder="Reus"></div>
-      <div class="field"><label data-t="dni">Documento de identidad (DNI/NIE)</label><input type="text" id="d-dni" data-tph="ph_dni" placeholder="12345678A"></div>
+      <div class="field"><label data-t="nombre">Nombre</label><input type="text" id="d-nombre" data-tph="ph_nombre" placeholder="Tu nombre" autocomplete="given-name" maxlength="50"></div>
+      <div class="field"><label data-t="apellidos">Apellidos</label><input type="text" id="d-apellidos" data-tph="ph_apellidos" placeholder="Tus apellidos" autocomplete="family-name" maxlength="80"></div>
+      <div class="field"><label data-t="email">Correo electrónico</label><input type="email" id="d-email" data-tph="ph_email" placeholder="tu@correo.com" autocomplete="email" inputmode="email" maxlength="100"></div>
+      <div class="field"><label data-t="telefono">Teléfono</label><input type="tel" id="d-telefono" data-tph="ph_telefono" placeholder="600 000 000" autocomplete="tel" inputmode="tel" maxlength="20"></div>
+      <!-- min y max de la fecha de nacimiento los pone inscripciones.js al cargar la página -->
+      <div class="field"><label data-t="fechaNac">Fecha de nacimiento</label><input type="date" id="d-fechaNac" autocomplete="bday"></div>
+      <div class="field"><label data-t="cp">Código postal</label><input type="text" id="d-cp" data-tph="ph_cp" placeholder="43003" autocomplete="postal-code" inputmode="numeric"></div>
+      <div class="field"><label data-t="ciudad">Ciudad</label><input type="text" id="d-ciudad" data-tph="ph_ciudad" placeholder="Reus" autocomplete="address-level2"></div>
+      <div class="field"><label data-t="dni">Documento de identidad (DNI/NIE)</label><input type="text" id="d-dni" data-tph="ph_dni" placeholder="12345678A" autocapitalize="characters" spellcheck="false" maxlength="12"></div>
     </div>
     <p class="err" id="err-p2"></p>
     <div class="nav">
