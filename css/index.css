@@ -354,6 +354,11 @@ section {
   line-height: 1.7;
 }
 
+.rental-cta {
+  margin-top: 28px;
+  text-align: center;
+}
+
 .gold-rule {
   width: 80px;
   height: 1px;

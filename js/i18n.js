@@ -584,17 +584,17 @@ const I18N = {
     ══════════════════════════════════════════ */
   proximamente: {
     es: {
-      titulo: 'Inscripciones próximamente',
-      texto: 'Por el momento no se pueden realizar inscripciones a través de este formulario.',
-      pronto: 'Esta funcionalidad estará disponible muy pronto. Mientras tanto, para solicitar tu inscripción utiliza el formulario de contacto y te responderemos lo antes posible.',
-      btn_contacto: 'Solicitar inscripción vía formulario de contacto',
+      titulo: 'Alquiler de sala próximamente',
+      texto: 'Por el momento no se puede realizar alquiler de sala a través de este formulario.',
+      pronto: 'Esta funcionalidad estará disponible muy pronto. Mientras tanto, para solicitar tu alquiler de sala utiliza el formulario de contacto y te responderemos lo antes posible.',
+      btn_contacto: 'Solicitar alquiler de sala vía formulario de contacto',
       volver: '← Volver a la página principal'
     },
     ca: {
-      titulo: 'Inscripcions ben aviat',
-      texto: 'De moment no es poden fer inscripcions a través d\'aquest formulari.',
-      pronto: 'Aquesta funcionalitat estarà disponible molt aviat. Mentrestant, per sol·licitar la teva inscripció utilitza el formulari de contacte i et respondrem el més aviat possible.',
-      btn_contacto: 'Sol·licitar inscripció mitjançant el formulari de contacte',
+      titulo: 'Lloguer de sala ben aviat',
+      texto: 'De moment no es pot fer lloguer de sala a través d\'aquest formulari.',
+      pronto: 'Aquesta funcionalitat estarà disponible molt aviat. Mentrestant, per sol·licitar el teu lloguer de sala utilitza el formulari de contacte i et respondrem el més aviat possible.',
+      btn_contacto: 'Sol·licitar lloguer de sala mitjançant el formulari de contacte',
       volver: '← Tornar a la pàgina principal'
     }
   }
